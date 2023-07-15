@@ -1,0 +1,27 @@
+{
+  "name": "mocik",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Toast",
+    "qwik",
+    "alert",
+    "notify",
+    "fresh",
+    "deno"
+  ],
+  "author": {
+    "name": "diecodev",
+    "url": "https://github.com/diecodev"
+  },
+  "contributors": [
+    {
+      "name": "devalexpy",
+      "url": "https://github.com/devalexpy"
+    }
+  ],
+  "license": "MIT"
+}

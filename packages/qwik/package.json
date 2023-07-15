@@ -1,7 +1,7 @@
 {
-  "name": "my-qwik-library-name",
+  "name": "@moick/qwik",
   "version": "0.0.1",
-  "description": "Create a reusable Qwik component library",
+  "description": "A versatile multi-package library for Toast notifications.",
   "main": "./lib/index.qwik.mjs",
   "qwik": "./lib/index.qwik.mjs",
   "types": "./lib-types/index.d.ts",

@@ -21,4 +21,7 @@
     "typescript",
     "typescriptreact"
   ],
+  "conventionalCommits.scopes": [
+    "root"
+  ],
 }

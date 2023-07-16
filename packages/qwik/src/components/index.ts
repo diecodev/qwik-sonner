@@ -1,3 +1,2 @@
-export { Toaster } from "./Toaster";
-export { toast } from "./toast";
-export type { ToasterProps, SubscriberOptions as ToastOptions } from "../types";
+export { Toaster } from "./Wrapper";
+export { toast } from "./state";

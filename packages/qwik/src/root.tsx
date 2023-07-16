@@ -1,4 +1,5 @@
 import { Toaster, toast } from "./components";
+import { VisibleToast } from "./types";
 
 export default () => {
   return (
@@ -14,8 +15,10 @@ export default () => {
           minHeight: "100vh",
         }}
       >
-        <button onClick$={() => toast.success("Prueba")}>Add toast</button>
-        <Toaster richColors />
+        <button onClick$={() => toast.success('Título', {
+          description: 'Descrição',
+        })}>Add toast</button>
+        <Toaster closeButton visibleToasts={VisibleToast.five} />
       </body>
     </>
   );

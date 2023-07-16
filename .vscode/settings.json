@@ -23,6 +23,7 @@
   ],
   "conventionalCommits.scopes": [
     "root",
-    "test"
+    "test",
+    "qwik"
   ],
 }

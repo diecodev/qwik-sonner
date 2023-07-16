@@ -10,48 +10,38 @@ import {
 } from "@builder.io/qwik";
 import {
   GAP,
-  MAX_VISIBLE_TOASTS,
   TOAST_WIDTH,
-  VIEWPORT_OFFSET,
+  DEFAULT_WRAPPER_OPTIONS,
+  createOptionsObject
 } from "../utils";
-import { toastState } from "./toast";
-import { ToasterProps, State } from "../types";
-import { Toast } from "./Item";
+import { toastState } from "./state";
+import { State, Theme, ToasterProps } from "../types";
+import { Toast } from "./Toast";
 import styles from "./styles.css?inline";
 
 export const Toaster = component$<ToasterProps>((props) => {
+  const opts = createOptionsObject<Required<ToasterProps>>(DEFAULT_WRAPPER_OPTIONS, props);
   useStyles$(styles);
-  const {
-    position = "bottom-right",
-    hotkey = ["altKey", "KeyT"],
-    expand = false,
-    closeButton = false,
-    class: className,
-    offset,
-    theme = "light",
-    richColors,
-    duration,
-    style,
-    visibleToasts = MAX_VISIBLE_TOASTS,
-    toastOptions,
-  } = props;
 
-  const [x, y] = position.split("-");
-  const keyShortcut = hotkey
+  const wrapperRef = useSignal<HTMLOListElement>();
+  const state = useStore<State>({
+    toasts: [],
+    expanded: opts.expand,
+    heights: [],
+    interacting: false,
+    theme: opts.theme,
+  });
+
+  const [y, x] = opts.position.split("-");
+  const keyShortcut = opts.hotkey
     .join(" + ")
     .replace(/Key/g, "")
     .replace(/Digit/g, "");
+  const offset = typeof opts.offset === "number"
+    ? `${opts.offset}px`
+    : opts.offset
 
-  const listRef = useSignal<HTMLOListElement>();
-  const state = useStore<State>({
-    toasts: [],
-    expanded: false,
-    heights: [],
-    interacting: false,
-    theme,
-  });
-
-  // this is the relationship between the toast and the toaster
+  // this is the relationship between the toast and the this component
   useVisibleTask$(() => {
     return toastState.subscribe((toast) => {
       if (toast.dismiss) {
@@ -65,73 +55,77 @@ export const Toaster = component$<ToasterProps>((props) => {
     });
   });
 
+  // handle user color theme preference
   useVisibleTask$(({ track }) => {
-    const trackedTheme = track(() => theme);
+    const theme = track(() => opts.theme);
 
-    if (trackedTheme !== "system") {
-      state.theme = trackedTheme;
+    if (theme !== Theme.system) {
+      state.theme = theme;
       return;
     }
 
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addEventListener("change", ({ matches }) => {
-        state.theme = matches ? "dark" : "light";
+        state.theme = matches ? Theme.dark : Theme.light;
       });
   });
 
+  // Ensure expanded prop is always false when no toasts are present or only one left
   useTask$(({ track }) => {
-    const tackedToasts = track(() => state.toasts);
-    // Ensure expanded prop is always false when no toasts are present or only one left
-    if (tackedToasts.length <= 1) {
+    track(() => state.toasts);
+    if (state.toasts.length <= 1) {
       state.expanded = false;
     }
   });
 
+  // Create shortcut to expand the toaster
   useOnDocument(
     "keydown",
     $((event: any) => {
-      const isHotkeyPressed = hotkey.every(
+      // Check if all hotkeys are pressed
+      const isHotkeyPressed = opts.hotkey.every(
         (key) => (event as any)[key] || event.code === key
       );
 
+      // If the key shortcut is pressed, expand the toaster
       if (isHotkeyPressed) {
         state.expanded = true;
-        listRef.value?.focus();
+        wrapperRef.value?.focus();
       }
 
+      // Then, if user presses escape, close the toaster
       if (
         event.code === "Escape" &&
-        (document.activeElement === listRef.value ||
-          listRef.value?.contains(document.activeElement))
+        (document.activeElement === wrapperRef.value ||
+          wrapperRef.value?.contains(document.activeElement))
       ) {
         state.expanded = false;
       }
     })
   );
 
+  // There are not toasts to show = no need to render
   if (!state.toasts.length) return null;
 
+  // render the toasts
   return (
-    <section aria-label={`Show Notifications ${keyShortcut}`} tabIndex={-1}>
+    <section aria-label={`Notifications ${keyShortcut}`} tabIndex={-1}>
       <ol
-        ref={listRef}
-        class={className}
+        ref={wrapperRef}
+        class={opts.class}
         tabIndex={-1}
-        data-theme={theme}
-        data-rich-colors={`${richColors}`}
-        data-y-position={`${y}`}
-        data-x-position={x}
-        data-moick-toaster
+        moick-data-theme={state.theme}
+        moick-rich-colors={`${opts.richColors}`}
+        moick-y-position={y}
+        moick-x-position={x}
+        moick-toaster-wrapper
         style={{
           "--front-toast-height": `${state.heights[0]?.height}px`,
-          "--offset":
-            typeof offset === "number"
-              ? `${offset}px`
-              : offset || VIEWPORT_OFFSET,
+          "--offset": `${offset}`,
           "--width": `${TOAST_WIDTH}px`,
           "--gap": `${GAP}px`,
-          ...style,
+          ...opts.style,
         }}
         onMouseEnter$={() => (state.expanded = true)}
         onMouseMove$={() => (state.expanded = true)}
@@ -156,15 +150,15 @@ export const Toaster = component$<ToasterProps>((props) => {
               })}
               toast={t}
               index={i}
-              expandByDefault={expand}
-              position={position}
-              visibleToasts={visibleToasts}
-              closeButton={closeButton}
+              expandByDefault={opts.expand}
+              position={opts.position}
+              visibleToasts={opts.visibleToasts}
+              closeButton={opts.closeButton}
               state={state}
-              duration={duration}
-              class={toastOptions?.class}
-              descriptionClassName={toastOptions?.descriptionClassName}
-              style={toastOptions?.style}
+              duration={opts.duration}
+              class={opts.toastOptions.class}
+              descriptionClassName={opts.toastOptions.descriptionClassName}
+              style={opts.toastOptions.style}
             />
           );
         })}

@@ -1,47 +1,163 @@
-# Qwik Library ⚡️
+# Moick Library for Qwik
 
-- [Qwik Docs](https://qwik.builder.io/)
-- [Discord](https://qwik.builder.io/chat)
-- [Qwik on GitHub](https://github.com/BuilderIO/qwik)
-- [@QwikDev](https://twitter.com/QwikDev)
-- [Vite](https://vitejs.dev/)
-- [Partytown](https://partytown.builder.io/)
-- [Mitosis](https://github.com/BuilderIO/mitosis)
-- [Builder.io](https://www.builder.io/)
+## Installation
 
----
+For install the library, you can use the following command:
 
-## Project Structure
-
-Inside your project, you'll see the following directories and files:
-
-```
-├── public/
-│   └── ...
-└── src/
-    ├── components/
-    │   └── ...
-    └── index.ts
+```tsx
+pnpm add @moick/qwik
 ```
 
-- `src/components`: Recommended directory for components.
+## Basic Usage
 
-- `index.ts`: The entry point of your component library, make sure all the public components are exported from this file.
+Add `<Toaster />` component to your app and use `toast` function to configure the message or type of your toast.
 
-## Development
+```tsx
+import {Toaster, toast} from '@moick/qwik';
 
-Development mode uses [Vite's development server](https://vitejs.dev/). For Qwik during development, the `dev` command will also server-side render (SSR) the output. The client-side development modules are loaded by the browser.
+export default () => {
+    return (
+        <div>
+            <Toaster />
+            <button onClick$={() => toast('Hello World!')}>Toast</button>
+        </div>
+    )
+
+}
+```
+## Types
+
+### Default
+
+The basic type of toast, with a simple message.
+
+```tsx
+toast('My first toast')
 
 ```
-pnpm dev
+Also you can use the `description` property to add a description to your toast.
+
+```tsx
+toast('toast', {
+    description: 'My first toast'
+})
 ```
 
-> Note: during dev mode, Vite will request many JS files, which does not represent a Qwik production build.
+### Success
 
-## Production
+The success type of toast, with a checkmark icon in front of text.
 
-The production build should generate the production build of your component library in (./lib) and the typescript type definitions in (./lib-types).
-
+```tsx
+toast.success('My first toast')
 ```
-pnpm build
+
+### Error
+
+The error type of toast, with a error icon in front of text.
+
+```tsx
+toast.error('My first toast')
+```
+
+### Updating a toast
+
+You can update a toast using the `toast` function with the same id.
+
+```tsx
+const toastId = toast('My first toast')
+
+toast('My first toast updated', {
+    id: toastId
+})
+```
+
+## Customization
+
+### Theme
+
+You can customize the theme of your toasts using the `theme` property.
+
+```tsx
+<Toaster theme="system" />
+```
+### Position
+
+You can customize the position of your toasts using the `position` property. By default, the position is `bottom-right`.
+
+```tsx
+//available positions: top-left, top-center, top-right, bottom-left, bottom-center, bottom-right
+
+<Toaster position="top-right"/>
+```
+
+### Duration
+
+You can customize the duration of your toasts using the `duration` property. By default, the duration is `5000`.
+
+```tsx
+<Toaster duration={10000}/>
+
+//or
+
+toast('My first toast', {
+    duration: 10000
+})
+```
+
+### Close Button
+
+You can add a close button to your toasts using the `closeButton` property.
+
+```tsx
+<Toaster closeButton />
+```
+
+### Expanded
+
+You can activate de expand by default your toasts using the `expanded` property. You can also use the `visibleToasts` property to set the number of visible toasts wich is 3 by default.
+
+```tsx
+<Toaster expanded visibleToasts={VisibleToast.five}/>
+```
+
+### RichColor
+
+The succes and error types can be more colorful using the `richColor` property.
+
+```tsx
+<Toaster richColor />
+```
+
+### Styling all toasts
+
+You can style all toasts using the `style` property in the `<Toaster />` component.
+
+```tsx
+<Toaster style={{borderRadius: '10px'}} />
+```
+
+### Styling a specific toast
+
+You can style a specific toast using the `style` property in the `toast` function.
+
+```tsx
+toast('My first toast', {
+    style: {borderRadius: '10px'}
+})
+```
+
+### Custom offset
+
+You can customize the offset of your toasts using the `offset` property. By default, the offset is `32px`.
+
+```tsx
+<Toaster offset={50}/>
+```
+
+## Keyboard Shortcuts
+
+You can use `Alt + T` to expand the toast. You can customize this shortcut using the `hotKey` property.
+
+```tsx
+<Toaster hotKey={['KeyA']}/>
 ```

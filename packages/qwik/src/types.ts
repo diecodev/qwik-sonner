@@ -5,7 +5,8 @@ export enum Theme {
   dark = "dark",
   system = "system",
   default = "light",
-};
+}
+
 export enum VisibleToast {
   one = 1,
   two = 2,
@@ -48,8 +49,7 @@ export interface ToasterProps {
   class?: ClassList;
   style?: CSSProperties;
   offset?: string | number;
-};
-
+}
 
 export interface Toast extends BasicOptions {
   title?: string;

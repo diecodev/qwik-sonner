@@ -4,12 +4,12 @@
   "description": "A versatile multi-package library for Toast notifications.",
   "main": "./lib/index.qwik.mjs",
   "qwik": "./lib/index.qwik.mjs",
-  "types": "./lib-types/index.d.ts",
+  "types": "./lib-types/types.d.ts",
   "exports": {
     ".": {
       "import": "./lib/index.qwik.mjs",
       "require": "./lib/index.qwik.cjs",
-      "types": "./lib-types/index.d.ts"
+      "types": "./lib-types/types.d.ts"
     }
   },
   "files": [

@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig",
+  "exclude": [
+    "src/entry.*",
+    "src/root.tsx"
+  ]
+}

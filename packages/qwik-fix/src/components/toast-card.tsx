@@ -44,7 +44,7 @@ export const Toast = component$((props: ToastProps) => {
 
   const isFront = props.index === 0;
   const isVisible = props.index + 1 <= props.visibleToasts;
-  const toastType = props.toast.type;
+  const {type: toastType} = props.toast;
   const dismissible = props.toast.dismissible !== false;
   const toastClassname = props.toast.className;
   const toastDescriptionClassname = props.toast.descriptionClassName;
@@ -152,10 +152,11 @@ export const Toast = component$((props: ToastProps) => {
 
     if (
       (props.toast.promise && toastType === "loading") ||
-      props.toast.duration === Number.POSITIVE_INFINITY
-    )
+      props.toast.duration === Infinity
+    ){
       return;
-
+    }
+    
     let timeoutId: number;
     // Pause the timer on each hover
     const pauseTimer = () => {
@@ -182,6 +183,7 @@ export const Toast = component$((props: ToastProps) => {
     if (props.state.expanded || props.state.interacting) {
       pauseTimer();
     } else {
+      console.log('timer start');
       startTimer();
     }
 
@@ -224,25 +226,25 @@ export const Toast = component$((props: ToastProps) => {
         // @ts-expect-error types don't match
         props.toast?.classNames?.[toastType],
       ]}
-      data-sonner-toast=""
+      data-moick-toast=""
       data-styled={`${!(
         props.toast.jsx ||
         props.toast.unstyled ||
         props.unstyled
       )}`}
       data-mounted={`${state.mounted}`}
-      data-promise={Boolean(props.toast.promise)}
+      data-promise={`${Boolean(props.toast.promise)}`}
       data-removed={`${state.removed}`}
       data-visible={`${isVisible}`}
       data-y-position={y}
       data-x-position={x}
       data-index={props.index}
       data-front={`${isFront}`}
-      data-swiping={state.swiping}
-      data-dismissible={dismissible}
+      data-swiping={`${state.swiping}`}
+      data-dismissible={`${dismissible}`}
       data-type={toastType}
-      data-invert={invert}
-      data-swipe-out={state.swipeOut}
+      data-invert={`${invert}`}
+      data-swipe-out={`${state.swipeOut}`}
       data-expanded={`${Boolean(
         props.state.expanded || (props.expandByDefault && state.mounted)
       )}`}

@@ -60,6 +60,7 @@ export function createToastState() {
       toasts.update((prev) =>
         prev.map((toast) => {
           if (toast.id === id) {
+            subscribers.getAll().forEach((subscriber) => subscriber({ ...toast, ...data, id, title: message, dismissible }));
             return { ...toast, ...data, id, title: message, dismissible };
           }
           return toast;
@@ -125,27 +126,18 @@ export function createToastState() {
       });
     }
 
-    const p = promise instanceof Promise ? promise : promise();
+    const p = promise();
 
     let shouldDismiss = id !== undefined;
 
-    p.then((response) => {
+    p.then(async (response) => {
       // TODO: Clean up TS here, response has incorrect type
-      // @ts-expect-error
-      if (response && typeof response.ok === "boolean" && !response.ok) {
+      if (data.success !== undefined) {
         shouldDismiss = false;
         const message =
-          typeof data.error === "function"
-            ? // @ts-expect-error: Incorrect response type
-              data.error(`HTTP error! status: ${response.status}`)
-            : data.error;
-        create({ id, type: "error", message });
-      } else if (data.success !== undefined) {
-        shouldDismiss = false;
-        const message =
-          typeof data.success === "function"
-            ? data.success(response)
-            : data.success;
+        typeof data.success === "function"
+        ? await data.success(response)
+        : data.success;
         create({ id, type: "success", message });
       }
     })

@@ -10,11 +10,11 @@ export type ToastTypes =
   | "loading"
   | "default";
 
-export type PromiseT<Data = any> = Promise<Data> | (() => Promise<Data>);
+export type PromiseT<Data = any> = QRL<() => Promise<Data>>;
 
 export type PromiseData<ToastData = any> = ExternalToast & {
   loading?: string | JSXNode;
-  success?: string | JSXNode | ((data: ToastData) => JSXNode | string);
+  success?: string | JSXNode | QRL<(data: ToastData) => JSXNode | string>;
   error?: string | JSXNode | ((error: any) => JSXNode | string);
   finally?: () => void | Promise<void>;
 };
@@ -156,7 +156,7 @@ export interface ToastToDismiss {
 
 export type ExternalToast = Omit<
   ToastT,
-  "id" | "type" | "title" | "jsx" | "delete" | "promise"
+  "id" | "type"  | "jsx" | "delete" | "promise"
 > & {
   id?: number | string;
 };

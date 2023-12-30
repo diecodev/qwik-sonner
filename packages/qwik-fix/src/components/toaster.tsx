@@ -212,7 +212,7 @@ export const Toaster = component$<ToasterProps>((props) => {
             tabIndex={-1}
             ref={listRef}
             class={props.className}
-            data-sonner-toaster
+            data-moick-toaster
             data-theme={state.theme}
             data-rich-colors={`${props.richColors}`}
             data-y-position={y}

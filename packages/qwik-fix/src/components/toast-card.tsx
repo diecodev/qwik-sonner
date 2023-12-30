@@ -406,7 +406,10 @@ export const Toast = component$((props: ToastProps) => {
             <button
               data-button=""
               style={props.toast.actionButtonStyle || props.actionButtonStyle}
-              onClick$={() => console.log("clicked")} // just for qwik gh issue
+              onClick$={(ev, el) => {
+                console.log("clicked")
+                props.toast.action?.onClick(ev, el)
+              }} // just for qwik gh issue
               onMouseOver$={() => console.log("over btn")} // just for qwik gh issue
               class={[
                 props.classNames?.actionButton,

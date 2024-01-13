@@ -21,7 +21,7 @@ bun add qwik-sonner
 Add `<Toaster />` to your app, it will be the place where all your toasts will be rendered. After that, you can use `toast()` from anywhere in your app.
 
 ```jsx
-import { Toaster, toast } from "svelte-sonner";
+import { Toaster, toast } from "qwik-sonner";
 
 export const QwikComponent = component$(() => {
   return (
@@ -164,7 +164,7 @@ toast.custom((t) => (
 
 You can change the theme using the `theme` prop. Default theme is light.
 
-```svelte
+```tsx
 <Toaster theme="dark" />
 ```
 
@@ -183,7 +183,7 @@ You can change the position through the `position` prop on the `<Toaster />` com
 
 Toasts can also be expanded by default through the `expand` prop. You can also change the amount of visible toasts which is 3 by default.
 
-```svelte
+```tsx
 <Toaster expand visibleToasts={9} />
 ```
 
@@ -191,13 +191,13 @@ Toasts can also be expanded by default through the `expand` prop. You can also c
 
 You can style your toasts globally with the `toastOptions` prop in the `Toaster` component.
 
-```svelte
+```tsx
 <Toaster
-	toastOptions={{
-		style: 'background: red;',
-		class: 'my-toast',
-		descriptionClass: 'my-toast-description'
-	}}
+  toastOptions={{
+    style: "background: red;",
+    class: "my-toast",
+    descriptionClass: "my-toast-description",
+  }}
 />
 ```
 
@@ -223,7 +223,7 @@ Add a close button to all toasts that shows on hover by adding the `closeButton`
 
 You can make error and success state more colorful by adding the `richColors` prop.
 
-```svelte
+```tsx
 <Toaster richColors />
 ```
 
@@ -231,7 +231,7 @@ You can make error and success state more colorful by adding the `richColors` pr
 
 Offset from the edges of the screen.
 
-```svelte
+```tsx
 <Toaster offset="80px" />
 ```
 
@@ -255,7 +255,7 @@ toast.dismiss();
 
 You can change the duration of each toast by using the `duration` property, or change the duration of all toasts like this:
 
-```svelte
+```tsx
 <Toaster duration={10000} />
 ```
 
@@ -287,8 +287,8 @@ toast("Event has been created", {
 
 You can focus on the toast area by pressing ⌥/alt + T. You can override it by providing an array of `event.code` values for each key.
 
-```svelte
-<Toaster hotkey={['KeyC']} />
+```tsx
+<Toaster hotkey={["KeyC"]} />
 ```
 
 ## License

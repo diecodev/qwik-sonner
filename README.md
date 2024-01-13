@@ -1,19 +1,47 @@
-# Moick
+# Qwik Library ⚡️
 
-Moick is a flexible and easy-to-use library for displaying toast notifications in web applications. With Moick, you can easily create and customize toast messages to provide feedback to your users, such as success messages, error messages. Moick supports multiple types of toasts, including simple text message and message with icon. It also provides a range of configuration options, such as duration, position, to help you tailor the toast messages to your specific needs.
+- [Qwik Docs](https://qwik.builder.io/)
+- [Discord](https://qwik.builder.io/chat)
+- [Qwik on GitHub](https://github.com/BuilderIO/qwik)
+- [@QwikDev](https://twitter.com/QwikDev)
+- [Vite](https://vitejs.dev/)
+- [Partytown](https://partytown.builder.io/)
+- [Mitosis](https://github.com/BuilderIO/mitosis)
+- [Builder.io](https://www.builder.io/)
 
-## Installation
+---
 
-```tsx
-pnpm install @moick/[favorite-framework]
+## Project Structure
+
+Inside your project, you'll see the following directories and files:
+
+```
+├── public/
+│   └── ...
+└── src/
+    ├── components/
+    │   └── ...
+    └── index.ts
 ```
 
-Supported frameworks:
+- `src/components`: Recommended directory for components.
 
-- [Qwik (**Available**)](/packages/qwik)
-- React (**Work in progress**)
-- Angular (**Work in progress**)
-- Astro (**Work in progress**)
-- Svelte (**Work in progress**)
-- Deno fresh (**Work in progress**)
+- `index.ts`: The entry point of your component library, make sure all the public components are exported from this file.
 
+## Development
+
+Development mode uses [Vite's development server](https://vitejs.dev/). For Qwik during development, the `dev` command will also server-side render (SSR) the output. The client-side development modules are loaded by the browser.
+
+```
+pnpm dev
+```
+
+> Note: during dev mode, Vite will request many JS files, which does not represent a Qwik production build.
+
+## Production
+
+The production build should generate the production build of your component library in (./lib) and the typescript type definitions in (./lib-types).
+
+```
+pnpm build
+```

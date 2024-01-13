@@ -44,14 +44,14 @@ export const Toast = component$((props: ToastProps) => {
 
   const isFront = props.index === 0;
   const isVisible = props.index + 1 <= props.visibleToasts;
-  const {type: toastType} = props.toast;
+  const { type: toastType } = props.toast;
   const dismissible = props.toast.dismissible !== false;
   const toastClassname = props.toast.className;
   const toastDescriptionClassname = props.toast.descriptionClassName;
   const invert = props.toast.invert || props.invert;
   const disabled = toastType === "loading";
 
-  console.log("onclik event: ", props.toast.action?.onClick()); // temporally just for the qwik gh issue
+  // console.log("onclik event: ", props.toast.action?.onClick()); // temporally just for the qwik gh issue
 
   // Height index is used to calculate the offset as it gets updated before the toast array, which means we can calculate the new layout faster.
   const heightIndex = useComputed$(() => {
@@ -153,10 +153,10 @@ export const Toast = component$((props: ToastProps) => {
     if (
       (props.toast.promise && toastType === "loading") ||
       props.toast.duration === Infinity
-    ){
+    ) {
       return;
     }
-    
+
     let timeoutId: number;
     // Pause the timer on each hover
     const pauseTimer = () => {
@@ -183,7 +183,6 @@ export const Toast = component$((props: ToastProps) => {
     if (props.state.expanded || props.state.interacting) {
       pauseTimer();
     } else {
-      console.log('timer start');
       startTimer();
     }
 
@@ -409,10 +408,10 @@ export const Toast = component$((props: ToastProps) => {
               data-button=""
               style={props.toast.actionButtonStyle || props.actionButtonStyle}
               onClick$={(ev, el) => {
-                console.log("clicked")
-                props.toast.action?.onClick(ev, el)
+                // console.log("clicked");
+                props.toast.action?.onClick(ev, el);
               }} // just for qwik gh issue
-              onMouseOver$={() => console.log("over btn")} // just for qwik gh issue
+              // onMouseOver$={() => console.log("over btn")} // just for qwik gh issue
               class={[
                 props.classNames?.actionButton,
                 props.toast?.classNames?.actionButton,

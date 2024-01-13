@@ -1,21 +1,38 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Build
+/dist
+/lib
+/lib-types
+/server
 
-# dependencies
+# Development
 node_modules
-.pnp
-.pnp.js
 
-# debug
+# Cache
+.cache
+.mf
+.vscode
+.rollup.cache
+tsconfig.tsbuildinfo
+
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# local env files
-.env
-.env.*
+# Editor
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Distribution directories
-dist/
-package/
-docs/
+# Yarn
+.yarn/*
+!.yarn/releases

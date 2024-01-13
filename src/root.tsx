@@ -1,5 +1,4 @@
-import { Toaster } from "./components";
-import { Counter } from "./components/counter/counter";
+import { Toaster, toast } from "./components";
 
 export default () => {
   return (
@@ -9,8 +8,10 @@ export default () => {
         <title>Qwik Blank App</title>
       </head>
       <body>
+        <button onClick$={() => toast.info("I'm a toast. Look at me")}>
+          open toaster
+        </button>
         <Toaster />
-        <Counter />
       </body>
     </>
   );

@@ -1,8 +1,10 @@
+
 # qwik-sonner
-
 An opinionated toast component for qwik.
-
 Based on [emilkowalski](https://github.com/emilkowalski)'s React [implementation](https://sonner.emilkowal.ski/).
+
+> [!NOTE]
+> This readme was created using the svelte-sonner readme as template
 
 ## Quick start
 
@@ -294,6 +296,3 @@ You can focus on the toast area by pressing ⌥/alt + T. You can override it by 
 ## License
 
 MIT
-
-> [!INFO]
-> This readme was created using the svelte-sonner readme as template

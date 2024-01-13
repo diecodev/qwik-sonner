@@ -48,7 +48,7 @@ export interface ToastT {
   important?: boolean;
   action?: {
     label: string;
-    onClick: (event: PointerEvent, element: HTMLButtonElement) => any;
+    onClick: QRL<(event: PointerEvent, element: HTMLButtonElement) => void>;
   };
   cancel?: {
     label: string;
@@ -156,7 +156,7 @@ export interface ToastToDismiss {
 
 export type ExternalToast = Omit<
   ToastT,
-  "id" | "type"  | "jsx" | "delete" | "promise"
+  "id" | "type" | "jsx" | "delete" | "promise"
 > & {
   id?: number | string;
 };

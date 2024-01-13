@@ -1,5 +1,4 @@
 import { JSXNode } from "@builder.io/qwik";
-import { store } from "./store";
 import {
   ExternalToast,
   PromiseData,
@@ -12,26 +11,18 @@ import {
 let toastsCounter: number = 1;
 
 export function createToastState() {
-  const toasts = new store<ToastT | ToastToDismiss>();
-  const subscribers = new store<
-    (toast: ExternalToast | ToastToDismiss) => void
-  >();
+  let toasts: (ToastT | ToastToDismiss)[] = [];
+  const subscribers: ((toast: ToastT | ToastToDismiss) => void)[] = [];
 
   // this subscribe func is to handle the dismiss props
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function subscribe(subscriber: (toast: ToastT | ToastToDismiss) => void) {
-    subscribers.update((prev) => [...prev, subscriber as any]);
-
-    return () => {
-      const index = subscribers.getAll().indexOf(subscriber as any);
-      const newSubscribers = subscribers.getAll().splice(index, 1);
-      subscribers.update(() => newSubscribers);
-    };
+    subscribers.push(subscriber);
   }
 
   function addToast(data: ToastT) {
-    subscribers.getAll().forEach((subscriber) => subscriber(data));
-    toasts.update((prev) => [data, ...prev]);
+    subscribers.forEach((subscriber) => subscriber(data));
+    toasts = [...toasts, data];
   }
 
   function create(
@@ -50,22 +41,28 @@ export function createToastState() {
     const dismissible =
       data.dismissible === undefined ? true : data.dismissible;
 
-    const $toasts = toasts.getAll();
+    const $toasts = toasts;
 
     const alreadyExists = $toasts.find((toast) => {
       return toast.id === id;
     });
 
     if (alreadyExists) {
-      toasts.update((prev) =>
-        prev.map((toast) => {
-          if (toast.id === id) {
-            subscribers.getAll().forEach((subscriber) => subscriber({ ...toast, ...data, id, title: message, dismissible }));
-            return { ...toast, ...data, id, title: message, dismissible };
-          }
-          return toast;
-        })
-      );
+      toasts = $toasts.map((toast) => {
+        if (toast.id === id) {
+          subscribers.forEach((subscriber) =>
+            subscriber({
+              ...toast,
+              ...data,
+              id,
+              title: message,
+              dismissible,
+            })
+          );
+          return { ...toast, ...data, id, title: message, dismissible };
+        }
+        return toast;
+      });
     } else {
       addToast({ ...rest, id, title: message, dismissible });
     }
@@ -75,10 +72,14 @@ export function createToastState() {
 
   function dismiss(id?: number | string) {
     if (!id) {
-      toasts.set([]);
-      return;
+      toasts.forEach((toast) => {
+        subscribers.forEach((subscriber) =>
+          subscriber({ id: toast.id, dismiss: true })
+        );
+      });
+    } else {
+      subscribers.forEach((subscriber) => subscriber({ id, dismiss: true }));
     }
-    toasts.update((prev) => prev.filter((toast) => toast.id !== id));
 
     return id;
   }
@@ -135,9 +136,9 @@ export function createToastState() {
       if (data.success !== undefined) {
         shouldDismiss = false;
         const message =
-        typeof data.success === "function"
-        ? await data.success(response)
-        : data.success;
+          typeof data.success === "function"
+            ? await data.success(response)
+            : data.success;
         create({ id, type: "success", message });
       }
     })
@@ -165,7 +166,7 @@ export function createToastState() {
   function custom(jsx: (id: number | string) => JSXNode, data?: ExternalToast) {
     const id = data?.id || toastsCounter++;
     create({ jsx: jsx(id), id, ...data });
-    return id;
+    return { id };
   }
 
   return {

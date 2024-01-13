@@ -51,8 +51,6 @@ export const Toast = component$((props: ToastProps) => {
   const invert = props.toast.invert || props.invert;
   const disabled = toastType === "loading";
 
-  // console.log("onclik event: ", props.toast.action?.onClick()); // temporally just for the qwik gh issue
-
   // Height index is used to calculate the offset as it gets updated before the toast array, which means we can calculate the new layout faster.
   const heightIndex = useComputed$(() => {
     const partialIndex = props.state.heights.findIndex(
@@ -260,13 +258,13 @@ export const Toast = component$((props: ToastProps) => {
         ...props.style,
         ...props.toast.style,
       }}
-      onPointerDown$={(event, element) => {
+      onPointerDown$={(event) => {
         if (disabled || !dismissible) return;
         state.dragStartTime = new Date();
         state.offsetBeforeRemove = offset.value;
         // Ensure we maintain correct pointer capture even when going outside of the toast (e.g. when swiping)
-        element.setPointerCapture(event.pointerId);
-        if (element.tagName === "BUTTON") return;
+        (event.target as HTMLElement).setPointerCapture(event.pointerId);
+        if ((event.target as HTMLElement).tagName === "BUTTON") return;
         state.swiping = true;
         pointerStartRef.value = { x: event.clientX, y: event.clientY };
       }}
@@ -408,10 +406,8 @@ export const Toast = component$((props: ToastProps) => {
               data-button=""
               style={props.toast.actionButtonStyle || props.actionButtonStyle}
               onClick$={(ev, el) => {
-                // console.log("clicked");
                 props.toast.action?.onClick(ev, el);
               }} // just for qwik gh issue
-              // onMouseOver$={() => console.log("over btn")} // just for qwik gh issue
               class={[
                 props.classNames?.actionButton,
                 props.toast?.classNames?.actionButton,

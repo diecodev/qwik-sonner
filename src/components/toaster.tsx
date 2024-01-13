@@ -118,7 +118,7 @@ export const Toaster = component$<ToasterProps>((props) => {
       }
 
       return (state.toasts = [toast, ...state.toasts]);
-    })();
+    });
   });
 
   // handle user color theme preference

@@ -6,6 +6,7 @@ import {
   useOnDocument,
   useSignal,
   useStore,
+  useStyles$,
   useTask$,
   useVisibleTask$,
 } from "@builder.io/qwik";
@@ -22,7 +23,7 @@ import {
   VIEWPORT_OFFSET,
   VISIBLE_TOASTS_AMOUNT,
 } from "../constants";
-import "./styles.css";
+import styles from "./styles.css?inline";
 import { toastState } from "../utils/state";
 
 function getDocumentDirection(): ToasterProps["dir"] {
@@ -40,6 +41,7 @@ function getDocumentDirection(): ToasterProps["dir"] {
 }
 
 export const Toaster = component$<ToasterProps>((props) => {
+  useStyles$(styles);
   const {
     position = "bottom-right",
     hotkey = ["altKey", "KeyT"],

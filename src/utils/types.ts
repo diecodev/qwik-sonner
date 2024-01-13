@@ -52,10 +52,10 @@ export interface ToastT {
   };
   cancel?: {
     label: string;
-    onClick?: () => void;
+    onClick?: QRL<() => void>;
   };
-  onDismiss?: (toast: ToastT) => void;
-  onAutoClose?: (toast: ToastT) => void;
+  onDismiss?: QRL<(toast: ToastT) => void>;
+  onAutoClose?: QRL<(toast: ToastT) => void>;
   promise?: PromiseT;
   cancelButtonStyle?: string | CSSProperties;
   actionButtonStyle?: string | CSSProperties;

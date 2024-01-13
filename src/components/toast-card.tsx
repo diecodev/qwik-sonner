@@ -319,11 +319,11 @@ export const Toast = component$((props: ToastProps) => {
           data-close-button
           onClick$={
             disabled || !dismissible
-              ? () => {}
-              : () => {
+              ? $(() => {})
+              : $(() => {
                   deleteToast();
                   props.toast.onDismiss?.(props.toast);
-                }
+                })
           }
           class={[
             props.classNames?.closeButton,

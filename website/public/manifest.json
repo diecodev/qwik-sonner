@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "qwik-sonner",
+  "short_name": "Welcome to qwik-sonner",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "Qwik Sonner is a library that allows you to render toasters in your Qwik app with different types, positions, colors and options. Learn how to install, use and customize Qwik Sonner with documentation and examples."
+}

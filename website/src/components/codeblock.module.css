@@ -1,0 +1,37 @@
+.code {
+  padding: 12px 62px 12px 12px;
+  border-radius: 6px;
+  margin: 1rem 0 2rem;
+  background: linear-gradient(to top, var(--gray2), var(--gray1) 8px);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  position: relative;
+  cursor: copy;
+  height: auto;
+  border: 1px solid var(--gray3);
+  display: flex;
+  flex-direction: column;
+  color: var(--gray12);
+}
+
+.copy {
+  position: absolute;
+  right: 6px;
+  top: 7px;
+  cursor: pointer;
+  border-radius: 50%;
+  border: none;
+  border: 1px solid var(--gray4);
+  background: #fff;
+  color: var(--gray12);
+  border-radius: 5px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.copy div {
+  display: flex;
+}

@@ -42,6 +42,7 @@ function getDocumentDirection(): ToasterProps["dir"] {
 
 export const Toaster = component$<ToasterProps>((props) => {
   useStyles$(styles);
+
   const {
     position = "bottom-right",
     hotkey = ["altKey", "KeyT"],
@@ -72,7 +73,7 @@ export const Toaster = component$<ToasterProps>((props) => {
   const possiblePositions = useComputed$(() => {
     return Array.from(
       new Set(
-        [position].concat(
+        [props.position ?? position].concat(
           state.toasts
             .filter((toast) => toast.position!)
             .map((toast) => toast.position!)

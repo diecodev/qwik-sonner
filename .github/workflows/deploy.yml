@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: main
     paths: website/**
-    
-defaults:
- run:
-   working-directory: ./website
 
 jobs:
   deploy:
@@ -23,23 +19,27 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
-        
+
       - name: Install Deno
         uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          node-version: lts/*
+          version: 8
 
-      - name: Setup website root and Build step
-        run: "npm install && npm run build" # 📝 Update the build command(s) if necessary
+      - name: Build qwik-sonner
+        run: "pnpm install --no-frozen-lockfile && pnpm run build"
+        
+      - name: Build website
+        run: "pnpm install --no-frozen-lockfile && pnpm run build"
+        working-directory: ./website
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
           project: "qwik-sonner"
           entrypoint: "https://deno.land/std@0.188.0/http/file_server.ts" # 📝 Update the entrypoint if necessary
-          root: "dist" # 📝 Update the root if necessary
+          root: "./website/dist" # 📝 Update the root if necessary

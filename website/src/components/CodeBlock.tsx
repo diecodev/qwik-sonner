@@ -16,7 +16,7 @@ export const CodeBlock = component$<{ code: string }>(({ code }) => {
         }, 2000);
       }}
     >
-      <pre class="!mb-o border-0 bg-transparent text-[13px]">{code}</pre>
+      <pre class="!mb-o border-0 bg-transparent text-[12px] whitespace-pre-wrap">{code}</pre>
       <button aria-label="Copy code" class={styles.copy}>
         {copying.value ? (
           <div key="check">

@@ -1,5 +1,5 @@
-
 # qwik-sonner
+
 An opinionated toast component for qwik.
 Based on [emilkowalski](https://github.com/emilkowalski)'s React [implementation](https://sonner.emilkowal.ski/).
 
@@ -158,7 +158,7 @@ You can use `toast.custom` to render an unstyled toast with custom component whi
 toast.custom((t) => (
   <div>
     <h1>Custom toast</h1>
-     <button onClick={() => toast.dismiss(t)}>Dismiss</button>
+     <button onClick={$(() => toast.dismiss(t))}>Dismiss</button>
   </div>
 ```
 

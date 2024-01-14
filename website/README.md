@@ -1,65 +1,298 @@
-# Qwik City App ⚡️
+# qwik-sonner
 
-- [Qwik Docs](https://qwik.builder.io/)
-- [Discord](https://qwik.builder.io/chat)
-- [Qwik GitHub](https://github.com/BuilderIO/qwik)
-- [@QwikDev](https://twitter.com/QwikDev)
-- [Vite](https://vitejs.dev/)
+An opinionated toast component for qwik.
+Based on [emilkowalski](https://github.com/emilkowalski)'s React [implementation](https://sonner.emilkowal.ski/).
 
----
+> [!NOTE]
+> This readme was created using the svelte-sonner readme as template
 
-## Project Structure
+## Quick start
 
-This project is using Qwik with [QwikCity](https://qwik.builder.io/qwikcity/overview/). QwikCity is just an extra set of tools on top of Qwik to make it easier to build a full site, including directory-based routing, layouts, and more.
+Install it:
 
-Inside your project, you'll see the following directory structure:
-
-```
-├── public/
-│   └── ...
-└── src/
-    ├── components/
-    │   └── ...
-    └── routes/
-        └── ...
+```bash
+npm i qwik-sonner
+# or
+yarn add qwik-sonner
+# or
+pnpm add qwik-sonner
+# or
+bun add qwik-sonner
 ```
 
-- `src/routes`: Provides the directory-based routing, which can include a hierarchy of `layout.tsx` layout files, and an `index.tsx` file as the page. Additionally, `index.ts` files are endpoints. Please see the [routing docs](https://qwik.builder.io/qwikcity/routing/overview/) for more info.
+Add `<Toaster />` to your app, it will be the place where all your toasts will be rendered. After that, you can use `toast()` from anywhere in your app.
 
-- `src/components`: Recommended directory for components.
+```jsx
+import { Toaster, toast } from "qwik-sonner";
 
-- `public`: Any static assets, like images, can be placed in the public directory. Please see the [Vite public directory](https://vitejs.dev/guide/assets.html#the-public-directory) for more info.
-
-## Add Integrations and deployment
-
-Use the `pnpm qwik add` command to add additional integrations. Some examples of integrations includes: Cloudflare, Netlify or Express Server, and the [Static Site Generator (SSG)](https://qwik.builder.io/qwikcity/guides/static-site-generation/).
-
-```shell
-pnpm qwik add # or `pnpm qwik add`
+export const QwikComponent = component$(() => {
+  return (
+    <div>
+      <Toaster />
+      <button onClick$={() => toast("My first toast")}>Give me a toast</button>
+    </div>
+  );
+});
 ```
 
-## Development
+## Types
 
-Development mode uses [Vite's development server](https://vitejs.dev/). The `dev` command will server-side render (SSR) the output during development.
+### Default
 
-```shell
-npm start # or `pnpm start`
+Most basic toast. You can customize it (and any other type) by passing an options object as the second argument.
+
+```js
+toast("Event has been created");
 ```
 
-> Note: during dev mode, Vite may request a significant number of `.js` files. This does not represent a Qwik production build.
+With custom icon and description:
 
-## Preview
+```js
+import Icon from "./Icon.tsx";
 
-The preview command will create a production build of the client modules, a production build of `src/entry.preview.tsx`, and run a local server. The preview server is only for convenience to preview a production build locally and should not be used as a production server.
-
-```shell
-pnpm preview # or `pnpm preview`
+toast("Event has been created", {
+  description: "Monday, January 3rd at 6:00pm",
+  icon: Icon,
+});
 ```
 
-## Production
+### Success
 
-The production build will generate client and server modules by running both client and server build commands. The build command will use Typescript to run a type check on the source code.
+Renders a checkmark icon in front of the message.
 
-```shell
-pnpm build # or `pnpm build`
+```js
+toast.success("Event has been created");
 ```
+
+### Info
+
+Renders a question mark icon in front of the message.
+
+```js
+toast.info("Event has new information");
+```
+
+### Warning
+
+Renders a warning icon in front of the message.
+
+```js
+toast.warning("Event has warning");
+```
+
+### Error
+
+Renders an error icon in front of the message.
+
+```js
+toast.error("Event has not been created");
+```
+
+### Action
+
+Renders a button.
+
+```js
+toast("Event has been created", {
+  action: {
+    label: "Undo",
+    onClick: $(() => console.log("Undo")),
+  },
+});
+```
+
+> [!CAUTION]
+> You must import the dollar sign when passing a onClick function.
+
+### Promise
+
+Starts in a loading state and will update automatically after the promise resolves or fails.
+
+```js
+toast.promise(() => new Promise((resolve) => setTimeout(resolve, 2000)), {
+  loading: "Loading",
+  success: "Success",
+  error: "Error",
+});
+```
+
+You can pass a function to the success/error messages to incorporate the result/error of the promise.
+
+```js
+toast.promise(promise, {
+  loading: "Loading...",
+  success: (data) => {
+    return `${data.name} has been added!`;
+  },
+  error: "Error",
+});
+```
+
+### Custom Component
+
+You can pass a component as the first argument instead of a string to render custom component while maintaining default styling. You can use the headless version below for a custom, unstyled toast.
+
+```js
+toast(<div>My custom toast</div>);
+```
+
+### Updating a toast
+
+You can update a toast by using the `toast` function and passing it the id of the toast you want to update, the rest stays the same.
+
+```js
+const toastId = toast("Sonner");
+
+toast.success("Toast has been updated", {
+  id: toastId,
+});
+```
+
+## Customization
+
+### Headless
+
+You can use `toast.custom` to render an unstyled toast with custom component while maintaining the functionality.
+
+```tsx
+toast.custom((t) => (
+  <div>
+    <h1>Custom toast</h1>
+     <button onClick={$(() => toast.dismiss(t))}>Dismiss</button>
+  </div>
+```
+
+### Theme
+
+You can change the theme using the `theme` prop. Default theme is light.
+
+```tsx
+<Toaster theme="dark" />
+```
+
+### Position
+
+You can change the position through the `position` prop on the `<Toaster />` component. Default is `bottom-right`.
+
+```tsx
+// Available positions
+// top-left, top-center, top-right, bottom-left, bottom-center, bottom-right
+
+<Toaster position="top-center" />
+```
+
+### Expanded
+
+Toasts can also be expanded by default through the `expand` prop. You can also change the amount of visible toasts which is 3 by default.
+
+```tsx
+<Toaster expand visibleToasts={9} />
+```
+
+### Styling for all toasts
+
+You can style your toasts globally with the `toastOptions` prop in the `Toaster` component.
+
+```tsx
+<Toaster
+  toastOptions={{
+    style: "background: red;",
+    class: "my-toast",
+    descriptionClass: "my-toast-description",
+  }}
+/>
+```
+
+### Styling for individual toast
+
+```js
+toast("Event has been created", {
+  style: "background: red;",
+  class: "my-toast",
+  descriptionClass: "my-toast-description",
+});
+```
+
+### Close button
+
+Add a close button to all toasts that shows on hover by adding the `closeButton` prop.
+
+```tsx
+<Toaster closeButton />
+```
+
+### Rich colors
+
+You can make error and success state more colorful by adding the `richColors` prop.
+
+```tsx
+<Toaster richColors />
+```
+
+### Custom offset
+
+Offset from the edges of the screen.
+
+```tsx
+<Toaster offset="80px" />
+```
+
+### Programmatically remove toast
+
+To remove a toast programmatically use `toast.dismiss(id)`.
+
+```js
+const toastId = toast("Event has been created");
+
+toast.dismiss(toastId);
+```
+
+You can also dismiss all toasts at once by calling `toast.dismiss()` without an id.
+
+```js
+toast.dismiss();
+```
+
+### Duration
+
+You can change the duration of each toast by using the `duration` property, or change the duration of all toasts like this:
+
+```tsx
+<Toaster duration={10000} />
+```
+
+```js
+toast("Event has been created", {
+  duration: 10000,
+});
+
+// Persisent toast
+toast("Event has been created", {
+  duration: Number.POSITIVE_INFINITY,
+});
+```
+
+### On Close Callback
+
+You can pass `onDismiss` and `onAutoClose` callbacks. `onDismiss` gets fired when either the close button gets clicked or the toast is swiped. `onAutoClose` fires when the toast disappears automatically after it's timeout (`duration` prop).
+
+```js
+toast("Event has been created", {
+  onDismiss: $((t) => console.log(`Toast with id ${t.id} has been dismissed`)),
+  onAutoClose: $((t) =>
+    console.log(`Toast with id ${t.id} has been closed automatically`)
+  ),
+});
+```
+
+## Keyboard focus
+
+You can focus on the toast area by pressing ⌥/alt + T. You can override it by providing an array of `event.code` values for each key.
+
+```tsx
+<Toaster hotkey={["KeyC"]} />
+```
+
+## License
+
+MIT

@@ -7,7 +7,7 @@ export const Usage = component$(() => {
       <h2>Usage</h2>
       <p>Render the toaster in the root of your app.</p>
       <CodeBlock
-        code={`import { Toaster, toast } from 'sonner'
+        code={`import { Toaster, toast } from 'qwik-sonner'
 // ...
 const App = component$(() => {
   return (

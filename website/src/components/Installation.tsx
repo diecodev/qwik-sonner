@@ -12,7 +12,7 @@ export const Installation = component$(() => {
       <code
         class={styles.code}
         onClick$={() => {
-          copy("npm install sonner");
+          copy("npm install qwik-sonner");
           copying.value = copying.value + 1;
           setTimeout(() => {
             copying.value = copying.value - 1;

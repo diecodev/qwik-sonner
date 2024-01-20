@@ -42,6 +42,7 @@ function getDocumentDirection(): ToasterProps["dir"] {
 
 export const Toaster = component$<ToasterProps>((props) => {
   useStyles$(styles);
+  const isInitializedSig = useSignal<boolean>(false);
 
   const {
     position = "bottom-right",
@@ -70,6 +71,43 @@ export const Toaster = component$<ToasterProps>((props) => {
           : "light",
   });
 
+  useOnDocument(
+    "sonner",
+    $((ev: CustomEvent) => {
+      if (isInitializedSig.value) return;
+      isInitializedSig.value = true;
+
+      state.toasts = [JSON.parse(ev.detail)];
+
+      console.log("toaster", JSON.parse(ev.detail));
+
+      toastState.subscribe((toast) => {
+        if ((toast as ToastToDismiss).dismiss) {
+          state.toasts = state.toasts.map((t) =>
+            t.id === toast.id ? { ...t, delete: true } : t
+          );
+          return;
+        }
+
+        const indexOfExistingToast = state.toasts.findIndex(
+          (t) => t.id === toast.id
+        );
+
+        // Update the toast if it already exists
+        if (indexOfExistingToast !== -1) {
+          state.toasts = [
+            ...state.toasts.slice(0, indexOfExistingToast),
+            { ...state.toasts[indexOfExistingToast], ...toast },
+            ...state.toasts.slice(indexOfExistingToast + 1),
+          ];
+          return;
+        }
+
+        return (state.toasts = [toast, ...state.toasts]);
+      });
+    })
+  );
+
   const possiblePositions = useComputed$(() => {
     return Array.from(
       new Set(
@@ -94,35 +132,6 @@ export const Toaster = component$<ToasterProps>((props) => {
     (toast: ToastT) =>
       (state.toasts = state.toasts.filter(({ id }) => id !== toast.id))
   );
-
-  // this is the relationship between the toast and the this component
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => {
-    return toastState.subscribe((toast) => {
-      if ((toast as ToastToDismiss).dismiss) {
-        state.toasts = state.toasts.map((t) =>
-          t.id === toast.id ? { ...t, delete: true } : t
-        );
-        return;
-      }
-
-      const indexOfExistingToast = state.toasts.findIndex(
-        (t) => t.id === toast.id
-      );
-
-      // Update the toast if it already exists
-      if (indexOfExistingToast !== -1) {
-        state.toasts = [
-          ...state.toasts.slice(0, indexOfExistingToast),
-          { ...state.toasts[indexOfExistingToast], ...toast },
-          ...state.toasts.slice(indexOfExistingToast + 1),
-        ];
-        return;
-      }
-
-      return (state.toasts = [toast, ...state.toasts]);
-    });
-  });
 
   // handle user color theme preference
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -187,6 +196,7 @@ export const Toaster = component$<ToasterProps>((props) => {
     })
   );
 
+  /* PROBLEM: THIS CREATES DIRTY TASK */
   useTask$(({ track }) => {
     track(() => listRef.value);
 
@@ -201,7 +211,7 @@ export const Toaster = component$<ToasterProps>((props) => {
     }
   });
 
-  if (!state.toasts.length) return null;
+  // if (!state.toasts.length) return null;
 
   return (
     // Remove item from normal navigation flow, only available via hotkey

@@ -33,6 +33,14 @@ export function createToastState() {
       jsx?: JSXNode;
     }
   ) {
+    document.dispatchEvent(
+      new CustomEvent("sonner", {
+        detail: JSON.stringify(data),
+      })
+    );
+
+    console.log("state", data);
+
     const { message, ...rest } = data;
     const id =
       typeof data?.id === "number" || (data.id && data.id?.length > 0)

@@ -7,8 +7,6 @@ export function useToastStore() {
   const deleteToast = useSignal<ToastToDismiss>({ id: "", dismiss: false });
   const counter = useSignal<number>(0);
 
-  console.log("toastsArr update", toastsArr.value);
-
   /**
    * SUBCRIPTION LOGIC
    * 1. when user fire toast.dismiss() --> delete all the toasts

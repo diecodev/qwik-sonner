@@ -33,8 +33,6 @@ export function createToastState() {
       jsx?: JSXNode;
     }
   ) {
-    console.log("state", data);
-
     const { message, ...rest } = data;
     const id =
       typeof data?.id === "number" || (data.id && data.id?.length > 0)

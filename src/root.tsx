@@ -59,7 +59,7 @@ export default component$(() => {
         >
           open toaster 3
         </button>
-        <Toaster richColors duration={10000} />
+        <Toaster richColors duration={10000} theme="system" />
       </body>
     </>
   );

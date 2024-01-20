@@ -8,9 +8,11 @@ import {
   useStore,
   useStyles$,
   useTask$,
-  useVisibleTask$,
+  useOnWindow,
+  sync$,
 } from "@builder.io/qwik";
 import {
+  Theme,
   ToastT,
   ToastToDismiss,
   ToasterProps,
@@ -60,15 +62,7 @@ export const Toaster = component$<ToasterProps>((props) => {
     expanded: expand,
     heights: [],
     interacting: false,
-    theme:
-      theme !== "system"
-        ? theme
-        : typeof window !== "undefined"
-          ? window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light"
-          : "light",
+    theme,
   });
 
   useOnDocument(
@@ -131,43 +125,34 @@ export const Toaster = component$<ToasterProps>((props) => {
       (state.toasts = state.toasts.filter(({ id }) => id !== toast.id))
   );
 
-  // handle user color theme preference
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track }) => {
-    const theme = track(() => state.theme);
+  // do not use DOMContentLoaded this unless using a sync$
+  useOnWindow(
+    "DOMContentLoaded",
+    sync$((e: Event) => {
+      const documentEl = e.target as Document;
+      const list = documentEl.getElementById("toaster");
+      const userTheme = list?.getAttribute("data-theme") as Theme;
 
-    if (theme !== "system") {
-      state.theme = theme;
-      return;
-    }
+      if (userTheme === "system") {
+        const themeFromLocalStorage = localStorage.getItem("theme");
 
-    if (theme === "system") {
-      // check if current preference is dark
-      if (
-        window.matchMedia &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches
-      ) {
-        // it's currently dark
-        state.theme = "dark";
-      } else {
-        // it's not dark
-        state.theme = "light";
+        console.log(themeFromLocalStorage);
+
+        if (themeFromLocalStorage) {
+          return list?.setAttribute("data-theme", themeFromLocalStorage);
+        }
+
+        const themeFromMedia =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+
+        list?.setAttribute("data-theme", themeFromMedia);
+        localStorage.setItem("theme", themeFromMedia);
       }
-    }
-
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", ({ matches }) => {
-        state.theme = matches ? "dark" : "light";
-      });
-  });
-
-  useTask$(({ track }) => {
-    track(() => state.toasts);
-    if (state.toasts.length <= 1) {
-      state.expanded = false;
-    }
-  });
+    })
+  );
 
   useOnDocument(
     "keydown",
@@ -194,18 +179,10 @@ export const Toaster = component$<ToasterProps>((props) => {
     })
   );
 
-  /* PROBLEM: THIS CREATES DIRTY TASK */
   useTask$(({ track }) => {
-    track(() => listRef.value);
-
-    if (listRef.value) {
-      return () => {
-        if (lastFocusedElementRef.value) {
-          lastFocusedElementRef.value.focus({ preventScroll: true });
-          lastFocusedElementRef.value = undefined;
-          isFocusWithinRef.value = false;
-        }
-      };
+    track(() => state.toasts);
+    if (state.toasts.length <= 1 && state.expanded) {
+      state.expanded = false;
     }
   });
 
@@ -219,6 +196,7 @@ export const Toaster = component$<ToasterProps>((props) => {
         return (
           <ol
             key={position}
+            id="toaster"
             dir={dir === "auto" ? getDocumentDirection() : dir}
             tabIndex={-1}
             ref={listRef}

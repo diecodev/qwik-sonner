@@ -92,7 +92,7 @@ interface ToastOptions {
 
 export interface ToasterProps {
   invert?: boolean;
-  theme?: "light" | "dark" | "system";
+  theme?: Theme;
   position?: Position;
   hotkey?: string[];
   richColors?: boolean;
@@ -115,7 +115,7 @@ export interface ToasterStore {
   expanded: boolean;
   heights: HeightT[];
   interacting: boolean;
-  theme: "light" | "dark" | "system";
+  theme: Theme;
 }
 
 export interface ToastProps {
@@ -147,7 +147,7 @@ export enum SwipeStateTypes {
   NotSwiped = "NotSwiped",
 }
 
-export type Theme = "light" | "dark";
+export type Theme = "light" | "dark" | "system";
 
 export interface ToastToDismiss {
   id: number | string;

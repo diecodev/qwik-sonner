@@ -1,4 +1,4 @@
-import type { CSSProperties, JSXNode, QRL } from "@builder.io/qwik";
+import type { CSSProperties, JSXNode, QRL, PropsOf } from "@builder.io/qwik";
 
 export type ToastTypes =
   | "normal"
@@ -90,7 +90,7 @@ interface ToastOptions {
   classNames?: ToastClassnames;
 }
 
-export interface ToasterProps {
+export interface ToasterProps extends PropsOf<"ol"> {
   invert?: boolean;
   theme?: Theme;
   position?: Position;

@@ -57,6 +57,7 @@ export const Toaster = component$<ToasterProps>((props) => {
   } = props;
 
   const listRef = useSignal<HTMLOListElement>();
+
   const state = useStore<ToasterStore>({
     toasts: [],
     expanded: expand,
@@ -186,7 +187,44 @@ export const Toaster = component$<ToasterProps>((props) => {
     }
   });
 
-  // if (!state.toasts.length) return null;
+  const handlePointerDown$ = $((_: Event, element: HTMLElement) => {
+    console.log("own");
+    const isNotDismissible = element.dataset.dismissible === "false";
+
+    if (isNotDismissible) return;
+    state.interacting = true;
+  });
+
+  const handleMouseLeave$ = $(() => {
+    // Avoid setting expanded to false when interacting with a toast, e.g. swiping
+    if (!state.interacting) {
+      state.expanded = false;
+    }
+  });
+
+  const handleFocus$ = $((event: FocusEvent, element: HTMLOListElement) => {
+    const isNotDismissible = element.dataset.dismissible === "false";
+
+    if (isNotDismissible) return;
+
+    if (!isFocusWithinRef.value) {
+      isFocusWithinRef.value = true;
+      lastFocusedElementRef.value = event.relatedTarget as HTMLElement;
+    }
+  });
+
+  const handleBlur$ = $((event: FocusEvent, element: HTMLElement) => {
+    if (
+      isFocusWithinRef.value &&
+      !element.contains(event.relatedTarget as Node)
+    ) {
+      isFocusWithinRef.value = false;
+      if (lastFocusedElementRef.value) {
+        lastFocusedElementRef.value.focus({ preventScroll: true });
+        lastFocusedElementRef.value = undefined;
+      }
+    }
+  });
 
   return (
     // Remove item from normal navigation flow, only available via hotkey
@@ -216,44 +254,23 @@ export const Toaster = component$<ToasterProps>((props) => {
               "--gap": `${props.gap ?? GAP}px`,
               ...props.style,
             }}
-            onBlur$={(event, element) => {
-              if (
-                isFocusWithinRef.value &&
-                !element.contains(event.relatedTarget as Node)
-              ) {
-                isFocusWithinRef.value = false;
-                if (lastFocusedElementRef.value) {
-                  lastFocusedElementRef.value.focus({ preventScroll: true });
-                  lastFocusedElementRef.value = undefined;
-                }
-              }
-            }}
-            onFocus$={(event, element) => {
-              const isNotDismissible = element.dataset.dismissible === "false";
-
-              if (isNotDismissible) return;
-
-              if (!isFocusWithinRef.value) {
-                isFocusWithinRef.value = true;
-                lastFocusedElementRef.value =
-                  event.relatedTarget as HTMLElement;
-              }
-            }}
-            onMouseEnter$={() => (state.expanded = true)}
-            onMouseMove$={() => (state.expanded = true)}
-            onMouseLeave$={() => {
-              // Avoid setting expanded to false when interacting with a toast, e.g. swiping
-              if (!state.interacting) {
-                state.expanded = false;
-              }
-            }}
-            onPointerDown$={(_, element) => {
-              const isNotDismissible = element.dataset.dismissible === "false";
-
-              if (isNotDismissible) return;
-              state.interacting = true;
-            }}
-            onPointerUp$={() => (state.interacting = false)}
+            onBlur$={[handleBlur$, props.onBlur$]}
+            onFocus$={[handleFocus$, props.onFocus$]}
+            onMouseEnter$={[
+              $(() => (state.expanded = true)),
+              props.onMouseEnter$,
+            ]}
+            onMouseMove$={[
+              $(() => (state.expanded = true)),
+              props.onMouseMove$,
+            ]}
+            onMouseLeave$={[handleMouseLeave$, props.onMouseLeave$]}
+            onPointerDown$={[handlePointerDown$, props.onPointerDown$]}
+            onPointerUp$={[
+              $(() => (state.interacting = false)),
+              props.onPointerUp$,
+            ]}
+            {...props}
           >
             {state.toasts
               .filter(

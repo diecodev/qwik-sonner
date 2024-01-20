@@ -77,9 +77,7 @@ export const Toaster = component$<ToasterProps>((props) => {
       if (isInitializedSig.value) return;
       isInitializedSig.value = true;
 
-      state.toasts = [JSON.parse(ev.detail)];
-
-      console.log("toaster", JSON.parse(ev.detail));
+      state.toasts = [...state.toasts, ev.detail];
 
       toastState.subscribe((toast) => {
         if ((toast as ToastToDismiss).dismiss) {

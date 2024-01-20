@@ -33,12 +33,6 @@ export function createToastState() {
       jsx?: JSXNode;
     }
   ) {
-    document.dispatchEvent(
-      new CustomEvent("sonner", {
-        detail: JSON.stringify(data),
-      })
-    );
-
     console.log("state", data);
 
     const { message, ...rest } = data;
@@ -72,6 +66,11 @@ export function createToastState() {
         return toast;
       });
     } else {
+      document.dispatchEvent(
+        new CustomEvent("sonner", {
+          detail: { ...rest, id, title: message, dismissible },
+        })
+      );
       addToast({ ...rest, id, title: message, dismissible });
     }
 

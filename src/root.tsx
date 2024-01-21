@@ -1,9 +1,7 @@
-import { $, component$, useSignal } from "@builder.io/qwik";
-import { Toaster, toast } from "./components";
+import { $, component$ } from "@builder.io/qwik";
+import { toast } from "./components";
 
 export default component$(() => {
-  const tId = useSignal<number | string>("myCustomId");
-
   return (
     <>
       <head>
@@ -11,11 +9,7 @@ export default component$(() => {
         <title>Qwik Blank App</title>
       </head>
       <body>
-        <button
-          onClick$={() =>
-            toast.success("I'm a toast. Look at me", { id: tId.value })
-          }
-        >
+        <button onClick$={() => toast.success("I'm a toast. Look at me")}>
           open toaster
         </button>
         <button onClick$={() => toast(<div>My custom toast</div>)}>
@@ -59,7 +53,7 @@ export default component$(() => {
         >
           open toaster 3
         </button>
-        <Toaster richColors duration={10000} theme="system" />
+        {/* <Toaster richColors duration={10000} theme="system" /> */}
       </body>
     </>
   );

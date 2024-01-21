@@ -18,6 +18,8 @@ import { manifest } from "@qwik-client-manifest";
 import Root from "./root";
 
 export default function (opts: RenderToStreamOptions) {
+  console.log({ stream: opts.stream });
+
   return renderToStream(<Root />, {
     manifest,
     ...opts,

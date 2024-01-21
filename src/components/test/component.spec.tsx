@@ -1,6 +1,7 @@
 import { type JSXNode } from "@builder.io/qwik";
 import { renderToString } from "@builder.io/qwik/server";
 import SampleComponent from "./component";
+import { test, expect } from "vitest";
 // import { QwikManifest, SymbolMapperFn } from "@builder.io/qwik/optimizer";
 // import { manifest } from "@qwik-client-manifest";
 // import { isDev } from "@builder.io/qwik/build";

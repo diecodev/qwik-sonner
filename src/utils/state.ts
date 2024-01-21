@@ -67,6 +67,14 @@ export function createToastState() {
       addToast({ ...rest, id, title: message, dismissible });
     }
 
+    if (toasts.length === 1) {
+      document.dispatchEvent(
+        new CustomEvent("sonner", {
+          detail: { ...rest, id, title: message, dismissible },
+        })
+      );
+    }
+
     return id;
   }
 

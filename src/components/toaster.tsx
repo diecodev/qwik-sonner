@@ -8,9 +8,11 @@ import {
   useStore,
   useStyles$,
   useTask$,
-  useVisibleTask$,
+  useOnWindow,
+  sync$,
 } from "@builder.io/qwik";
 import {
+  Theme,
   ToastT,
   ToastToDismiss,
   ToasterProps,
@@ -42,6 +44,7 @@ function getDocumentDirection(): ToasterProps["dir"] {
 
 export const Toaster = component$<ToasterProps>((props) => {
   useStyles$(styles);
+  const isInitializedSig = useSignal<boolean>(false);
 
   const {
     position = "bottom-right",
@@ -59,16 +62,43 @@ export const Toaster = component$<ToasterProps>((props) => {
     expanded: expand,
     heights: [],
     interacting: false,
-    theme:
-      theme !== "system"
-        ? theme
-        : typeof window !== "undefined"
-          ? window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light"
-          : "light",
+    theme,
   });
+
+  useOnDocument(
+    "sonner",
+    $((ev: CustomEvent) => {
+      if (isInitializedSig.value) return;
+      isInitializedSig.value = true;
+
+      state.toasts = [...state.toasts, ev.detail];
+
+      toastState.subscribe((toast) => {
+        if ((toast as ToastToDismiss).dismiss) {
+          state.toasts = state.toasts.map((t) =>
+            t.id === toast.id ? { ...t, delete: true } : t
+          );
+          return;
+        }
+
+        const indexOfExistingToast = state.toasts.findIndex(
+          (t) => t.id === toast.id
+        );
+
+        // Update the toast if it already exists
+        if (indexOfExistingToast !== -1) {
+          state.toasts = [
+            ...state.toasts.slice(0, indexOfExistingToast),
+            { ...state.toasts[indexOfExistingToast], ...toast },
+            ...state.toasts.slice(indexOfExistingToast + 1),
+          ];
+          return;
+        }
+
+        return (state.toasts = [toast, ...state.toasts]);
+      });
+    })
+  );
 
   const possiblePositions = useComputed$(() => {
     return Array.from(
@@ -95,72 +125,33 @@ export const Toaster = component$<ToasterProps>((props) => {
       (state.toasts = state.toasts.filter(({ id }) => id !== toast.id))
   );
 
-  // this is the relationship between the toast and the this component
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => {
-    return toastState.subscribe((toast) => {
-      if ((toast as ToastToDismiss).dismiss) {
-        state.toasts = state.toasts.map((t) =>
-          t.id === toast.id ? { ...t, delete: true } : t
-        );
-        return;
+  useOnWindow(
+    "DOMContentLoaded",
+    sync$((e: Event) => {
+      const documentEl = e.target as Document;
+      const list = documentEl.getElementById("sonner-toaster");
+      const userTheme = list?.getAttribute("data-theme") as Theme;
+
+      // if there is a default theme that is not "system", return
+      if (userTheme !== "system") return;
+
+      // reading the qwik script to handle user theme preferences
+      const themeFromLocalStorage = localStorage.getItem("theme");
+
+      if (themeFromLocalStorage) {
+        return list?.setAttribute("data-theme", themeFromLocalStorage);
       }
 
-      const indexOfExistingToast = state.toasts.findIndex(
-        (t) => t.id === toast.id
-      );
-
-      // Update the toast if it already exists
-      if (indexOfExistingToast !== -1) {
-        state.toasts = [
-          ...state.toasts.slice(0, indexOfExistingToast),
-          { ...state.toasts[indexOfExistingToast], ...toast },
-          ...state.toasts.slice(indexOfExistingToast + 1),
-        ];
-        return;
-      }
-
-      return (state.toasts = [toast, ...state.toasts]);
-    });
-  });
-
-  // handle user color theme preference
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track }) => {
-    const theme = track(() => state.theme);
-
-    if (theme !== "system") {
-      state.theme = theme;
-      return;
-    }
-
-    if (theme === "system") {
-      // check if current preference is dark
-      if (
+      const themeFromMedia =
         window.matchMedia &&
         window.matchMedia("(prefers-color-scheme: dark)").matches
-      ) {
-        // it's currently dark
-        state.theme = "dark";
-      } else {
-        // it's not dark
-        state.theme = "light";
-      }
-    }
+          ? "dark"
+          : "light";
 
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", ({ matches }) => {
-        state.theme = matches ? "dark" : "light";
-      });
-  });
-
-  useTask$(({ track }) => {
-    track(() => state.toasts);
-    if (state.toasts.length <= 1) {
-      state.expanded = false;
-    }
-  });
+      list?.setAttribute("data-theme", themeFromMedia);
+      localStorage.setItem("theme", themeFromMedia);
+    })
+  );
 
   useOnDocument(
     "keydown",
@@ -188,20 +179,11 @@ export const Toaster = component$<ToasterProps>((props) => {
   );
 
   useTask$(({ track }) => {
-    track(() => listRef.value);
-
-    if (listRef.value) {
-      return () => {
-        if (lastFocusedElementRef.value) {
-          lastFocusedElementRef.value.focus({ preventScroll: true });
-          lastFocusedElementRef.value = undefined;
-          isFocusWithinRef.value = false;
-        }
-      };
+    track(() => state.toasts);
+    if (state.toasts.length <= 1) {
+      state.expanded = false;
     }
   });
-
-  if (!state.toasts.length) return null;
 
   return (
     // Remove item from normal navigation flow, only available via hotkey
@@ -210,6 +192,7 @@ export const Toaster = component$<ToasterProps>((props) => {
         const [y, x] = position.split("-");
         return (
           <ol
+            id="sonner-toaster"
             key={position}
             dir={dir === "auto" ? getDocumentDirection() : dir}
             tabIndex={-1}

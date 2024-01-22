@@ -102,7 +102,6 @@ export interface ToasterProps extends PropsOf<"ol"> {
   visibleToasts?: number;
   closeButton?: boolean;
   toastOptions?: ToastOptions;
-  className?: string;
   style?: CSSProperties;
   offset?: string | number;
   dir?: "rtl" | "ltr" | "auto";
@@ -124,7 +123,7 @@ export interface ToastProps {
   invert: boolean;
   state: ToasterStore;
   removeToast: QRL<(toast: ToastT) => ToastT[]>;
-  gap?: number;
+  gap: number;
   position: Position;
   visibleToasts: number;
   expandByDefault: boolean;
@@ -132,7 +131,7 @@ export interface ToastProps {
   style?: CSSProperties;
   cancelButtonStyle?: string | CSSProperties;
   actionButtonStyle?: string | CSSProperties;
-  duration?: number;
+  duration: number;
   className?: string;
   unstyled?: boolean;
   descriptionClassName?: string;

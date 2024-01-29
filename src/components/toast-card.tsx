@@ -148,7 +148,7 @@ export const Toast = component$((props: ToastProps) => {
       return;
     }
 
-    let timeoutId: number | NodeJS.Timeout;
+    let timeoutId: number;
     // Pause the timer on each hover
     const pauseTimer = () => {
       if (lastCloseTimerStartTimeRef.value < closeTimerStartTimeRef.value) {

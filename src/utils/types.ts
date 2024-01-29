@@ -1,4 +1,4 @@
-import type { CSSProperties, JSXNode, QRL } from "@builder.io/qwik";
+import type { CSSProperties, JSXNode, PropsOf, QRL } from "@builder.io/qwik";
 
 export type ToastTypes =
   | "normal"
@@ -90,9 +90,9 @@ interface ToastOptions {
   classNames?: ToastClassnames;
 }
 
-export interface ToasterProps {
+export interface ToasterProps extends PropsOf<"ol"> {
   invert?: boolean;
-  theme?: "light" | "dark" | "system";
+  theme?: Theme;
   position?: Position;
   hotkey?: string[];
   richColors?: boolean;
@@ -102,7 +102,6 @@ export interface ToasterProps {
   visibleToasts?: number;
   closeButton?: boolean;
   toastOptions?: ToastOptions;
-  className?: string;
   style?: CSSProperties;
   offset?: string | number;
   dir?: "rtl" | "ltr" | "auto";
@@ -115,7 +114,7 @@ export interface ToasterStore {
   expanded: boolean;
   heights: HeightT[];
   interacting: boolean;
-  theme: "light" | "dark" | "system";
+  theme: Theme;
 }
 
 export interface ToastProps {
@@ -124,7 +123,7 @@ export interface ToastProps {
   invert: boolean;
   state: ToasterStore;
   removeToast: QRL<(toast: ToastT) => ToastT[]>;
-  gap?: number;
+  gap: number;
   position: Position;
   visibleToasts: number;
   expandByDefault: boolean;
@@ -132,7 +131,7 @@ export interface ToastProps {
   style?: CSSProperties;
   cancelButtonStyle?: string | CSSProperties;
   actionButtonStyle?: string | CSSProperties;
-  duration?: number;
+  duration: number;
   className?: string;
   unstyled?: boolean;
   descriptionClassName?: string;
@@ -147,7 +146,7 @@ export enum SwipeStateTypes {
   NotSwiped = "NotSwiped",
 }
 
-export type Theme = "light" | "dark";
+export type Theme = "light" | "dark" | "system";
 
 export interface ToastToDismiss {
   id: number | string;

@@ -8,9 +8,11 @@ import {
   useStore,
   useStyles$,
   useTask$,
-  useVisibleTask$,
+  useOnWindow,
+  sync$,
 } from "@builder.io/qwik";
 import {
+  Theme,
   ToastT,
   ToastToDismiss,
   ToasterProps,
@@ -19,6 +21,7 @@ import {
 import { Toast } from "./toast-card";
 import {
   GAP,
+  TOAST_LIFETIME,
   TOAST_WIDTH,
   VIEWPORT_OFFSET,
   VISIBLE_TOASTS_AMOUNT,
@@ -42,6 +45,7 @@ function getDocumentDirection(): ToasterProps["dir"] {
 
 export const Toaster = component$<ToasterProps>((props) => {
   useStyles$(styles);
+  const isInitializedSig = useSignal<boolean>(false);
 
   const {
     position = "bottom-right",
@@ -51,6 +55,15 @@ export const Toaster = component$<ToasterProps>((props) => {
     dir = getDocumentDirection(),
     containerAriaLabel = "Notifications",
     expand = false,
+    toastOptions = {},
+    closeButton = false,
+    invert = false,
+    gap = GAP,
+    loadingIcon,
+    offset = VIEWPORT_OFFSET,
+    richColors = false,
+    duration = TOAST_LIFETIME,
+    ...restProps
   } = props;
 
   const listRef = useSignal<HTMLOListElement>();
@@ -59,16 +72,43 @@ export const Toaster = component$<ToasterProps>((props) => {
     expanded: expand,
     heights: [],
     interacting: false,
-    theme:
-      theme !== "system"
-        ? theme
-        : typeof window !== "undefined"
-          ? window.matchMedia &&
-            window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? "dark"
-            : "light"
-          : "light",
+    theme,
   });
+
+  useOnDocument(
+    "sonner",
+    $((ev: CustomEvent) => {
+      if (isInitializedSig.value) return;
+      isInitializedSig.value = true;
+
+      state.toasts = [...state.toasts, ev.detail];
+
+      toastState.subscribe((toast) => {
+        if ((toast as ToastToDismiss).dismiss) {
+          state.toasts = state.toasts.map((t) =>
+            t.id === toast.id ? { ...t, delete: true } : t
+          );
+          return;
+        }
+
+        const indexOfExistingToast = state.toasts.findIndex(
+          (t) => t.id === toast.id
+        );
+
+        // Update the toast if it already exists
+        if (indexOfExistingToast !== -1) {
+          state.toasts = [
+            ...state.toasts.slice(0, indexOfExistingToast),
+            { ...state.toasts[indexOfExistingToast], ...toast },
+            ...state.toasts.slice(indexOfExistingToast + 1),
+          ];
+          return;
+        }
+
+        return (state.toasts = [toast, ...state.toasts]);
+      });
+    })
+  );
 
   const possiblePositions = useComputed$(() => {
     return Array.from(
@@ -95,72 +135,33 @@ export const Toaster = component$<ToasterProps>((props) => {
       (state.toasts = state.toasts.filter(({ id }) => id !== toast.id))
   );
 
-  // this is the relationship between the toast and the this component
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => {
-    return toastState.subscribe((toast) => {
-      if ((toast as ToastToDismiss).dismiss) {
-        state.toasts = state.toasts.map((t) =>
-          t.id === toast.id ? { ...t, delete: true } : t
-        );
-        return;
+  useOnWindow(
+    "DOMContentLoaded",
+    sync$((e: Event) => {
+      const documentEl = e.target as Document;
+      const list = documentEl.getElementById("sonner-toaster");
+      const userTheme = list?.getAttribute("data-theme") as Theme;
+
+      // if there is a default theme that is not "system", return
+      if (userTheme !== "system") return;
+
+      // reading the qwik script to handle user theme preferences
+      const themeFromLocalStorage = localStorage.getItem("theme");
+
+      if (themeFromLocalStorage) {
+        return list?.setAttribute("data-theme", themeFromLocalStorage);
       }
 
-      const indexOfExistingToast = state.toasts.findIndex(
-        (t) => t.id === toast.id
-      );
-
-      // Update the toast if it already exists
-      if (indexOfExistingToast !== -1) {
-        state.toasts = [
-          ...state.toasts.slice(0, indexOfExistingToast),
-          { ...state.toasts[indexOfExistingToast], ...toast },
-          ...state.toasts.slice(indexOfExistingToast + 1),
-        ];
-        return;
-      }
-
-      return (state.toasts = [toast, ...state.toasts]);
-    });
-  });
-
-  // handle user color theme preference
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track }) => {
-    const theme = track(() => state.theme);
-
-    if (theme !== "system") {
-      state.theme = theme;
-      return;
-    }
-
-    if (theme === "system") {
-      // check if current preference is dark
-      if (
+      const themeFromMedia =
         window.matchMedia &&
         window.matchMedia("(prefers-color-scheme: dark)").matches
-      ) {
-        // it's currently dark
-        state.theme = "dark";
-      } else {
-        // it's not dark
-        state.theme = "light";
-      }
-    }
+          ? "dark"
+          : "light";
 
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", ({ matches }) => {
-        state.theme = matches ? "dark" : "light";
-      });
-  });
-
-  useTask$(({ track }) => {
-    track(() => state.toasts);
-    if (state.toasts.length <= 1) {
-      state.expanded = false;
-    }
-  });
+      list?.setAttribute("data-theme", themeFromMedia);
+      localStorage.setItem("theme", themeFromMedia);
+    })
+  );
 
   useOnDocument(
     "keydown",
@@ -188,20 +189,53 @@ export const Toaster = component$<ToasterProps>((props) => {
   );
 
   useTask$(({ track }) => {
-    track(() => listRef.value);
-
-    if (listRef.value) {
-      return () => {
-        if (lastFocusedElementRef.value) {
-          lastFocusedElementRef.value.focus({ preventScroll: true });
-          lastFocusedElementRef.value = undefined;
-          isFocusWithinRef.value = false;
-        }
-      };
+    track(() => state.toasts);
+    if (state.toasts.length <= 1) {
+      state.expanded = false;
     }
   });
 
-  if (!state.toasts.length) return null;
+  const onBlurHandler = $((event: FocusEvent, element: HTMLOListElement) => {
+    if (
+      isFocusWithinRef.value &&
+      !element.contains(event.relatedTarget as Node)
+    ) {
+      isFocusWithinRef.value = false;
+      if (lastFocusedElementRef.value) {
+        lastFocusedElementRef.value.focus({ preventScroll: true });
+        lastFocusedElementRef.value = undefined;
+      }
+    }
+  });
+
+  const onFocusHandler = $((event: FocusEvent, element: HTMLOListElement) => {
+    const isNotDismissible = element.dataset.dismissible === "false";
+
+    if (isNotDismissible) return;
+
+    if (!isFocusWithinRef.value) {
+      isFocusWithinRef.value = true;
+      lastFocusedElementRef.value = event.relatedTarget as HTMLElement;
+    }
+  });
+
+  const onMouseleaveHandler = $(() => {
+    // Avoid setting expanded to false when interacting with a toast, e.g. swiping
+    if (!state.interacting) {
+      state.expanded = false;
+    }
+  });
+
+  const onPointerDownHandler = $(
+    (_: PointerEvent, element: HTMLOListElement) => {
+      const isNotDismissible = element.dataset.dismissible === "false";
+
+      if (isNotDismissible) return;
+      state.interacting = true;
+    }
+  );
+
+  const makeToasterExpanded = $(() => (state.expanded = true));
 
   return (
     // Remove item from normal navigation flow, only available via hotkey
@@ -210,64 +244,35 @@ export const Toaster = component$<ToasterProps>((props) => {
         const [y, x] = position.split("-");
         return (
           <ol
+            {...restProps}
+            id="sonner-toaster"
             key={position}
             dir={dir === "auto" ? getDocumentDirection() : dir}
             tabIndex={-1}
             ref={listRef}
-            class={props.className}
+            class={props.class}
             data-moick-toaster
             data-theme={state.theme}
-            data-rich-colors={`${props.richColors}`}
+            data-rich-colors={`${richColors}`}
             data-y-position={y}
             data-x-position={x}
             style={{
               "--front-toast-height": `${state.heights[0]?.height}px`,
-              "--offset":
-                typeof props.offset === "number"
-                  ? `${props.offset}px`
-                  : props.offset || VIEWPORT_OFFSET,
+              "--offset": typeof offset === "number" ? `${offset}px` : offset,
               "--width": `${TOAST_WIDTH}px`,
-              "--gap": `${props.gap ?? GAP}px`,
+              "--gap": `${gap}px`,
               ...props.style,
             }}
-            onBlur$={(event, element) => {
-              if (
-                isFocusWithinRef.value &&
-                !element.contains(event.relatedTarget as Node)
-              ) {
-                isFocusWithinRef.value = false;
-                if (lastFocusedElementRef.value) {
-                  lastFocusedElementRef.value.focus({ preventScroll: true });
-                  lastFocusedElementRef.value = undefined;
-                }
-              }
-            }}
-            onFocus$={(event, element) => {
-              const isNotDismissible = element.dataset.dismissible === "false";
-
-              if (isNotDismissible) return;
-
-              if (!isFocusWithinRef.value) {
-                isFocusWithinRef.value = true;
-                lastFocusedElementRef.value =
-                  event.relatedTarget as HTMLElement;
-              }
-            }}
-            onMouseEnter$={() => (state.expanded = true)}
-            onMouseMove$={() => (state.expanded = true)}
-            onMouseLeave$={() => {
-              // Avoid setting expanded to false when interacting with a toast, e.g. swiping
-              if (!state.interacting) {
-                state.expanded = false;
-              }
-            }}
-            onPointerDown$={(_, element) => {
-              const isNotDismissible = element.dataset.dismissible === "false";
-
-              if (isNotDismissible) return;
-              state.interacting = true;
-            }}
-            onPointerUp$={() => (state.interacting = false)}
+            onBlur$={[onBlurHandler, props.onBlur$]}
+            onFocus$={[onFocusHandler, props.onFocus$]}
+            onMouseEnter$={[makeToasterExpanded, props.onMouseEnter$]}
+            onMouseMove$={[makeToasterExpanded, props.onMouseMove$]}
+            onMouseLeave$={[onMouseleaveHandler, props.onMouseLeave$]}
+            onPointerDown$={[onPointerDownHandler, props.onPointerDown$]}
+            onPointerUp$={[
+              $(() => (state.interacting = false)),
+              props.onPointerUp$,
+            ]}
           >
             {state.toasts
               .filter(
@@ -280,25 +285,23 @@ export const Toaster = component$<ToasterProps>((props) => {
                   key={toast.id}
                   index={index}
                   toast={toast}
-                  duration={props.toastOptions?.duration ?? props.duration}
+                  duration={toastOptions?.duration ?? duration}
                   // eslint-disable-next-line qwik/no-react-props
-                  className={props.toastOptions?.className}
-                  descriptionClassName={
-                    props.toastOptions?.descriptionClassName
-                  }
-                  invert={props.invert ?? false}
+                  className={toastOptions?.className}
+                  descriptionClassName={toastOptions?.descriptionClassName}
+                  invert={invert}
                   visibleToasts={visibleToasts}
-                  closeButton={props.closeButton ?? false}
+                  closeButton={closeButton}
                   position={position}
-                  style={props.toastOptions?.style}
-                  unstyled={props.toastOptions?.unstyled}
-                  classNames={props.toastOptions?.classNames}
-                  cancelButtonStyle={props.toastOptions?.cancelButtonStyle}
-                  actionButtonStyle={props.toastOptions?.actionButtonStyle}
+                  style={toastOptions?.style}
+                  unstyled={toastOptions?.unstyled}
+                  classNames={toastOptions?.classNames}
+                  cancelButtonStyle={toastOptions?.cancelButtonStyle}
+                  actionButtonStyle={toastOptions?.actionButtonStyle}
                   removeToast={removeToast}
                   expandByDefault={expand}
-                  gap={props.gap}
-                  loadingIcon={props.loadingIcon}
+                  gap={gap}
+                  loadingIcon={loadingIcon}
                   state={state}
                 />
               ))}

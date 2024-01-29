@@ -11,12 +11,7 @@ import {
   useVisibleTask$,
 } from "@builder.io/qwik";
 import { ToastProps } from "../utils/types";
-import {
-  GAP,
-  SWIPE_THRESHOLD,
-  TIME_BEFORE_UNMOUNT,
-  TOAST_LIFETIME,
-} from "../constants";
+import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT } from "../constants";
 import { Loader, getAsset } from "./assets";
 
 type ToastCardState = {
@@ -59,9 +54,7 @@ export const Toast = component$((props: ToastProps) => {
     return partialIndex === -1 ? 0 : partialIndex;
   });
 
-  const duration = useComputed$(
-    () => props.toast.duration || props.duration || TOAST_LIFETIME
-  );
+  const duration = useComputed$(() => props.toast.duration || props.duration);
 
   const closeTimerStartTimeRef = useSignal<number>(0);
   // const closeTimerRemainingTimeRef = useSignal<number>(duration.value);
@@ -80,7 +73,7 @@ export const Toast = component$((props: ToastProps) => {
   });
 
   const offset = useComputed$(
-    () => heightIndex.value * (props.gap ?? GAP) + toastsHeightBefore.value
+    () => heightIndex.value * props.gap + toastsHeightBefore.value
   );
 
   // eslint-disable-next-line qwik/no-use-visible-task

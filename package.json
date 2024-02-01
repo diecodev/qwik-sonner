@@ -52,7 +52,7 @@
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
-    "release": "bumpp --commit --tag --push && npm publish",
+    "release": "bumpp --commit --tag --push && npm run build && npm publish",
     "start": "vite --open --mode ssr",
     "test": "echo \"No test specified\" && exit 0",
     "qwik": "qwik"

@@ -1,7 +1,7 @@
-export { Toaster } from "./toaster";
-export { toast } from "../utils/state";
-export type {
-  ToastT as Toast,
-  ExternalToast,
-  ToasterProps,
-} from "../utils/types";
+export { Toaster } from "./toaster-styled";
+export {
+  toast,
+  type ToastT as Toast,
+  type ExternalToast,
+  type ToasterProps,
+} from "@/components/headless";

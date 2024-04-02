@@ -1,5 +1,4 @@
 /* eslint-disable qwik/valid-lexical-scope */
-import "./styles.css?inline";
 import {
   $,
   Fragment,
@@ -10,8 +9,8 @@ import {
   useTask$,
   useVisibleTask$,
 } from "@builder.io/qwik";
-import { ToastProps } from "../utils/types";
-import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT } from "../constants";
+import { ToastProps } from "@/utils/types";
+import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT } from "@/constants";
 import { Loader, getAsset } from "./assets";
 
 type ToastCardState = {
@@ -216,7 +215,7 @@ export const Toast = component$((props: ToastProps) => {
         // @ts-expect-error types don't match
         props.toast?.classNames?.[toastType],
       ]}
-      data-moick-toast=""
+      data-qwik-toast=""
       data-styled={`${!(
         props.toast.jsx ||
         props.toast.unstyled ||

@@ -1,4 +1,4 @@
-import type { CSSProperties, JSXNode, PropsOf, QRL } from "@builder.io/qwik";
+import type { CSSProperties, JSXOutput, PropsOf, QRL } from "@builder.io/qwik";
 
 export type ToastTypes =
   | "normal"
@@ -13,9 +13,9 @@ export type ToastTypes =
 export type PromiseT<Data = any> = QRL<() => Promise<Data>>;
 
 export type PromiseData<ToastData = any> = ExternalToast & {
-  loading?: string | JSXNode;
-  success?: string | JSXNode | QRL<(data: ToastData) => JSXNode | string>;
-  error?: string | JSXNode | ((error: any) => JSXNode | string);
+  loading?: string | JSXOutput;
+  success?: string | JSXOutput | QRL<(data: ToastData) => JSXOutput | string>;
+  error?: string | JSXOutput | ((error: any) => JSXOutput | string);
   finally?: () => void | Promise<void>;
 };
 
@@ -36,13 +36,13 @@ export interface ToastClassnames {
 
 export interface ToastT {
   id: number | string;
-  title?: string | JSXNode;
+  title?: string | JSXOutput;
   type?: ToastTypes;
-  icon?: JSXNode;
-  jsx?: JSXNode;
+  icon?: JSXOutput;
+  jsx?: JSXOutput;
   invert?: boolean;
   dismissible?: boolean;
-  description?: string | JSXNode;
+  description?: string | JSXOutput;
   duration?: number;
   delete?: boolean;
   important?: boolean;
@@ -105,7 +105,7 @@ export interface ToasterProps extends PropsOf<"ol"> {
   style?: CSSProperties;
   offset?: string | number;
   dir?: "rtl" | "ltr" | "auto";
-  loadingIcon?: JSXNode;
+  loadingIcon?: JSXOutput;
   containerAriaLabel?: string;
 }
 
@@ -135,7 +135,7 @@ export interface ToastProps {
   className?: string;
   unstyled?: boolean;
   descriptionClassName?: string;
-  loadingIcon?: JSXNode;
+  loadingIcon?: JSXOutput;
   classNames?: ToastClassnames;
   closeButtonAriaLabel?: string;
 }

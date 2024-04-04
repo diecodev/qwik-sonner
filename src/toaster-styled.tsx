@@ -1,14 +1,14 @@
 import { component$, useStyles$ } from "@builder.io/qwik";
-import { ToasterProps } from "@/utils/types";
+import { ToasterProps } from "@/headless/utils/types";
 import styles from "./styles.css?inline";
-import { Toaster as RawToaster } from "@/components/headless/toaster";
+import { Toaster as RawToaster } from "@/headless/toaster";
 import {
   GAP,
   TOAST_LIFETIME,
   TOAST_WIDTH,
   VIEWPORT_OFFSET,
   VISIBLE_TOASTS_AMOUNT,
-} from "@/constants";
+} from "@/headless/constants";
 
 function getDocumentDirection(): ToasterProps["dir"] {
   if (typeof window === "undefined") return "ltr";

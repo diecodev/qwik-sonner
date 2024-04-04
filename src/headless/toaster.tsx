@@ -15,9 +15,9 @@ import {
   ToastToDismiss,
   ToasterProps,
   ToasterStore,
-} from "@/utils/types";
+} from "@/headless/utils/types";
 import { Toast } from "./toast-card";
-import { toastState } from "@/utils/state";
+import { toastState } from "@/headless/utils/state";
 
 export const Toaster = component$<ToasterProps & { toastWidth: number }>(
   (props) => {

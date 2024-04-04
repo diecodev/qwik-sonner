@@ -24,36 +24,43 @@
     "type": "git",
     "url": "https://github.com/diecodev/qwik-sonner"
   },
-  "main": "./lib/index.qwik.mjs",
-  "qwik": "./lib/index.qwik.mjs",
-  "types": "./lib-types/index.d.ts",
+  "main": "index.qwik.mjs",
+  "qwik": "index.qwik.mjs",
+  "types": "index.d.ts",
+  "files": [
+    "headless",
+    "toaster-styled.d.ts",
+    "index.qiwk.mjs",
+    "index.qiwk.cjs",
+    "index.d.ts"
+  ],
   "exports": {
     ".": {
-      "import": "./lib/index.qwik.mjs",
-      "require": "./lib/index.qwik.cjs",
-      "types": "./lib-types/index.d.ts"
+      "import": "./index.qwik.mjs",
+      "require": "./index.qwik.cjs",
+      "types": "./index.d.ts"
+    },
+    "./headless": {
+      "import": "./headless/index.qwik.mjs",
+      "require": "./headless/index.qwik.cjs",
+      "types": "./headless/index.d.ts"
     }
   },
-  "files": [
-    "lib",
-    "lib-types"
-  ],
   "engines": {
     "node": ">=16.0.0"
   },
   "private": false,
   "type": "module",
   "scripts": {
-    "build": "qwik build && npm run build.types-alias",
+    "build": "qwik build",
     "build.lib": "vite build --mode lib",
-    "build.types": "tsc --emitDeclarationOnly",
-    "build.types-alias": "tsc-alias",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
     "release": "bumpp --commit --tag --push && npm run build && npm publish",
+    "postpublish": "rm -rf headless index.d.ts index.qwik.cjs index.qwik.mjs toaster-styled.d.ts",
     "start": "vite --open --mode ssr",
     "test": "echo \"No test specified\" && exit 0",
     "qwik": "qwik"
@@ -72,6 +79,7 @@
     "typescript": "5.4.3",
     "undici": "6.10.2",
     "vite": "5.2.7",
+    "vite-plugin-dts": "3.8.1",
     "vite-tsconfig-paths": "4.3.2"
   }
 }

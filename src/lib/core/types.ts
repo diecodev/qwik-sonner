@@ -16,9 +16,10 @@ export type PromiseData<ToastData = any> = ExternalToast & {
   loading?: string | JSXOutput;
   success?: string | JSXOutput | QRL<(data: ToastData) => JSXOutput | string>;
   error?: string | JSXOutput | ((error: any) => JSXOutput | string);
-  finally?: () => void | Promise<void>;
+  finally?: QRL<() => void | Promise<void>>;
 };
 
+export type Dir = "rtl" | "ltr" | "auto";
 export interface ToastClassnames {
   toast?: string;
   title?: string;
@@ -104,7 +105,7 @@ export interface ToasterProps extends PropsOf<"ol"> {
   toastOptions?: ToastOptions;
   style?: CSSProperties;
   offset?: string | number;
-  dir?: "rtl" | "ltr" | "auto";
+  dir?: Dir;
   loadingIcon?: JSXOutput;
   containerAriaLabel?: string;
 }

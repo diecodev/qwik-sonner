@@ -10,6 +10,7 @@ import {
   useOnWindow,
 } from "@builder.io/qwik";
 import {
+  Dir,
   Theme,
   ToastT,
   ToastToDismiss,
@@ -18,6 +19,19 @@ import {
   toastState,
 } from "../core";
 import { Toast } from "./toast-card";
+
+// function getDocumentDirection(): Dir {
+//   if (typeof window === "undefined") return "ltr";
+//   if (typeof document === "undefined") return "ltr"; // For Fresh purpose
+
+//   const dirAttribute = document.documentElement.getAttribute("dir");
+
+//   if (dirAttribute === "auto" || !dirAttribute) {
+//     return window.getComputedStyle(document.documentElement).direction as Dir;
+//   }
+
+//   return dirAttribute as Dir;
+// }
 
 export const Toaster = component$<ToasterProps & { toastWidth: number }>(
   (props) => {
@@ -137,6 +151,41 @@ export const Toaster = component$<ToasterProps & { toastWidth: number }>(
       })
     );
 
+    useOnWindow(
+      "DOMContentLoaded",
+      $(() => {
+        if (dir && dir !== "auto") return;
+
+        const newDir = window.getComputedStyle(document.documentElement)
+          .direction as Dir;
+        listRef.value!.setAttribute("dir", newDir);
+
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (
+              mutation.type === "attributes" &&
+              mutation.attributeName === "dir"
+            ) {
+              const value = (mutation.target as HTMLElement).getAttribute(
+                "dir"
+              );
+              if (value === "auto" || !value) {
+                const dir = window.getComputedStyle(document.documentElement)
+                  .direction as Dir;
+                return listRef.value!.setAttribute("dir", dir);
+              }
+              listRef.value!.setAttribute("dir", value as Dir);
+            }
+          });
+        });
+
+        observer.observe(document.querySelector("html")!, {
+          attributes: true,
+          attributeFilter: ["dir"],
+        });
+      })
+    );
+
     useOnDocument(
       "keydown",
       $((event) => {
@@ -169,18 +218,20 @@ export const Toaster = component$<ToasterProps & { toastWidth: number }>(
       }
     });
 
-    const onBlurHandler = $((event: FocusEvent, element: HTMLOListElement) => {
-      if (
-        isFocusWithinRef.value &&
-        !element.contains(event.relatedTarget as Node)
-      ) {
-        isFocusWithinRef.value = false;
-        if (lastFocusedElementRef.value) {
-          lastFocusedElementRef.value.focus({ preventScroll: true });
-          lastFocusedElementRef.value = undefined;
+    const onFocusOutHandler = $(
+      (event: FocusEvent, element: HTMLOListElement) => {
+        if (
+          isFocusWithinRef.value &&
+          !element.contains(event.relatedTarget as Node)
+        ) {
+          isFocusWithinRef.value = false;
+          if (lastFocusedElementRef.value) {
+            lastFocusedElementRef.value.focus({ preventScroll: true });
+            lastFocusedElementRef.value = undefined;
+          }
         }
       }
-    });
+    );
 
     const onFocusHandler = $((event: FocusEvent, element: HTMLOListElement) => {
       const isNotDismissible = element.dataset.dismissible === "false";
@@ -240,8 +291,8 @@ export const Toaster = component$<ToasterProps & { toastWidth: number }>(
                 "--gap": `${gap}px`,
                 ...props.style,
               }}
-              onBlur$={[onBlurHandler, props.onBlur$]}
-              onFocus$={[onFocusHandler, props.onFocus$]}
+              onFocusOut$={[onFocusOutHandler, props.onFocusOut$]}
+              onFocusIn$={[onFocusHandler, props.onFocus$]}
               onMouseEnter$={[makeToasterExpanded, props.onMouseEnter$]}
               onMouseMove$={[makeToasterExpanded, props.onMouseMove$]}
               onMouseLeave$={[onMouseleaveHandler, props.onMouseLeave$]}

@@ -10,20 +10,6 @@ import {
   ToasterProps,
 } from "../core";
 
-function getDocumentDirection(): ToasterProps["dir"] {
-  if (typeof window === "undefined") return "ltr";
-  if (typeof document === "undefined") return "ltr"; // For Fresh purpose
-
-  const dirAttribute = document.documentElement.getAttribute("dir");
-
-  if (dirAttribute === "auto" || !dirAttribute) {
-    return window.getComputedStyle(document.documentElement)
-      .direction as ToasterProps["dir"];
-  }
-
-  return dirAttribute as ToasterProps["dir"];
-}
-
 export const Toaster = component$<ToasterProps>((props) => {
   useStyles$(styles);
 
@@ -32,9 +18,7 @@ export const Toaster = component$<ToasterProps>((props) => {
     hotkey = ["altKey", "KeyT"],
     theme = "light",
     visibleToasts = VISIBLE_TOASTS_AMOUNT,
-    dir = props.dir === "auto"
-      ? getDocumentDirection()
-      : getDocumentDirection(),
+    dir,
     containerAriaLabel = "Notifications",
     expand = false,
     toastOptions = {},

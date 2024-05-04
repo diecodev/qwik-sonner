@@ -75,9 +75,9 @@
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
     "release": "bumpp --commit --tag --push && npm publish",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm run test",
     "start": "vite --open --mode ssr",
-    "test": "echo \"No test specified\" && exit 0",
+    "test": "npm run test -w test",
     "qwik": "qwik"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 import { $, component$, useSignal } from "@builder.io/qwik";
-import { Toaster, toast } from "./components";
+import { Toaster, toast } from "./lib";
 
 export default component$(() => {
   const tId = useSignal<number | string>("myCustomId");

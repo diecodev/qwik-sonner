@@ -15,9 +15,9 @@ import {
   ToastToDismiss,
   ToasterProps,
   ToasterStore,
-} from "@/headless/utils/types";
+  toastState,
+} from "../core";
 import { Toast } from "./toast-card";
-import { toastState } from "@/headless/utils/state";
 
 export const Toaster = component$<ToasterProps & { toastWidth: number }>(
   (props) => {
@@ -48,7 +48,6 @@ export const Toaster = component$<ToasterProps & { toastWidth: number }>(
       expanded: expand!,
       heights: [],
       interacting: false,
-      theme: theme!,
     });
 
     useOnDocument(
@@ -123,7 +122,7 @@ export const Toaster = component$<ToasterProps & { toastWidth: number }>(
         const themeFromLocalStorage = localStorage.getItem("theme") as Theme;
 
         if (themeFromLocalStorage) {
-          state.theme = themeFromLocalStorage;
+          listRef.value!.setAttribute("data-theme", themeFromLocalStorage);
           return;
         }
 
@@ -133,7 +132,7 @@ export const Toaster = component$<ToasterProps & { toastWidth: number }>(
             ? "dark"
             : "light";
 
-        state.theme = themeFromMedia;
+        listRef.value!.setAttribute("data-theme", themeFromMedia);
         localStorage.setItem("theme", themeFromMedia);
       })
     );
@@ -230,7 +229,7 @@ export const Toaster = component$<ToasterProps & { toastWidth: number }>(
               ref={listRef}
               class={props.class}
               data-qwik-toaster
-              data-theme={state.theme}
+              data-theme={theme ?? "system"}
               data-rich-colors={`${richColors}`}
               data-y-position={y}
               data-x-position={x}

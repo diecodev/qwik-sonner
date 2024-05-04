@@ -1,5 +1,5 @@
 import { JSX } from "@builder.io/qwik/jsx-runtime";
-import type { ToastTypes } from "@/headless";
+import type { ToastTypes } from "./index";
 import { component$ } from "@builder.io/qwik";
 
 export const getAsset = (type?: ToastTypes): JSX.Element | null => {

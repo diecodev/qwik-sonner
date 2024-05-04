@@ -114,7 +114,6 @@ export interface ToasterStore {
   expanded: boolean;
   heights: HeightT[];
   interacting: boolean;
-  theme: Theme;
 }
 
 export interface ToastProps {

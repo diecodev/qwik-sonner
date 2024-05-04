@@ -6,7 +6,7 @@ import {
   ToastT,
   ToastToDismiss,
   ToastTypes,
-} from "./types";
+} from "./index";
 
 let toastsCounter: number = 1;
 

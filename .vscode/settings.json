@@ -1,6 +1,7 @@
 {
   "conventionalCommits.emojiFormat": "emoji",
   "conventionalCommits.scopes": [
-    "website"
+    "website",
+    "test"
   ],
 }

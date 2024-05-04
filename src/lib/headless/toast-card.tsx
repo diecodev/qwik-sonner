@@ -194,7 +194,7 @@ export const Toast = component$((props: ToastProps) => {
   const getLoadingIcon = () => {
     if (props.loadingIcon) {
       return (
-        <div class="loader" data-visible={toastType === "loading"}>
+        <div class="qwik-loader" data-visible={toastType === "loading"}>
           {props.loadingIcon}
         </div>
       );

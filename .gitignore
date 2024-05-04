@@ -11,7 +11,7 @@ node_modules
 .cache
 .mf
 .rollup.cache
-tsconfig.tsbuildinfo
+**.tsbuildinfo
 
 # Logs
 logs
@@ -21,6 +21,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
 
 # Editor
 !.vscode/extensions.json

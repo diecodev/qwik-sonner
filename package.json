@@ -24,9 +24,9 @@
     "type": "git",
     "url": "https://github.com/diecodev/qwik-sonner"
   },
-  "main": "index.qwik.mjs",
-  "qwik": "index.qwik.mjs",
-  "types": "index.d.ts",
+  "main": "./lib/index.qwik.mjs",
+  "qwik": "./lib/index.qwik.mjs",
+  "types": "./lib-types/index.d.ts",
   "files": [
     "headless",
     "toaster-styled.d.ts",
@@ -36,51 +36,63 @@
   ],
   "exports": {
     ".": {
-      "import": "./index.qwik.mjs",
-      "require": "./index.qwik.cjs",
-      "types": "./index.d.ts"
+      "node": {
+        "import": "./lib/index.qwik.mjs",
+        "require": "./lib/index.qwik.cjs",
+        "types": "./lib-types/index.d.ts"
+      },
+      "default": {
+        "import": "./lib/index.qwik.mjs",
+        "require": "./lib/index.qwik.cjs",
+        "types": "./lib-types/index.d.ts"
+      }
     },
     "./headless": {
-      "import": "./headless/index.qwik.mjs",
-      "require": "./headless/index.qwik.cjs",
-      "types": "./headless/index.d.ts"
+      "node": {
+        "import": "./lib/headless/index.qwik.mjs",
+        "require": "./lib/headless/index.qwik.cjs",
+        "types": "./lib-types/headless/index.d.ts"
+      },
+      "default": {
+        "import": "./lib/headless/index.qwik.mjs",
+        "require": "./lib/headless/index.qwik.cjs",
+        "types": "./lib-types/headless/index.d.ts"
+      }
     }
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
   },
   "private": false,
   "type": "module",
   "scripts": {
     "build": "qwik build",
     "build.lib": "vite build --mode lib",
+    "build.types": "tsc --emitDeclarationOnly -p tsconfig.lib.json",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
     "release": "bumpp --commit --tag --push && npm publish",
-    "prepublishOnly": "PKG=headless npm run build && PKG=raw npm run build",
-    "postpublish": "rm -rf headless index.d.ts index.qwik.cjs index.qwik.mjs toaster-styled.d.ts",
+    "prepublishOnly": "npm run build",
     "start": "vite --open --mode ssr",
     "test": "echo \"No test specified\" && exit 0",
     "qwik": "qwik"
   },
   "devDependencies": {
-    "@builder.io/qwik": "1.5.1",
-    "@types/eslint": "8.56.7",
-    "@types/node": "20.12.2",
-    "@typescript-eslint/eslint-plugin": "7.5.0",
-    "@typescript-eslint/parser": "7.5.0",
+    "@builder.io/qwik": "1.5.3",
+    "@types/eslint": "^8.56.10",
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^7.7.1",
+    "@typescript-eslint/parser": "^7.7.1",
     "bumpp": "9.4.0",
-    "eslint": "8.57.0",
-    "eslint-plugin-qwik": "1.5.1",
-    "prettier": "3.2.5",
-    "tsc-alias": "1.8.8",
-    "typescript": "5.4.3",
-    "undici": "6.10.2",
-    "vite": "5.2.7",
-    "vite-plugin-dts": "3.8.1",
-    "vite-tsconfig-paths": "4.3.2"
+    "eslint-plugin-qwik": "latest",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "typescript": "5.4.5",
+    "undici": "*",
+    "vite": "^5.2.10",
+    "vite-tsconfig-paths": "^4.2.1"
   }
 }

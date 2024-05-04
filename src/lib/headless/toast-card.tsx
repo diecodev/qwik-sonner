@@ -9,9 +9,13 @@ import {
   useTask$,
   useVisibleTask$,
 } from "@builder.io/qwik";
-import { ToastProps } from "@/headless/utils/types";
-import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT } from "@/headless/constants";
-import { Loader, getAsset } from "./assets";
+import {
+  type ToastProps,
+  SWIPE_THRESHOLD,
+  TIME_BEFORE_UNMOUNT,
+  Loader,
+  getAsset,
+} from "../core";
 
 type ToastCardState = {
   mounted: boolean;

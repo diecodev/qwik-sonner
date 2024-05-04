@@ -1,7 +1,7 @@
-export { Toaster } from "./toaster-styled";
+export { Toaster } from "./lib/styled/index";
+export { toast } from "./lib/core/state";
 export {
-  toast,
   type ToastT as Toast,
   type ExternalToast,
   type ToasterProps,
-} from "@/headless";
+} from "./lib/core/types";

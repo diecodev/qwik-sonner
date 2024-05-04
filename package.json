@@ -74,10 +74,10 @@
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
-    "release": "bumpp --commit --tag --push && npm publish",
-    "prepublishOnly": "npm run build && npm run test",
+    "release": "bumpp --commit --tag --push && pnpm publish",
+    "prepublishOnly": "pnpm run build && pnpm run test",
     "start": "vite --open --mode ssr",
-    "test": "npm run test -w test",
+    "test": "pnpm run test -w test",
     "qwik": "qwik"
   },
   "devDependencies": {

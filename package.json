@@ -1,6 +1,6 @@
 {
   "name": "qwik-sonner",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "An opinionated toast component for Qwik.",
   "keywords": [
     "qwik",
@@ -28,11 +28,8 @@
   "qwik": "./lib/index.qwik.mjs",
   "types": "./lib-types/index.d.ts",
   "files": [
-    "headless",
-    "toaster-styled.d.ts",
-    "index.qiwk.mjs",
-    "index.qiwk.cjs",
-    "index.d.ts"
+    "lib",
+    "lib-types"
   ],
   "exports": {
     ".": {

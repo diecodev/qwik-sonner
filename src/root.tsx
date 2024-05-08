@@ -1,8 +1,9 @@
 import { $, component$, useSignal } from "@builder.io/qwik";
-import { Toaster, toast } from "./lib";
+import { Toaster } from "./lib/styled";
+import { toast } from "./lib";
 
 export default component$(() => {
-  const tId = useSignal<number | string>("myCustomId");
+  const tId = useSignal<number>(0);
 
   return (
     <>
@@ -18,16 +19,30 @@ export default component$(() => {
         >
           open toaster
         </button>
-        <button onClick$={() => toast(<div>My custom toast</div>)}>
+        <button
+          onClick$={() => {
+            toast(`Event has been created ${tId.value}`, {
+              onDismiss$: $((t) =>
+                console.log(`Toast with id ${t.id} has been dismissed`)
+              ),
+              onAutoClose$: $((t) =>
+                console.log(
+                  `Toast with id ${t.id} has been closed automatically`
+                )
+              ),
+            });
+            tId.value++;
+          }}
+        >
           open toaster 2
         </button>
         <button
           onClick$={() =>
             toast("Event has been created", {
-              onDismiss: $((t) =>
+              onDismiss$: $((t) =>
                 console.log(`Toast with id ${t.id} has been dismissed`)
               ),
-              onAutoClose: $((t) =>
+              onAutoClose$: $((t) =>
                 console.log(
                   `Toast with id ${t.id} has been closed automatically`
                 )
@@ -59,7 +74,7 @@ export default component$(() => {
         >
           open toaster 3
         </button>
-        <Toaster richColors duration={10000} theme="system" />
+        <Toaster richColors theme="system" />
       </body>
     </>
   );

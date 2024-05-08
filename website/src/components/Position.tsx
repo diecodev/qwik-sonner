@@ -1,22 +1,20 @@
-import { toast, type ToasterProps } from "qwik-sonner";
+import { toast } from "qwik-sonner";
 import { CodeBlock } from "./CodeBlock";
 import { type Signal, component$ } from "@builder.io/qwik";
 
-type PositionT = Required<Pick<ToasterProps, "position">>["position"];
-
-const positions: PositionT[] = [
+const positions = [
   "top-left",
   "top-center",
   "top-right",
   "bottom-left",
   "bottom-center",
   "bottom-right",
-];
+] as const;
 
 export type Position = (typeof positions)[number];
 
 export const Position = component$(
-  ({ position }: { position: Signal<Position> }) => {
+  ({ position }: { position: Signal<any> }) => {
     return (
       <div>
         <h2>Position</h2>

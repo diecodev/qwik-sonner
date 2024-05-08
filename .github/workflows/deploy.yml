@@ -26,9 +26,7 @@ jobs:
           deno-version: v1.x
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
+        uses: pnpm/action-setup@v4
 
       - name: Build qwik-sonner
         run: "pnpm install --no-frozen-lockfile && pnpm run build"

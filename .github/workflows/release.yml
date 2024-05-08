@@ -54,10 +54,16 @@ jobs:
         with:
           version: 9
 
-      - name: Building library
-        run: pnpm install --no-frozen-lockfile && pnpm run build
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
 
-      - run: pnpm publish --no-git-checks
+      - name: Building library
+        run: pnpm install --no-frozen-lockfile
+
+      - run: npm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

@@ -87,7 +87,7 @@ const allTypes = [
       toast.message("Event has been created", {
         action: {
           label: "Undo",
-          onClick: $(() => console.log("Undo")),
+          onClick$: $(() => console.log("Undo")),
         },
       }),
     ),
@@ -104,9 +104,9 @@ toast.promise(promise, {
   error: 'Error',
 });`,
     action: $(() =>
-      toast.promise<{ name: string }>(
+      toast.promise(
         $(
-          () =>
+          (): Promise<{ name: string }> =>
             new Promise((resolve) => {
               setTimeout(() => {
                 resolve({ name: "Sonner" });

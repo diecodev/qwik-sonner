@@ -46,13 +46,13 @@
     },
     "./headless": {
       "node": {
-        "import": "./lib/headless/index.qwik.mjs",
-        "require": "./lib/headless/index.qwik.cjs",
+        "import": "./lib/headless.qwik.mjs",
+        "require": "./lib/headless.qwik.cjs",
         "types": "./lib-types/headless/index.d.ts"
       },
       "default": {
-        "import": "./lib/headless/index.qwik.mjs",
-        "require": "./lib/headless/index.qwik.cjs",
+        "import": "./lib/headless.qwik.mjs",
+        "require": "./lib/headless.qwik.cjs",
         "types": "./lib-types/headless/index.d.ts"
       }
     }

@@ -5,24 +5,37 @@ permissions:
 
 on:
   push:
+    branches: main
     tags:
       - "v*"
+  pull_request:
+    branches: main
 
 jobs:
-  gh_release:
+  playwright_test:
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: clone repo
+        uses: actions/checkout@v4
+
+      - name: installing pnpm
+        uses: pnpm/action-setup@v4
         with:
-          fetch-depth: 0
+          version: 9
 
-      - uses: actions/setup-node@v4
+      - name: Install dependencies
+        run: pnpmi
 
-      - run: npx changelogithub # or changelogithub@0.12 if ensure the stable result
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Install Playwright Browsers
+        run: pnpx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: pnpx playwright test
+        working-directory: ./tests
 
   npm_publish:
+    needs: playwright_test
     runs-on: ubuntu-latest
     steps:
       - name: clone repository
@@ -41,3 +54,17 @@ jobs:
       - run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+  gh_release:
+    needs: [npm_publish, playwright_test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+
+      - run: npx changelogithub # or changelogithub@0.12 if ensure the stable result
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

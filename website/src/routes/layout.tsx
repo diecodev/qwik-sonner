@@ -20,10 +20,8 @@ export const useServerTimeLoader = routeLoader$(() => {
 export default component$(() => {
   useStyles$(styles);
   return (
-    <>
-      <main>
-        <Slot />
-      </main>
-    </>
+    <main>
+      <Slot />
+    </main>
   );
 });

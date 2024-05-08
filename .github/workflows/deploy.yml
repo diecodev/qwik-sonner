@@ -27,6 +27,8 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Build qwik-sonner
         run: "pnpm install --no-frozen-lockfile && pnpm run build"

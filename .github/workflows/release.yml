@@ -5,43 +5,11 @@ permissions:
 
 on:
   push:
-    branches: main
     tags:
       - "v*"
-  pull_request:
-    branches: main
 
 jobs:
-  playwright_test:
-    timeout-minutes: 60
-    runs-on: ubuntu-latest
-    steps:
-      - name: clone repo
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-      - run: pnpm build
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      - name: Run Playwright tests
-        run: pnpm test || exit 1
-
   npm_publish:
-    needs: playwright_test
     runs-on: ubuntu-latest
     steps:
       - name: clone repository
@@ -69,7 +37,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
   gh_release:
-    needs: [npm_publish, playwright_test]
+    needs: [npm_publish]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

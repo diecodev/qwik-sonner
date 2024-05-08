@@ -35,6 +35,9 @@ jobs:
         with:
           version: 9
 
+      - name: Building library
+        run: pnpm install --no-frozen-lockfile && pnpm run build
+
       - run: pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

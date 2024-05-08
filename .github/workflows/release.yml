@@ -25,7 +25,7 @@ jobs:
           version: 9
 
       - name: Install dependencies
-        run: pnpmi
+        run: pnpm install --no-frozen-lockfile
 
       - name: Install Playwright Browsers
         run: pnpx playwright install --with-deps

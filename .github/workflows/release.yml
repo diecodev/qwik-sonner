@@ -31,8 +31,7 @@ jobs:
         run: pnpx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: pnpx playwright test
-        working-directory: tests
+        run: pnpm run test
 
   npm_publish:
     needs: playwright_test

@@ -68,7 +68,7 @@ export default component$(() => {
           toast("My Message", {
             action: {
               label: "Action",
-              onClick: $(() => console.log("Action")),
+              onClick$: $(() => console.log("Action")),
             },
           })
         }
@@ -82,10 +82,10 @@ export default component$(() => {
           toast("My Message", {
             action: {
               label: "Action",
-              onClick: $((event) => {
-                event.preventDefault();
+              onClick$: $(() => {
                 console.log("Action");
               }),
+              preventDefault: true,
             },
           })
         }
@@ -135,7 +135,7 @@ export default component$(() => {
           toast("My Custom Cancel Button", {
             cancel: {
               label: "Cancel",
-              onClick: $(() => console.log("Cancel")),
+              onClick$: $(() => console.log("Cancel")),
             },
           })
         }
@@ -154,7 +154,7 @@ export default component$(() => {
         class="button"
         onClick$={() =>
           toast("My Toast", {
-            onAutoClose: $(() => {
+            onAutoClose$: $(() => {
               showAutoClose.value = true;
             }),
           })
@@ -167,7 +167,7 @@ export default component$(() => {
         class="button"
         onClick$={() =>
           toast("My Toast", {
-            onDismiss: $(() => {
+            onDismiss$: $(() => {
               showDismiss.value = true;
             }),
           })

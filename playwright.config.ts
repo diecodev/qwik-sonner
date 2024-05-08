@@ -16,12 +16,13 @@ const config: PlaywrightTestConfig = {
   /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: 2,
+  retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
     actionTimeout: 0,
     trace: "on-first-retry",
+    baseURL: "http://localhost:5173",
   },
   projects: [
     {
@@ -42,6 +43,7 @@ const config: PlaywrightTestConfig = {
     command: "npm run dev",
     cwd: "./test",
     port: 5173,
+    url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
   },
 };

@@ -214,7 +214,7 @@ const Toaster = component$<ToasterProps>((props) => {
             tabIndex={-1}
             ref={listRef}
             class={localClass}
-            data-sonner-toaster
+            data-qwik-toaster
             data-theme={theme}
             data-rich-colors={String(richColors)}
             data-y-position={y}

@@ -25,10 +25,10 @@ const bars = Array(12).fill(0);
 
 export const Loader = component$(({ visible }: { visible: boolean }) => {
   return (
-    <div class="sonner-loading-wrapper" data-visible={String(visible)}>
-      <div class="sonner-spinner">
+    <div class="qwik-loading-wrapper" data-visible={String(visible)}>
+      <div class="qwik-spinner">
         {bars.map((_, i) => (
-          <div class="sonner-loading-bar" key={`spinner-bar-${i}`} />
+          <div class="qwik-loading-bar" key={`spinner-bar-${i}`} />
         ))}
       </div>
     </div>

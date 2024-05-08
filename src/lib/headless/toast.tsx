@@ -111,10 +111,7 @@ export const Toast = component$<ToastProps>((props) => {
   function getLoadingIcon() {
     if (icons?.loading) {
       return (
-        <div
-          class="sonner-loader"
-          data-visible={String(toastType === "loading")}
-        >
+        <div class="qwik-loader" data-visible={String(toastType === "loading")}>
           {icons.loading}
         </div>
       );
@@ -122,10 +119,7 @@ export const Toast = component$<ToastProps>((props) => {
 
     if (loadingIconProp) {
       return (
-        <div
-          class="sonner-loader"
-          data-visible={String(toastType === "loading")}
-        >
+        <div class="qwik-loader" data-visible={String(toastType === "loading")}>
           {loadingIconProp}
         </div>
       );
@@ -278,7 +272,7 @@ export const Toast = component$<ToastProps>((props) => {
         classes?.[toastType as keyof ToastClassnames],
         toast?.classes?.[toastType as keyof ToastClassnames],
       ]}
-      data-sonner-toast=""
+      data-qwik-toast=""
       data-styled={String(!Boolean(toast.jsx || toast.unstyled || unstyled))}
       data-mounted={String(mounted.value)}
       data-promise={String(Boolean(toast.promise))}
@@ -446,13 +440,13 @@ export const Toast = component$<ToastProps>((props) => {
               )
             ) : null}
           </div>
-          {typeof toast.cancel === "object" ? (
+          {typeof toast.cancel === "function" ? (
             toast.cancel
           ) : toast.cancel && isAction(toast.cancel) ? (
             <button
               data-button
               data-cancel
-              style={toast.cancelButtonStyle || cancelButtonStyle}
+              style={toast.cancelButtonStyle ?? cancelButtonStyle}
               onClick$={(event, target) => {
                 // We need to check twice because typescript
                 if (!isAction(toast.cancel)) return;
@@ -465,17 +459,18 @@ export const Toast = component$<ToastProps>((props) => {
               {toast.cancel.label}
             </button>
           ) : null}
-          {typeof toast.action === "object" ? (
+          {typeof toast.action === "function" ? (
             toast.action
           ) : toast.action && isAction(toast.action) ? (
             <button
               data-button=""
               style={toast.actionButtonStyle || actionButtonStyle}
+              preventdefault:click={toast.action.preventDefault}
               onClick$={(event, target) => {
                 // We need to check twice because typescript
                 if (!isAction(toast.action)) return;
                 toast.action.onClick$(event, target);
-                if (event.defaultPrevented) return;
+                if (toast.action.preventDefault) return;
                 deleteToast();
               }}
               class={[classes?.actionButton, toast?.classes?.actionButton]}

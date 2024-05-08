@@ -60,6 +60,7 @@ interface Action {
   label: string;
   onClick$: QRL<(ev: PointerEvent, target: HTMLButtonElement) => any>;
   actionButtonStyle?: CSSProperties;
+  preventDefault?: boolean;
 }
 
 export interface ToastT {

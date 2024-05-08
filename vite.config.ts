@@ -8,24 +8,27 @@ const makeRegex = (dep) => new RegExp(`^${dep}(/.*)?$`);
 const excludeAll = (obj) => Object.keys(obj).map(makeRegex);
 
 export default defineConfig(() => {
+  const env = process.env.ENTRY as "styled" | "headless" | undefined;
+
+  if (!env) throw new Error("ENTRY env var is required");
+
+  const entry =
+    env === "headless" ? "src/lib/headless/toast-wrapper.tsx" : "src/lib";
+
   return {
     build: {
       target: "es2020",
       outDir: "lib",
       lib: {
-        entry: {
-          index: "./src/lib/",
-          headless: "./src/lib/headless",
-          core: "./src/lib/core",
-        },
+        entry,
         formats: ["es", "cjs"],
         fileName: (format, file) => {
           const ext = format === "es" ? "mjs" : "cjs";
-          return `${file}.qwik.${ext}`;
+          const name = env === "styled" ? "index" : "headless";
+          return `${name}.qwik.${ext}`;
         },
-        name: "qwik-toast",
       },
-      emptyOutDir: true,
+      emptyOutDir: env === "styled" ? true : false,
       rollupOptions: {
         // externalize deps that shouldn't be bundled into the library
         external: [
@@ -35,7 +38,7 @@ export default defineConfig(() => {
         ],
         // all the chunks created by vite shuold also have qwik in the name
         output: {
-          chunkFileNames: "[name]-[hash].qwik.js",
+          chunkFileNames: "[name]-[format].qwik.js",
         },
       },
     },

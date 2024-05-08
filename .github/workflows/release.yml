@@ -19,19 +19,26 @@ jobs:
       - name: clone repo
         uses: actions/checkout@v4
 
-      - name: installing pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
         with:
           version: 9
 
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+      - run: pnpm build
 
       - name: Install Playwright Browsers
-        run: pnpx playwright install --with-deps
+        run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: pnpm run test
+        run: pnpm test || exit 1
 
   npm_publish:
     needs: playwright_test

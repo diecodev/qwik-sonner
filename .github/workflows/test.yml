@@ -6,6 +6,11 @@ permissions:
 on:
   push:
     branches: main
+    paths:
+      - "src/**"
+      - "test/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
   pull_request:
     branches: main
 

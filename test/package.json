@@ -24,13 +24,11 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "preview": "qwik build preview && vite preview --open",
     "start": "vite --open --mode ssr",
-    "test": "playwright test",
     "qwik": "qwik"
   },
   "devDependencies": {
     "@builder.io/qwik": "^1.5.3",
     "@builder.io/qwik-city": "^1.5.3",
-    "@playwright/test": "^1.38.1",
     "@types/eslint": "^8.56.10",
     "@types/node": "^20.12.7",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
@@ -38,10 +36,10 @@
     "eslint": "^8.57.0",
     "eslint-plugin-qwik": "^1.5.3",
     "prettier": "^3.2.5",
+    "qwik-sonner": "workspace:*",
     "typescript": "5.4.5",
     "undici": "*",
     "vite": "^5.2.10",
-    "vite-tsconfig-paths": "^4.2.1",
-    "qwik-sonner": "workspace:*"
+    "vite-tsconfig-paths": "^4.2.1"
   }
 }

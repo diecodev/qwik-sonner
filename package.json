@@ -74,11 +74,12 @@
     "release": "bumpp --commit --tag --push",
     "prepublishOnly": "pnpm build && pnpm test",
     "start": "vite --open --mode ssr",
-    "test": "pnpm --filter=test run test",
+    "test": "playwright test",
     "qwik": "qwik"
   },
   "devDependencies": {
     "@builder.io/qwik": "1.5.3",
+    "@playwright/test": "^1.38.1",
     "@types/dompurify": "3.0.5",
     "@types/eslint": "^8.56.10",
     "@types/node": "^20.12.7",

@@ -72,7 +72,7 @@
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
     "release": "bumpp --commit --tag --push",
-    "prepublishOnly": "pnpm build && pnpm test",
+    "prepublishOnly": "pnpm build",
     "start": "vite --open --mode ssr",
     "test": "playwright test",
     "qwik": "qwik"

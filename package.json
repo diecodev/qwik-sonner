@@ -48,12 +48,12 @@
       "node": {
         "import": "./lib/headless.qwik.mjs",
         "require": "./lib/headless.qwik.cjs",
-        "types": "./lib-types/headless/index.d.ts"
+        "types": "./lib-types/headless/toast-wrapper.d.ts"
       },
       "default": {
         "import": "./lib/headless.qwik.mjs",
         "require": "./lib/headless.qwik.cjs",
-        "types": "./lib-types/headless/index.d.ts"
+        "types": "./lib-types/headless/toast-wrapper.d.ts"
       }
     }
   },

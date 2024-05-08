@@ -42,7 +42,6 @@ const config: PlaywrightTestConfig = {
   webServer: {
     command: "npm run dev",
     cwd: "./test",
-    port: 5173,
     url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
   },

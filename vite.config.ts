@@ -7,10 +7,10 @@ const { dependencies = {}, peerDependencies = {} } = pkg as any;
 const makeRegex = (dep) => new RegExp(`^${dep}(/.*)?$`);
 const excludeAll = (obj) => Object.keys(obj).map(makeRegex);
 
-export default defineConfig(() => {
+export default defineConfig(({ command }) => {
   const env = process.env.ENTRY as "styled" | "headless" | undefined;
 
-  if (!env) throw new Error("ENTRY env var is required");
+  if (!env && command === "build") throw new Error("ENTRY env var is required");
 
   const entry =
     env === "headless" ? "src/lib/headless/toast-wrapper.tsx" : "src/lib";

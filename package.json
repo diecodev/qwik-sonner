@@ -1,6 +1,6 @@
 {
   "name": "qwik-sonner",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "An opinionated toast component for Qwik.",
   "keywords": [
     "qwik",

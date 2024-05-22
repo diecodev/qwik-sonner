@@ -364,10 +364,7 @@ export const Toast = component$<ToastProps>((props) => {
           onClick$={
             disabled || !dismissible
               ? () => {}
-              : () => {
-                  deleteToast();
-                  toast.onDismiss$?.(toast);
-                }
+              : [deleteToast, $(() => toast.onDismiss$?.(toast))]
           }
           class={[classes?.closeButton, toast?.classes?.closeButton]}
         >

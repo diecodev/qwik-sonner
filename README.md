@@ -8,6 +8,9 @@ Based on [emilkowalski](https://github.com/emilkowalski)'s React [implementation
 > [!NOTE]
 > This readme was created using the svelte-sonner readme as template
 
+> [!IMPORTANT]
+> Due to the resumability handled by Qwik, the `<Toast />` component should be positioned at the beginning of where you want to use it. This way, you won't encounter [rendering issues.](https://github.com/diecodev/qwik-sonner/issues/13)
+
 ## Quick start
 
 Install it:

@@ -41,5 +41,5 @@ jobs:
         uses: denoland/deployctl@v1
         with:
           project: "qwik-sonner"
-          entrypoint: "https://deno.land/std@0.188.0/http/file_server.ts" # ð Update the entrypoint if necessary
-          root: "./website/dist" # ð Update the root if necessary
+          entrypoint: "https://deno.land/std@0.188.0/http/file_server.ts" # 📝 Update the entrypoint if necessary
+          root: "./website/dist" # 📝 Update the root if necessary

@@ -1,4 +1,4 @@
-import { JSXOutput } from "@builder.io/qwik";
+import { JSXOutput } from "@qwik.dev/core";
 import type {
   ExternalToast,
   ToastT,
@@ -38,9 +38,11 @@ const create = (
     type?: ToastTypes;
     promise?: PromiseT;
     jsx?: JSXOutput;
-  }
+  },
 ) => {
-  const { message, ...rest } = data;
+  const message = data.message;
+  const rest: any = Object.assign({}, data);
+  delete rest.message;
   const id =
     typeof data?.id === "number" || (data.id && data.id?.length > 0)
       ? data.id
@@ -76,7 +78,7 @@ const dismiss = (id?: number | string) => {
   if (!id) {
     return toasts.forEach((toast) => {
       subscribers.forEach((subscriber) =>
-        subscriber({ id: toast.id, dismiss: true })
+        subscriber({ id: toast.id, dismiss: true }),
       );
     });
   }
@@ -111,7 +113,7 @@ const loading = (message: string | JSXOutput, data?: ExternalToast) => {
 
 const promise = <ToastData>(
   promise: PromiseT<ToastData>,
-  data?: PromiseData<ToastData>
+  data?: PromiseData<ToastData>,
 ) => {
   if (!data) {
     // Nothing to show
@@ -150,7 +152,7 @@ const promise = <ToastData>(
         typeof data.description === "function"
           ? await data.description(
               // @ts-expect-error
-              `HTTP error! status: ${response.status}`
+              `HTTP error! status: ${response.status}`,
             )
           : data.description;
       create({ id, type: "error", message, description });
@@ -196,7 +198,7 @@ const promise = <ToastData>(
 
 const custom = (
   jsx: (id: number | string) => JSXOutput,
-  data?: ExternalToast
+  data?: ExternalToast,
 ) => {
   const id = data?.id || toastsCounter++;
   create({ jsx: jsx(id), id, ...data });

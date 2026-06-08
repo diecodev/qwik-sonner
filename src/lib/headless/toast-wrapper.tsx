@@ -3,10 +3,9 @@ import {
   component$,
   QwikVisibleEvent,
   useComputed$,
-  useOnDocument,
   useSignal,
   useTask$,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import {
   HeightT,
   Theme,
@@ -65,9 +64,9 @@ const Toaster = component$<ToasterProps>((props) => {
         [position].concat(
           toasts.value
             .filter((toast) => toast.position)
-            .map((toast) => toast.position!)
-        )
-      )
+            .map((toast) => toast.position!),
+        ),
+      ),
     );
   });
 
@@ -78,20 +77,20 @@ const Toaster = component$<ToasterProps>((props) => {
 
   const removeToast = $(
     (toast: ToastT) =>
-      (toasts.value = toasts.value.filter(({ id }) => id !== toast.id))
+      (toasts.value = toasts.value.filter(({ id }) => id !== toast.id)),
   );
 
   const onMountHandler = $((_: QwikVisibleEvent, _1: HTMLElement) => {
     return ToastState.subscribe((toast) => {
       if ((toast as ToastToDismiss).dismiss) {
         toasts.value = toasts.value.map((t) =>
-          t.id === toast.id ? { ...t, delete: true } : t
+          t.id === toast.id ? { ...t, delete: true } : t,
         );
         return;
       }
 
       const indexOfExistingToast = toasts.value.findIndex(
-        (t) => t.id === toast.id
+        (t) => t.id === toast.id,
       );
 
       if (indexOfExistingToast !== -1) {
@@ -162,28 +161,6 @@ const Toaster = component$<ToasterProps>((props) => {
     }
   });
 
-  useOnDocument(
-    "keydown",
-    $((ev) => {
-      const isHotkeyPressed = hotkey.every(
-        (key) => (ev as any)[key] || ev.code === key
-      );
-
-      if (isHotkeyPressed) {
-        expanded.value = true;
-        listRef.value?.focus();
-      }
-
-      if (
-        ev.code === "Escape" &&
-        (document.activeElement === listRef.value ||
-          listRef.value?.contains(document.activeElement))
-      ) {
-        expanded.value = false;
-      }
-    })
-  );
-
   useTask$(({ track, cleanup }) => {
     track(() => listRef.value);
 
@@ -203,6 +180,24 @@ const Toaster = component$<ToasterProps>((props) => {
     <section
       aria-label={`${containerAriaLabel} ${hotkeyLabel}`}
       tabIndex={-1}
+      document:onKeyDown$={(ev) => {
+        const isHotkeyPressed = hotkey.every(
+          (key) => (ev as any)[key] || ev.code === key,
+        );
+
+        if (isHotkeyPressed) {
+          expanded.value = true;
+          listRef.value?.focus();
+        }
+
+        if (
+          ev.code === "Escape" &&
+          (document.activeElement === listRef.value ||
+            listRef.value?.contains(document.activeElement))
+        ) {
+          expanded.value = false;
+        }
+      }}
       onQVisible$={[onMountHandler, onMountThemeHandler, onMountDirHandler]}
     >
       {possiblePositions.value.map((position, index) => {
@@ -278,7 +273,7 @@ const Toaster = component$<ToasterProps>((props) => {
               .filter(
                 (toast) =>
                   (!toast.position && index === 0) ||
-                  toast.position === position
+                  toast.position === position,
               )
               .map((toast, index) => (
                 <Toast
@@ -303,7 +298,7 @@ const Toaster = component$<ToasterProps>((props) => {
                   actionButtonStyle={toastOptions?.actionButtonStyle}
                   removeToast={removeToast}
                   toasts={toasts.value.filter(
-                    (t) => t.position === toast.position
+                    (t) => t.position === toast.position,
                   )}
                   heights={heights}
                   expandByDefault={expand ?? false}

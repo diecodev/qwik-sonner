@@ -1,9 +1,9 @@
-import { component$ } from "@builder.io/qwik";
+import { component$ } from "@qwik.dev/core";
 import {
-  QwikCityProvider,
+  QwikRouterProvider,
   RouterOutlet,
   ServiceWorkerRegister,
-} from "@builder.io/qwik-city";
+} from "@qwik.dev/router";
 import { RouterHead } from "./components/router-head/router-head";
 
 export default component$(() => {
@@ -15,7 +15,7 @@ export default component$(() => {
    */
 
   return (
-    <QwikCityProvider>
+    <QwikRouterProvider>
       <head>
         <meta charSet="utf-8" />
         <link rel="manifest" href="/manifest.json" />
@@ -25,6 +25,6 @@ export default component$(() => {
       <body lang="en">
         <RouterOutlet />
       </body>
-    </QwikCityProvider>
+    </QwikRouterProvider>
   );
 });

@@ -8,18 +8,14 @@
  * - https://deno.com/manual/examples/http_server
  *
  */
-import { createQwikCity } from "@builder.io/qwik-city/middleware/deno";
-import qwikCityPlan from "@qwik-city-plan";
-import { manifest } from "@qwik-client-manifest";
+import { createQwikRouter } from "@qwik.dev/router/middleware/deno";
 import render from "./entry.ssr";
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 
-// Create the Qwik City Deno middleware
-const { router, notFound, staticFile } = createQwikCity({
+// Create the Qwik Router Deno middleware
+const { router, notFound, staticFile } = createQwikRouter({
   render,
-  qwikCityPlan,
-  manifest,
 });
 
 // Allow for dynamic port

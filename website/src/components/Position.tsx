@@ -1,6 +1,6 @@
 import { toast } from "qwik-sonner";
 import { CodeBlock } from "./CodeBlock";
-import { type Signal, component$ } from "@builder.io/qwik";
+import { type Signal, component$ } from "@qwik.dev/core";
 
 const positions = [
   "top-left",

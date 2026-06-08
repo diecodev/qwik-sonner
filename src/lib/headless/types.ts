@@ -6,7 +6,7 @@ import {
   QRL,
   QRLEventHandlerMulti,
   Signal,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 
 export type ToastTypes =
   | "normal"

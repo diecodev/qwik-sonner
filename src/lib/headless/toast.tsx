@@ -7,7 +7,7 @@ import {
   isSignal,
   useOnDocument,
   useVisibleTask$,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { isAction, ToastClassnames, ToastIcons, ToastProps } from "./types";
 import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT, TOAST_LIFETIME } from "./const";
 import { getAsset, Loader } from "./icons";
@@ -64,7 +64,7 @@ export const Toast = component$<ToastProps>((props) => {
   const toastClass = toast.class ?? "";
   const toastDescriptionClass = toast.descriptionClass ?? "";
   const [y, x] = position.split("-");
-  const invertChecked = isSignal<boolean>(ToasterInvert)
+  const invertChecked = isSignal(ToasterInvert)
     ? ToasterInvert.value
     : ToasterInvert;
   const invert = useComputed$(() => toast.invert ?? invertChecked);
@@ -78,10 +78,10 @@ export const Toast = component$<ToastProps>((props) => {
     return idx === -1 ? 0 : idx;
   });
   const closeButton = useComputed$(
-    () => toast.closeButton ?? closeButtonFromToaster
+    () => toast.closeButton ?? closeButtonFromToaster,
   );
   const duration = useComputed$(
-    () => toast.duration ?? durationFromToaster ?? TOAST_LIFETIME
+    () => toast.duration ?? durationFromToaster ?? TOAST_LIFETIME,
   );
   const toastsHeightBefore = useComputed$(() => {
     return heights.value.reduce((prev, curr, reducerIndex) => {
@@ -131,7 +131,7 @@ export const Toast = component$<ToastProps>((props) => {
   }
 
   // tasks
-  useTask$(({ track }) => {
+  useVisibleTask$(({ track }) => {
     track(() => toastRef.value);
 
     if (!toastRef.value) return;
@@ -146,7 +146,7 @@ export const Toast = component$<ToastProps>((props) => {
 
     heights.value = exists
       ? heights.value.map((h) =>
-          h.toastId === toast.id ? { ...h, height: newHeight } : h
+          h.toastId === toast.id ? { ...h, height: newHeight } : h,
         )
       : [{ toastId: toast.id, height: newHeight, position }, ...heights.value];
   });
@@ -167,7 +167,7 @@ export const Toast = component$<ToastProps>((props) => {
       toast.type === "loading"
     )
       return;
-    let timeoutId: number;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     // Pause the timer on each hover
     const pauseTimer = () => {
@@ -208,7 +208,7 @@ export const Toast = component$<ToastProps>((props) => {
 
     cleanup(() => clearTimeout(timeoutId));
   });
-  useTask$(({ track, cleanup }) => {
+  useVisibleTask$(({ track, cleanup }) => {
     track(() => toastRef.value);
     track(() => toast.id);
 
@@ -227,10 +227,9 @@ export const Toast = component$<ToastProps>((props) => {
       ...heights.value,
     ];
 
-    cleanup(
-      () =>
-        (heights.value = heights.value.filter((h) => h.toastId !== toast.id))
-    );
+    cleanup(() => {
+      heights.value = heights.value.filter((h) => h.toastId !== toast.id);
+    });
   });
   useTask$(({ track }) => {
     track(() => toast.delete);
@@ -245,7 +244,7 @@ export const Toast = component$<ToastProps>((props) => {
     "visibilitychange",
     $(() => {
       isDocumentHidden.value = document.hidden;
-    })
+    }),
   );
 
   // I shoudl not use visible task but I don't found a better way to do it
@@ -284,11 +283,11 @@ export const Toast = component$<ToastProps>((props) => {
       data-front={String(isFront)}
       data-swiping={String(swiping.value)}
       data-dismissible={String(dismissible)}
-      data-type={toastType}
+      data-type={String(toastType)}
       data-invert={String(invert.value)}
       data-swipe-out={String(swipeOut.value)}
       data-expanded={String(
-        Boolean(expanded.value || (expandByDefault && mounted.value))
+        Boolean(expanded.value || (expandByDefault && mounted.value)),
       )}
       style={{
         "--index": index,
@@ -318,7 +317,7 @@ export const Toast = component$<ToastProps>((props) => {
         const swipeAmount = Number(
           toastRef.value?.style
             .getPropertyValue("--swipe-amount")
-            .replace("px", "") ?? 0
+            .replace("px", "") ?? 0,
         );
         const timeTaken =
           new Date().getTime() - (dragStartTime.value as Date)?.getTime();

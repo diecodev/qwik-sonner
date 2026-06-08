@@ -7,7 +7,7 @@ import {
   component$,
   useComputed$,
   useSignal,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 
 export const Other = component$(
   ({

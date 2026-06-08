@@ -1,6 +1,6 @@
-import { component$, Slot, useStyles$ } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
-import type { RequestHandler } from "@builder.io/qwik-city";
+import { component$, Slot, useStyles$ } from "@qwik.dev/core";
+import { routeLoader$ } from "@qwik.dev/router";
+import type { RequestHandler } from "@qwik.dev/router";
 
 import styles from "./styles.css?inline";
 
@@ -11,9 +11,9 @@ export const onGet: RequestHandler = async ({
 }) => {
   const { host } = url;
 
-  if (host === "qwik-sonner.deno.dev" || host === "localhost:5173") {
-    throw redirect(301, "https://qwik-sonner.dieco.dev");
-  }
+  // if (host === "qwik-sonner.deno.dev" || host === "localhost:5173") {
+  //   throw redirect(301, "https://qwik-sonner.dieco.dev");
+  // }
 
   cacheControl({
     staleWhileRevalidate: 60 * 60 * 24 * 7,

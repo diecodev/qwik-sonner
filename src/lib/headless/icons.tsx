@@ -1,5 +1,4 @@
-"use client";
-import { component$ } from "@builder.io/qwik";
+import { component$ } from "@qwik.dev/core";
 import type { ToastTypes } from "./types";
 
 export const getAsset = (type: ToastTypes) => {

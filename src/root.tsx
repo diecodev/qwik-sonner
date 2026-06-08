@@ -1,4 +1,4 @@
-import { $, component$, useSignal } from "@builder.io/qwik";
+import { $, component$, useSignal } from "@qwik.dev/core";
 import { Toaster } from "./lib/styled";
 import { toast } from "./lib";
 

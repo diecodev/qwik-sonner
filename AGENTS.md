@@ -48,7 +48,7 @@ The codebase was migrated from Qwik 1.x to **Qwik 2.0 beta** (`@qwik.dev/core` /
   `manifest` where applicable). Don't add a `qwikRouterConfig` option back.
 - **`isSignal(x)` takes no type argument** in v2 (was `isSignal<T>(x)` in v1).
 - **`tsconfig` uses `moduleResolution: "bundler"`** and `jsxImportSource: "@qwik.dev/core"`.
-- **Vite is v7** (peer range `>=6 <9`). Don't downgrade below 6.
+- **Vite is v8** (peer range `>=6 <9`; Vite 8 uses Rolldown). Don't downgrade below 6.
 
 When in doubt about a v2 API, check the installed type defs under
 `node_modules/.pnpm/@qwik.dev+*/node_modules/@qwik.dev/{core,router}/**/*.d.ts` — they are
@@ -93,7 +93,7 @@ pnpm install              # install all workspaces (build scripts for esbuild/sh
 
 # Library (root)
 pnpm build.types          # tsc --emitDeclarationOnly -> lib-types/  (typecheck)
-pnpm build.lib            # vite lib build -> lib/ (styled + headless, esm + cjs)
+pnpm build.lib            # single-pass vite lib build -> lib/ (styled + headless, ESM-only, shared chunk)
 pnpm lint                 # eslint src
 pnpm fmt                  # prettier --write
 

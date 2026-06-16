@@ -6,7 +6,7 @@ import {
   useOnDocument,
   useSignal,
   useTask$,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import {
   HeightT,
   Theme,

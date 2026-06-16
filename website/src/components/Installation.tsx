@@ -1,7 +1,7 @@
 import copy from "copy-to-clipboard";
 
 import styles from "./installation.module.css";
-import { component$, useSignal } from "@builder.io/qwik";
+import { component$, useSignal } from "@qwik.dev/core";
 
 export const Installation = component$(() => {
   const copying = useSignal<number>(0);

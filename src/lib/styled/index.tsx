@@ -1,4 +1,4 @@
-import { component$, useStyles$ } from "@builder.io/qwik";
+import { component$, useStyles$ } from "@qwik.dev/core";
 import { ToasterProps } from "../headless/types";
 import styles from "./styles.css?inline";
 import { Toaster as RawToaster } from "../headless/toast-wrapper";

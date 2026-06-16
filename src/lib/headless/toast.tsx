@@ -7,7 +7,7 @@ import {
   isSignal,
   useOnDocument,
   useVisibleTask$,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { isAction, ToastClassnames, ToastIcons, ToastProps } from "./types";
 import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT, TOAST_LIFETIME } from "./const";
 import { getAsset, Loader } from "./icons";
@@ -64,7 +64,7 @@ export const Toast = component$<ToastProps>((props) => {
   const toastClass = toast.class ?? "";
   const toastDescriptionClass = toast.descriptionClass ?? "";
   const [y, x] = position.split("-");
-  const invertChecked = isSignal<boolean>(ToasterInvert)
+  const invertChecked = isSignal(ToasterInvert)
     ? ToasterInvert.value
     : ToasterInvert;
   const invert = useComputed$(() => toast.invert ?? invertChecked);
@@ -167,7 +167,7 @@ export const Toast = component$<ToastProps>((props) => {
       toast.type === "loading"
     )
       return;
-    let timeoutId: number;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     // Pause the timer on each hover
     const pauseTimer = () => {
@@ -227,10 +227,9 @@ export const Toast = component$<ToastProps>((props) => {
       ...heights.value,
     ];
 
-    cleanup(
-      () =>
-        (heights.value = heights.value.filter((h) => h.toastId !== toast.id))
-    );
+    cleanup(() => {
+      heights.value = heights.value.filter((h) => h.toastId !== toast.id);
+    });
   });
   useTask$(({ track }) => {
     track(() => toast.delete);

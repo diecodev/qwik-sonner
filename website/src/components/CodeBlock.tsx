@@ -1,4 +1,4 @@
-import { component$, useSignal } from "@builder.io/qwik";
+import { component$, useSignal } from "@qwik.dev/core";
 import styles from "./codeblock.module.css";
 import copy from "copy-to-clipboard";
 

@@ -1,5 +1,5 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
-import { useLocation, type DocumentHead } from "@builder.io/qwik-city";
+import { component$, useSignal, $ } from "@qwik.dev/core";
+import { useLocation, type DocumentHead } from "@qwik.dev/router";
 import { toast, Toaster } from "qwik-sonner";
 
 const promise = $(

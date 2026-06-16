@@ -1,4 +1,4 @@
-import { JSXOutput } from "@builder.io/qwik";
+import { JSXOutput } from "@qwik.dev/core";
 import type {
   ExternalToast,
   ToastT,

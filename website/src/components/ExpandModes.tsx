@@ -1,6 +1,6 @@
 import { toast } from "qwik-sonner";
 import { CodeBlock } from "./CodeBlock";
-import { type Signal } from "@builder.io/qwik";
+import { type Signal } from "@qwik.dev/core";
 
 export const ExpandModes = ({ expand }: { expand: Signal<boolean> }) => {
   return (

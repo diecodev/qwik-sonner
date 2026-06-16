@@ -2,3 +2,6 @@ packages:
   - "website"
   - "."
   - "test"
+allowBuilds:
+  esbuild: true
+  sharp: true

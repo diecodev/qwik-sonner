@@ -1,4 +1,4 @@
-import { component$, useSignal } from "@builder.io/qwik";
+import { component$, useSignal } from "@qwik.dev/core";
 import { Toaster, type ToasterProps } from "qwik-sonner";
 import { Hero } from "../components/Hero";
 import { Installation } from "../components/Installation";

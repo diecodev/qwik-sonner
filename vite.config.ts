@@ -11,7 +11,7 @@ const { dependencies = {}, peerDependencies = {} } = pkg as {
 
 // Anything declared as a (peer)dependency must NOT be bundled into the library.
 // Consumers install these themselves, which keeps the output small and
-// dedupable (e.g. @qwik.dev/core, dompurify).
+// dedupable (e.g. @qwik.dev/core).
 const makeRegex = (dep: string) => new RegExp(`^${dep}(/.*)?$`);
 const external = [
   /^node:.*/,

@@ -11,7 +11,6 @@ import {
 import { isAction, ToastClassnames, ToastIcons, ToastProps } from "./types";
 import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT, TOAST_LIFETIME } from "./const";
 import { getAsset, Loader } from "./icons";
-import DOMPurify from "dompurify";
 
 export const Toast = component$<ToastProps>((props) => {
   const {
@@ -125,9 +124,6 @@ export const Toast = component$<ToastProps>((props) => {
       );
     }
     return <Loader visible={toastType === "loading"} />;
-  }
-  function sanitizeHTML(html: string | Node): string {
-    return DOMPurify.sanitize(html);
   }
 
   // tasks
@@ -407,33 +403,21 @@ export const Toast = component$<ToastProps>((props) => {
             <div
               data-title=""
               class={[classes?.title, toast?.classes?.title]}
-              dangerouslySetInnerHTML={sanitizeHTML(toast.title as string)}
-            ></div>
+            >
+              {toast.title}
+            </div>
             {toast.description ? (
-              typeof toast.description === "string" ? (
-                <div
-                  data-description=""
-                  class={[
-                    descriptionClass,
-                    toastDescriptionClass,
-                    classes?.description,
-                    toast?.classes?.description,
-                  ]}
-                  dangerouslySetInnerHTML={sanitizeHTML(toast.description)}
-                />
-              ) : (
-                <div
-                  data-description=""
-                  class={[
-                    descriptionClass,
-                    toastDescriptionClass,
-                    classes?.description,
-                    toast?.classes?.description,
-                  ]}
-                >
-                  {toast.description}
-                </div>
-              )
+              <div
+                data-description=""
+                class={[
+                  descriptionClass,
+                  toastDescriptionClass,
+                  classes?.description,
+                  toast?.classes?.description,
+                ]}
+              >
+                {toast.description}
+              </div>
             ) : null}
           </div>
           {typeof toast.cancel === "function" ? (

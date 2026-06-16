@@ -63,9 +63,6 @@
     "test": "playwright test",
     "qwik": "qwik"
   },
-  "dependencies": {
-    "dompurify": "^3.4.10"
-  },
   "peerDependencies": {
     "@qwik.dev/core": "^2.0.0-beta.37"
   },

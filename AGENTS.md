@@ -22,27 +22,27 @@ The codebase was migrated from Qwik 1.x to **Qwik 2.0 beta** (`@qwik.dev/core` /
 
 ### v1 → v2 renames (memorize these)
 
-| Qwik v1 | Qwik v2 |
-|---|---|
-| `@builder.io/qwik` | `@qwik.dev/core` |
-| `@builder.io/qwik/optimizer` | `@qwik.dev/core/optimizer` |
-| `@builder.io/qwik/server` | `@qwik.dev/core/server` |
-| `@builder.io/qwik-city` | `@qwik.dev/router` |
-| `@builder.io/qwik-city/vite` → `qwikCity()` | `@qwik.dev/router/vite` → `qwikRouter()` |
-| `createQwikCity()` (middleware) | `createQwikRouter()` |
-| `<QwikCityProvider>` | `<QwikRouterProvider>` |
-| `@qwik-city-plan` (virtual module) | `@qwik-router-config` |
-| `jsxImportSource: "@builder.io/qwik"` | `jsxImportSource: "@qwik.dev/core"` |
-| `qwikVite()` from `/optimizer` | **unchanged** (still `qwikVite`) |
-| `renderToStream`, `renderToString` (`/server`) | **unchanged** |
-| `routeLoader$`, `useLocation`, `DocumentHead`, `RequestHandler`, `RouterOutlet` | **unchanged** (now from `@qwik.dev/router`) |
-| Core APIs: `component$`, `useSignal`, `useStore`, `useComputed$`, `useTask$`, `useVisibleTask$`, `useStyles$`, `$`, `Slot`, `JSXOutput`, `Signal` | **unchanged** (from `@qwik.dev/core`) |
+| Qwik v1                                                                                                                                           | Qwik v2                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `@builder.io/qwik`                                                                                                                                | `@qwik.dev/core`                            |
+| `@builder.io/qwik/optimizer`                                                                                                                      | `@qwik.dev/core/optimizer`                  |
+| `@builder.io/qwik/server`                                                                                                                         | `@qwik.dev/core/server`                     |
+| `@builder.io/qwik-city`                                                                                                                           | `@qwik.dev/router`                          |
+| `@builder.io/qwik-city/vite` → `qwikCity()`                                                                                                       | `@qwik.dev/router/vite` → `qwikRouter()`    |
+| `createQwikCity()` (middleware)                                                                                                                   | `createQwikRouter()`                        |
+| `<QwikCityProvider>`                                                                                                                              | `<QwikRouterProvider>`                      |
+| `@qwik-city-plan` (virtual module)                                                                                                                | `@qwik-router-config`                       |
+| `jsxImportSource: "@builder.io/qwik"`                                                                                                             | `jsxImportSource: "@qwik.dev/core"`         |
+| `qwikVite()` from `/optimizer`                                                                                                                    | **unchanged** (still `qwikVite`)            |
+| `renderToStream`, `renderToString` (`/server`)                                                                                                    | **unchanged**                               |
+| `routeLoader$`, `useLocation`, `DocumentHead`, `RequestHandler`, `RouterOutlet`                                                                   | **unchanged** (now from `@qwik.dev/router`) |
+| Core APIs: `component$`, `useSignal`, `useStore`, `useComputed$`, `useTask$`, `useVisibleTask$`, `useStyles$`, `$`, `Slot`, `JSXOutput`, `Signal` | **unchanged** (from `@qwik.dev/core`)       |
 
 ### v2 behavioral gotchas already handled here (don't undo them)
 
 - **Service worker removed.** v2 uses `<link rel="modulepreload">` for prefetching. The
   `src/routes/service-worker.ts` files were deleted. Keep `<ServiceWorkerRegister />` in
-  `root.tsx` — in v2 it exists only to *unregister* stale service workers from old visitors.
+  `root.tsx` — in v2 it exists only to _unregister_ stale service workers from old visitors.
 - **`createQwikRouter()` no longer takes `qwikCityPlan`/`qwikRouterConfig`.** The router config is
   imported internally via `await import("@qwik-router-config")`. Pass only `{ render }` (and
   `manifest` where applicable). Don't add a `qwikRouterConfig` option back.
@@ -51,7 +51,7 @@ The codebase was migrated from Qwik 1.x to **Qwik 2.0 beta** (`@qwik.dev/core` /
 - **Vite is pinned to v7** (Qwik's peer range is `>=6 <9`, so v8 installs, but **do not use it**).
   Vite 8 switches the bundler to **Rolldown**, and under Rolldown the Qwik optimizer fails to
   register its internal runtime QRL symbols (`_run`, `_task`) in the **production** build. The
-  result is `QWIK ERROR Code(Q14)` (`qrlMissingChunk`) during production SSR for *every* event
+  result is `QWIK ERROR Code(Q14)` (`qrlMissingChunk`) during production SSR for _every_ event
   handler that captures lexical scope — i.e. `pnpm preview` and any real deploy throw, while
   `pnpm dev` works (dev has a `_`-symbol fallback). e2e tests also pass because Playwright runs
   against `pnpm dev`. **Keep `vite` on `^7` in the catalog** until Qwik v2 fixes Rolldown support.

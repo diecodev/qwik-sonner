@@ -65,6 +65,17 @@ export const Toast = component$<ToastProps>((props) => {
   const removed = useSignal<boolean>(false);
   const swiping = useSignal<boolean>(false);
   const swipeOut = useSignal<boolean>(false);
+  // Final swipe offsets, committed into the rendered `style` object when the
+  // swipe-out animation starts. During the drag we set `--swipe-amount-x/y`
+  // imperatively (no re-render → smooth), but flipping `swipeOut`/`removed`
+  // re-renders the `<li>`, and Qwik rewrites the whole `style` attribute from
+  // the object — wiping any imperative custom props. The `swipe-out-*`
+  // keyframes read `var(--swipe-amount-x)` with no fallback, so a wiped var
+  // makes `transform` invalid (→ `none`): the toast snaps back to its initial
+  // position and fades in place instead of sliding off. Keeping the committed
+  // values in the object survives that re-render.
+  const committedSwipeX = useSignal<number | null>(null);
+  const committedSwipeY = useSignal<number | null>(null);
   const isSwiped = useSignal<boolean>(false);
   const offsetBeforeRemove = useSignal<number>(0);
   const initialHeight = useSignal<number>(0);
@@ -363,6 +374,12 @@ export const Toast = component$<ToastProps>((props) => {
         "--z-index": toasts.length - index,
         "--offset": `${removed.value ? offsetBeforeRemove.value : offset.value}px`,
         "--initial-height": expandByDefault ? "auto" : `${initialHeight.value}px`,
+        ...(committedSwipeX.value !== null
+          ? { "--swipe-amount-x": `${committedSwipeX.value}px` }
+          : {}),
+        ...(committedSwipeY.value !== null
+          ? { "--swipe-amount-y": `${committedSwipeY.value}px` }
+          : {}),
         ...style,
         ...toast.style,
       }}
@@ -434,6 +451,12 @@ export const Toast = component$<ToastProps>((props) => {
             } else {
               swipeOutDirection.value = swipeAmountY > 0 ? "down" : "up";
             }
+
+            // Persist the release offsets so they survive the re-render that
+            // turns on `swipeOut` (Qwik rewrites the `style` attribute from the
+            // object and would otherwise drop the imperatively-set vars).
+            committedSwipeX.value = swipeAmountX;
+            committedSwipeY.value = swipeAmountY;
 
             deleteToast();
             swipeOut.value = true;

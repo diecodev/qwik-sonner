@@ -11,7 +11,7 @@ export const Other = component$(
         snippet: `toast.success('Event has been created')`,
         action: $(() => {
           toast.success("Event has been created");
-          richColors.value !== true && (richColors.value = true);
+          if (richColors.value !== true) richColors.value = true;
         }),
       },
       {
@@ -19,7 +19,7 @@ export const Other = component$(
         snippet: `toast.error('Event has not been created')`,
         action: $(() => {
           toast.error("Event has not been created");
-          richColors.value !== true && (richColors.value = true);
+          if (richColors.value !== true) richColors.value = true;
         }),
       },
       {
@@ -27,7 +27,7 @@ export const Other = component$(
         snippet: `toast.info('Be at the area 10 minutes before the event time')`,
         action: $(() => {
           toast.info("Be at the area 10 minutes before the event time");
-          richColors.value !== true && (richColors.value = true);
+          if (richColors.value !== true) richColors.value = true;
         }),
       },
       {
@@ -35,7 +35,7 @@ export const Other = component$(
         snippet: `toast.warning('Event start time cannot be earlier than 8am')`,
         action: $(() => {
           toast.warning("Event start time cannot be earlier than 8am");
-          richColors.value !== true && (richColors.value = true);
+          if (richColors.value !== true) richColors.value = true;
         }),
       },
       {

@@ -100,8 +100,8 @@ pnpm install              # install all workspaces (build scripts for esbuild/sh
 # Library (root)
 pnpm build.types          # tsc --emitDeclarationOnly -> lib-types/  (typecheck)
 pnpm build.lib            # single-pass vite lib build -> lib/ (styled + headless, ESM-only, shared chunk)
-pnpm lint                 # oxlint src (loads eslint-plugin-qwik via jsPlugins)
-pnpm fmt                  # oxfmt
+pnpm lint                 # oxlint . (whole repo: src + website + test; loads eslint-plugin-qwik via jsPlugins)
+pnpm fmt                  # oxfmt . (whole repo)
 
 # Website (cd website)
 pnpm build.types          # tsc --noEmit (typecheck)

@@ -2,6 +2,6 @@
   "recommendations": [
     "oxc.oxc-vscode",
     "seatonjiang.gitmoji-vscode",
-    "vivaxy.vscode-conventional-commits",
+    "vivaxy.vscode-conventional-commits"
   ]
 }

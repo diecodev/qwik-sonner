@@ -1,15 +1,7 @@
 {
   "name": "test",
-  "description": "Demo App with Routing built-in (recommended)",
-  "engines": {
-    "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
-  },
-  "engines-annotation": "Mostly required by sharp which needs a Node-API v9 compatible runtime",
   "private": true,
-  "trustedDependencies": [
-    "sharp"
-  ],
-  "trustedDependencies-annotation": "Needed for bun to allow running install scripts",
+  "description": "Demo App with Routing built-in (recommended)",
   "type": "module",
   "scripts": {
     "build": "qwik build",
@@ -31,12 +23,20 @@
     "@qwik.dev/router": "catalog:",
     "@types/node": "catalog:",
     "eslint-plugin-qwik": "catalog:",
-    "oxlint": "catalog:",
     "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "qwik-sonner": "workspace:*",
     "typescript": "catalog:",
     "undici": "catalog:",
     "vite": "catalog:",
     "vite-tsconfig-paths": "catalog:"
-  }
+  },
+  "engines": {
+    "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
+  },
+  "engines-annotation": "Mostly required by sharp which needs a Node-API v9 compatible runtime",
+  "trustedDependencies": [
+    "sharp"
+  ],
+  "trustedDependencies-annotation": "Needed for bun to allow running install scripts"
 }

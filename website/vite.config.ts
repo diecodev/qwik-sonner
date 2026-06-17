@@ -2,7 +2,7 @@ import { defineConfig, type UserConfig } from "vite";
 import { qwikVite } from "@qwik.dev/core/optimizer";
 import { qwikRouter } from "@qwik.dev/router/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig((): UserConfig => {
   return {

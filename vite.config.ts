@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import { qwikVite } from "@qwik.dev/core/optimizer";
 import tsconfigPaths from "vite-tsconfig-paths";
 import pkg from "./package.json";
-import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from "@tailwindcss/vite";
 import { qwikRouter } from "@qwik.dev/router/vite";
 
 type DepMap = Record<string, string>;

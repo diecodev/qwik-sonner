@@ -1,14 +1,15 @@
 {
   "name": "qwik-sonner",
   "version": "1.0.3",
+  "private": false,
   "description": "An opinionated toast component for Qwik.",
   "keywords": [
     "qwik",
     "qwik library",
-    "typescript",
-    "toast",
     "qwik sonner",
-    "sonner"
+    "sonner",
+    "toast",
+    "typescript"
   ],
   "author": {
     "name": "diecodev",
@@ -24,15 +25,15 @@
     "type": "git",
     "url": "git+https://github.com/diecodev/qwik-sonner.git"
   },
-  "main": "./lib/index.qwik.mjs",
-  "module": "./lib/index.qwik.mjs",
-  "qwik": "./lib/index.qwik.mjs",
-  "types": "./lib-types/index.d.ts",
-  "sideEffects": false,
   "files": [
     "lib",
     "lib-types"
   ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./lib/index.qwik.mjs",
+  "module": "./lib/index.qwik.mjs",
+  "types": "./lib-types/index.d.ts",
   "exports": {
     ".": {
       "types": "./lib-types/index.d.ts",
@@ -43,11 +44,6 @@
       "import": "./lib/headless.qwik.mjs"
     }
   },
-  "engines": {
-    "node": ">=22.x"
-  },
-  "private": false,
-  "type": "module",
   "scripts": {
     "build": "qwik build",
     "build.lib": "vite build --mode lib",
@@ -56,7 +52,7 @@
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "fmt": "oxfmt",
     "fmt.check": "oxfmt --check",
-    "lint": "oxlint src",
+    "lint": "oxlint",
     "release": "bumpp --commit --tag --push",
     "prepublishOnly": "pnpm run build.types && pnpm run build.lib",
     "start": "vite --open --mode ssr",
@@ -64,22 +60,26 @@
     "test:ui": "playwright test --ui",
     "qwik": "qwik"
   },
-  "peerDependencies": {
-    "@qwik.dev/core": "^2.0.0-beta.37"
-  },
   "devDependencies": {
-    "@tailwindcss/vite": "catalog:",
     "@playwright/test": "^1.61.0",
     "@qwik.dev/core": "catalog:",
     "@qwik.dev/router": "catalog:",
+    "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "bumpp": "11.1.0",
     "eslint-plugin-qwik": "catalog:",
-    "oxlint": "catalog:",
     "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "typescript": "catalog:",
     "undici": "catalog:",
     "vite": "catalog:",
     "vite-tsconfig-paths": "catalog:"
-  }
+  },
+  "peerDependencies": {
+    "@qwik.dev/core": "^2.0.0-beta.37"
+  },
+  "engines": {
+    "node": ">=22.x"
+  },
+  "qwik": "./lib/index.qwik.mjs"
 }

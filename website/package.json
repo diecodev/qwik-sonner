@@ -1,13 +1,7 @@
 {
   "name": "website",
-  "description": "Demo App with Routing built-in (recommended)",
-  "engines": {
-    "node": ">=15.0.0"
-  },
   "private": true,
-  "trustedDependencies": [
-    "sharp"
-  ],
+  "description": "Demo App with Routing built-in (recommended)",
   "type": "module",
   "scripts": {
     "build": "qwik build",
@@ -29,18 +23,24 @@
   "devDependencies": {
     "@qwik.dev/core": "catalog:",
     "@qwik.dev/router": "catalog:",
+    "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "autoprefixer": "10.5.0",
     "copy-to-clipboard": "4.0.2",
     "eslint-plugin-qwik": "catalog:",
-    "oxlint": "catalog:",
     "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "qwik-sonner": "workspace:*",
     "tailwindcss": "4.3.1",
     "typescript": "catalog:",
     "undici": "catalog:",
     "vite": "catalog:",
-    "vite-tsconfig-paths": "catalog:",
-    "@tailwindcss/vite": "catalog:"
-  }
+    "vite-tsconfig-paths": "catalog:"
+  },
+  "engines": {
+    "node": ">=15.0.0"
+  },
+  "trustedDependencies": [
+    "sharp"
+  ]
 }

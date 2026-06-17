@@ -11,9 +11,7 @@ export const Hero = () => {
         <div class={styles.toast} />
       </div>
       <h1 class={styles.heading}>Qwik Sonner</h1>
-      <p style={{ marginTop: 0, fontSize: 18 }}>
-        An opinionated toast component for Qwik.
-      </p>
+      <p style={{ marginTop: 0, fontSize: 18 }}>An opinionated toast component for Qwik.</p>
       <div class={styles.buttons}>
         <button
           data-primary=""
@@ -26,11 +24,7 @@ export const Hero = () => {
         >
           Render a toast
         </button>
-        <a
-          class={styles.button}
-          href="https://github.com/diecodev/qwik-sonner"
-          target="_blank"
-        >
+        <a class={styles.button} href="https://github.com/diecodev/qwik-sonner" target="_blank">
           GitHub
         </a>
       </div>

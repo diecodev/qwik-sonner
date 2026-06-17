@@ -11,8 +11,8 @@ export const Types = component$(() => {
     <div>
       <h2>Types</h2>
       <p>
-        You can customize the type of toast you want to render, and pass an
-        options object as the second argument.
+        You can customize the type of toast you want to render, and pass an options object as the
+        second argument.
       </p>
       <div class="buttons">
         {allTypes.map((type) => (
@@ -59,16 +59,12 @@ const allTypes = [
   {
     name: "Info",
     snippet: `toast.info('Be at the area 10 minutes before the event time')`,
-    action: $(() =>
-      toast.info("Be at the area 10 minutes before the event time"),
-    ),
+    action: $(() => toast.info("Be at the area 10 minutes before the event time")),
   },
   {
     name: "Warning",
     snippet: `toast.warning('Event start time cannot be earlier than 8am')`,
-    action: $(() =>
-      toast.warning("Event start time cannot be earlier than 8am"),
-    ),
+    action: $(() => toast.warning("Event start time cannot be earlier than 8am")),
   },
   {
     name: "Error",

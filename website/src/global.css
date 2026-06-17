@@ -18,9 +18,13 @@
   --gray12: hsl(0, 0%, 9%);
   --hover: rgb(40, 40, 40);
   --border-radius: 6px;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial,
-    Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  --font-mono: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue,
+    Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
+    Noto Color Emoji;
+  --font-mono:
+    "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New,
+    monospace;
   --shiki-token-comment: var(--gray11) !important;
 }
 
@@ -56,7 +60,10 @@ body {
   font-family: var(--font-sans);
   cursor: pointer;
   color: var(--gray12);
-  transition: border-color 200ms, background 200ms, box-shadow 200ms;
+  transition:
+    border-color 200ms,
+    background 200ms,
+    box-shadow 200ms;
   margin: 1.5rem 0 0;
 }
 
@@ -69,21 +76,31 @@ body {
   border-color: var(--gray4);
 }
 
-.button[data-active='true'] {
+.button[data-active="true"] {
   background: var(--gray3);
   border-color: var(--gray7);
 }
 
 .button:focus-visible {
   outline: none;
-  box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.06), 0px 1px 0px 0px rgba(0, 0, 0, 0.08),
-    0px 2px 2px 0px rgba(0, 0, 0, 0.04), 0px 3px 3px 0px rgba(0, 0, 0, 0.02), 0px 4px 4px 0px rgba(0, 0, 0, 0.01),
+  box-shadow:
+    0px 0px 0px 1px rgba(0, 0, 0, 0.06),
+    0px 1px 0px 0px rgba(0, 0, 0, 0.08),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.04),
+    0px 3px 3px 0px rgba(0, 0, 0, 0.02),
+    0px 4px 4px 0px rgba(0, 0, 0, 0.01),
     0 0 0 2px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 600px) {
   .buttons {
-    mask-image: linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent);
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 16px,
+      black calc(100% - 16px),
+      transparent
+    );
   }
 }
 
@@ -101,12 +118,12 @@ pre {
   border: 1px solid var(--gray4);
 }
 
-button[title='Copy code'] {
+button[title="Copy code"] {
   background: var(--gray2);
   color: var(--gray10);
 }
 
-main>p {
+main > p {
   line-height: 1.5rem !important;
   margin-top: 1rem !important;
 }
@@ -115,7 +132,7 @@ main>p {
   color: var(--gray12) !important;
 }
 
-div>a:hover {
+div > a:hover {
   color: var(--gray12) !important;
 }
 
@@ -123,6 +140,6 @@ p {
   color: var(--gray12) !important;
 }
 
-footer>div {
+footer > div {
   padding: 32px 24px !important;
 }

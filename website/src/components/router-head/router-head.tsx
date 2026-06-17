@@ -15,14 +15,8 @@ export const RouterHead = component$(() => {
       <meta name="og:title" content="Qwik Sonner" />
 
       {/* Description */}
-      <meta
-        name="description"
-        content="An opinionated toast component for Qwik."
-      />
-      <meta
-        name="og:description"
-        content="An opinionated toast component for Qwik."
-      />
+      <meta name="description" content="An opinionated toast component for Qwik." />
+      <meta name="og:description" content="An opinionated toast component for Qwik." />
 
       {/* Image */}
       <meta name="twitter:image" content={ogImage} />
@@ -42,11 +36,7 @@ export const RouterHead = component$(() => {
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content="#ffffff" />
       <link rel="shortcut icon" href="favicon.ico" />
-      <link
-        rel="apple-touch-icon"
-        sizes="180x180"
-        href="apple-touch-icon.png"
-      />
+      <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
 
       <link rel="canonical" href={loc.url.href} />
 

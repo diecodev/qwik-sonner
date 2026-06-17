@@ -48,7 +48,13 @@ The codebase was migrated from Qwik 1.x to **Qwik 2.0 beta** (`@qwik.dev/core` /
   `manifest` where applicable). Don't add a `qwikRouterConfig` option back.
 - **`isSignal(x)` takes no type argument** in v2 (was `isSignal<T>(x)` in v1).
 - **`tsconfig` uses `moduleResolution: "bundler"`** and `jsxImportSource: "@qwik.dev/core"`.
-- **Vite is v8** (peer range `>=6 <9`; Vite 8 uses Rolldown). Don't downgrade below 6.
+- **Vite is pinned to v7** (Qwik's peer range is `>=6 <9`, so v8 installs, but **do not use it**).
+  Vite 8 switches the bundler to **Rolldown**, and under Rolldown the Qwik optimizer fails to
+  register its internal runtime QRL symbols (`_run`, `_task`) in the **production** build. The
+  result is `QWIK ERROR Code(Q14)` (`qrlMissingChunk`) during production SSR for *every* event
+  handler that captures lexical scope — i.e. `pnpm preview` and any real deploy throw, while
+  `pnpm dev` works (dev has a `_`-symbol fallback). e2e tests also pass because Playwright runs
+  against `pnpm dev`. **Keep `vite` on `^7` in the catalog** until Qwik v2 fixes Rolldown support.
 
 When in doubt about a v2 API, check the installed type defs under
 `node_modules/.pnpm/@qwik.dev+*/node_modules/@qwik.dev/{core,router}/**/*.d.ts` — they are
@@ -94,8 +100,8 @@ pnpm install              # install all workspaces (build scripts for esbuild/sh
 # Library (root)
 pnpm build.types          # tsc --emitDeclarationOnly -> lib-types/  (typecheck)
 pnpm build.lib            # single-pass vite lib build -> lib/ (styled + headless, ESM-only, shared chunk)
-pnpm lint                 # eslint src
-pnpm fmt                  # prettier --write
+pnpm lint                 # oxlint src (loads eslint-plugin-qwik via jsPlugins)
+pnpm fmt                  # oxfmt
 
 # Website (cd website)
 pnpm build.types          # tsc --noEmit (typecheck)
@@ -126,7 +132,10 @@ pass at the root, and `pnpm build.types` passes in `website/` and `test/`.
 
 - **Package manager: pnpm only** (workspace protocol `workspace:*` links the site/test to the lib).
 - TypeScript is `strict`. Keep it green; don't add `any` to silence errors — fix the type.
-- Formatting is Prettier; linting is ESLint + `eslint-plugin-qwik`. Run `pnpm fmt` before finishing.
+- Formatting is **oxfmt**; linting is **oxlint**, which loads `eslint-plugin-qwik` through oxlint's
+  `jsPlugins` (see `.oxlintrc.json`). Run `pnpm fmt` before finishing. Note: oxlint's JS-plugin
+  runtime has no type information, so the type-aware Qwik rules `valid-lexical-scope` and
+  `use-async-top` are intentionally omitted — TypeScript `strict` still covers types.
 - Don't edit anything in `lib/`, `lib-types/`, `dist/`, or `tmp/` — they are build output.
 - Keep `package.json#exports` intact (both `.` and `./headless`); breaking it breaks consumers.
 - This is a published package — call out any change that affects the public API or build output.

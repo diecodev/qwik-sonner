@@ -44,7 +44,7 @@
     }
   },
   "engines": {
-    "node": "22.x"
+    "node": ">=22.x"
   },
   "private": false,
   "type": "module",
@@ -54,32 +54,32 @@
     "build.types": "tsc --emitDeclarationOnly -p tsconfig.lib.json",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
-    "fmt": "prettier --write .",
-    "fmt.check": "prettier --check .",
-    "lint": "eslint \"src/**/*.ts*\"",
+    "fmt": "oxfmt",
+    "fmt.check": "oxfmt --check",
+    "lint": "oxlint src",
     "release": "bumpp --commit --tag --push",
     "prepublishOnly": "pnpm run build.types && pnpm run build.lib",
     "start": "vite --open --mode ssr",
     "test": "playwright test",
+    "test:ui": "playwright test --ui",
     "qwik": "qwik"
   },
   "peerDependencies": {
     "@qwik.dev/core": "^2.0.0-beta.37"
   },
   "devDependencies": {
-    "@qwik.dev/core": "2.0.0-beta.37",
-    "@playwright/test": "^1.38.1",
-    "@types/eslint": "^8.56.10",
-    "@types/node": "^20.12.7",
-    "@typescript-eslint/eslint-plugin": "^7.7.1",
-    "@typescript-eslint/parser": "^7.7.1",
-    "bumpp": "9.4.0",
-    "eslint-plugin-qwik": "2.0.0-beta.37",
-    "eslint": "^8.57.0",
-    "prettier": "^3.2.5",
-    "typescript": "5.4.5",
-    "undici": "*",
-    "vite": "^8.0.16",
-    "vite-tsconfig-paths": "^6.1.1"
+    "@tailwindcss/vite": "catalog:",
+    "@playwright/test": "^1.61.0",
+    "@qwik.dev/core": "catalog:",
+    "@qwik.dev/router": "catalog:",
+    "@types/node": "catalog:",
+    "bumpp": "11.1.0",
+    "eslint-plugin-qwik": "catalog:",
+    "oxlint": "catalog:",
+    "oxfmt": "catalog:",
+    "typescript": "catalog:",
+    "undici": "catalog:",
+    "vite": "catalog:",
+    "vite-tsconfig-paths": "catalog:"
   }
 }

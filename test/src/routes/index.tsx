@@ -18,6 +18,8 @@ export default component$(() => {
   const isFinally = useSignal<boolean>(false);
   const showAutoClose = useSignal<boolean>(false);
   const showDismiss = useSignal<boolean>(false);
+  const showAriaLabels = useSignal<boolean>(false);
+  const unwrapError = useSignal<string>("");
 
   const position = (params.get("position") as any) ?? "bottom-right";
   const dir = (params.get("dir") as any) ?? "auto";
@@ -110,6 +112,98 @@ export default component$(() => {
         Render Promise Toast
       </button>
       <button
+        data-testid="extended-promise"
+        class="button"
+        onClick$={() =>
+          toast.promise(
+            new Promise((resolve) => {
+              setTimeout(() => resolve({ name: "Sonner" }), 2000);
+            }),
+            {
+              loading: "Loading...",
+              success: $((data: any) => ({
+                message: `${data.name} toast has been added`,
+                description: "Custom description for the Success state",
+              })),
+              error: {
+                message: "An error occurred",
+                action: {
+                  label: "Retry",
+                  onClick$: $(() => console.log("retrying")),
+                },
+              },
+              description: "Global description",
+            }
+          )
+        }
+      >
+        Extended Promise Toast
+      </button>
+      <button
+        data-testid="extended-promise-error"
+        class="button"
+        onClick$={() =>
+          toast.promise(
+            new Promise((_, reject) => {
+              setTimeout(() => reject(new Error("Simulated error")), 2000);
+            }),
+            {
+              loading: "Loading...",
+              success: $((data: any) => ({
+                message: `${data.name} toast has been added`,
+                description: "Custom description for the Success state",
+              })),
+              error: {
+                message: "An error occurred",
+                action: {
+                  label: "Retry",
+                  onClick$: $(() => console.log("retrying")),
+                  preventDefault: true,
+                },
+              },
+              description: "Global description",
+            }
+          )
+        }
+      >
+        Extended Promise Error Toast
+      </button>
+      <button
+        data-testid="error-promise"
+        class="button"
+        onClick$={() => {
+          const whatWillHappen = $(async () => {
+            throw new Error("Not implemented");
+          });
+
+          toast.promise(whatWillHappen, {
+            loading: "Saving project...",
+            success: $((result: any) =>
+              result?.ok ? "Project saved" : `${result?.error}`
+            ),
+            error: $((e: any) => `Error Raise: ${e}`),
+          });
+        }}
+      >
+        Error Promise Toast
+      </button>
+      <button
+        data-testid="unwrap-reject"
+        class="button"
+        onClick$={async () => {
+          const rejected = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Promise rejected")), 100)
+          );
+          try {
+            await toast.promise(rejected, {})?.unwrap();
+          } catch (e) {
+            unwrapError.value = (e as Error).message;
+          }
+        }}
+      >
+        Unwrap Rejecting Promise
+      </button>
+      <button
         data-testid="custom"
         class="button"
         onClick$={() =>
@@ -127,6 +221,25 @@ export default component$(() => {
         }
       >
         Render Custom Toast
+      </button>
+      <button
+        data-testid="custom-with-empty-id"
+        class="button"
+        onClick$={() =>
+          toast.custom(
+            (t) => (
+              <div>
+                <h1>jsx</h1>
+                <button data-dismiss onClick$={() => toast.dismiss(t)}>
+                  Dismiss
+                </button>
+              </div>
+            ),
+            { id: undefined }
+          )
+        }
+      >
+        Render Custom Toast with empty id
       </button>
       <button
         data-testid="custom-cancel-button-toast"
@@ -173,7 +286,7 @@ export default component$(() => {
           })
         }
       >
-        Render Toast With onAutoClose callback
+        Dismiss toast callback
       </button>
       <button
         data-testid="non-dismissible-toast"
@@ -202,6 +315,23 @@ export default component$(() => {
         Updated Toast
       </button>
       <button
+        data-testid="update-toast-duration"
+        class="button"
+        onClick$={() => {
+          const toastId = toast("My Unupdated Toast, Updated After 3 Seconds", {
+            duration: 10000,
+          });
+          setTimeout(() => {
+            toast("My Updated Toast, Close After 1 Second", {
+              id: toastId,
+              duration: 1000,
+            });
+          }, 3000);
+        }}
+      >
+        Updated Toast Duration
+      </button>
+      <button
         data-testid="string-description"
         class="button"
         onClick$={() =>
@@ -221,16 +351,81 @@ export default component$(() => {
       >
         ReactNode Description
       </button>
+      <button
+        class="button"
+        onClick$={() => {
+          showAriaLabels.value = true;
+          toast("Toast with custom ARIA labels", {
+            closeButton: true,
+            onAutoClose$: $(() => {
+              showAriaLabels.value = false;
+            }),
+          });
+        }}
+      >
+        With custom ARIA labels
+      </button>
+      <button
+        data-testid="toast-secondary"
+        class="button"
+        onClick$={() =>
+          toast("Secondary Toaster Toast", { toasterId: "secondary" })
+        }
+      >
+        Render Toast in Secondary Toaster
+      </button>
+      <button
+        data-testid="toast-global"
+        class="button"
+        onClick$={() => toast("Global Toaster Toast")}
+      >
+        Render Toast in Global Toaster
+      </button>
+      <button
+        data-testid="testid-toast-button"
+        class="button"
+        onClick$={() =>
+          toast("Toast with test ID", { testId: "my-test-toast" })
+        }
+      >
+        Toast with testId
+      </button>
+      <button
+        data-testid="testid-promise-toast-button"
+        class="button"
+        onClick$={() =>
+          toast.promise(promise, {
+            loading: "Loading...",
+            success: "Loaded",
+            error: "Error",
+            testId: "promise-test-toast",
+          })
+        }
+      >
+        Promise Toast with testId
+      </button>
       {showAutoClose.value ? <div data-testid="auto-close-el" /> : null}
       {showDismiss.value ? <div data-testid="dismiss-el" /> : null}
+      {unwrapError.value ? (
+        <div data-testid="unwrap-error">{unwrapError.value}</div>
+      ) : null}
       <Toaster
         position={position}
         toastOptions={{
           actionButtonStyle: { backgroundColor: "rgb(219, 239, 255)" },
           cancelButtonStyle: { backgroundColor: "rgb(254, 226, 226)" },
+          closeButtonAriaLabel: showAriaLabels.value
+            ? "Yeet the notice"
+            : undefined,
         }}
         theme={theme.value}
         dir={dir}
+        containerAriaLabel={showAriaLabels.value ? "Notices" : undefined}
+      />
+      <Toaster
+        id="secondary"
+        position="top-left"
+        toastOptions={{ class: "secondary-toaster" }}
       />
     </>
   );

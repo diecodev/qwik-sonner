@@ -1,10 +1,8 @@
 import {
   ClassList,
-  Component,
   CSSProperties,
   JSXOutput,
   QRL,
-  QRLEventHandlerMulti,
   Signal,
 } from "@qwik.dev/core";
 
@@ -20,14 +18,35 @@ export type ToastTypes =
 
 export type PromiseT<Data = any> = Promise<Data> | (() => Promise<Data>);
 
+/**
+ * A node, or a (possibly async) function returning a node. Functions may be
+ * plain (invoked during client render) or QRLs (resolved in `toast.promise`).
+ */
+export type PromiseTResult<Data = any> =
+  | string
+  | JSXOutput
+  | QRL<(data: Data) => JSXOutput | string | Promise<JSXOutput | string>>
+  | ((data: Data) => JSXOutput | string | Promise<JSXOutput | string>);
+
+export interface PromiseIExtendedResult extends ExternalToast {
+  message: string | JSXOutput;
+}
+
+export type PromiseTExtendedResult<Data = any> =
+  | PromiseIExtendedResult
+  | QRL<
+      (data: Data) => PromiseIExtendedResult | Promise<PromiseIExtendedResult>
+    >
+  | ((data: Data) => PromiseIExtendedResult | Promise<PromiseIExtendedResult>);
+
 export type PromiseExternalToast = Omit<ExternalToast, "description">;
 
 export type PromiseData<ToastData = any> = PromiseExternalToast & {
-  loading?: string;
-  success?: string | JSXOutput | QRL<(data: ToastData) => JSXOutput | string>;
-  error?: string | QRL<(error: any) => JSXOutput | string> | JSXOutput;
-  description?: string | QRL<(data: any) => JSXOutput | string> | JSXOutput;
-  finally?: () => void | Promise<void>;
+  loading?: string | JSXOutput;
+  success?: PromiseTResult<ToastData> | PromiseTExtendedResult<ToastData>;
+  error?: PromiseTResult | PromiseTExtendedResult;
+  description?: PromiseTResult;
+  finally?: QRL<() => void | Promise<void>> | (() => void | Promise<void>);
 };
 
 export interface ToastClassnames {
@@ -49,30 +68,37 @@ export interface ToastClassnames {
 }
 
 export interface ToastIcons {
-  success?: Component;
-  info?: Component;
-  warning?: Component;
-  error?: Component;
-  loading?: Component;
+  success?: JSXOutput;
+  info?: JSXOutput;
+  warning?: JSXOutput;
+  error?: JSXOutput;
+  loading?: JSXOutput;
+  close?: JSXOutput;
 }
 
-interface Action {
-  label: string;
+export interface Action {
+  label: string | JSXOutput;
   onClick$: QRL<(ev: PointerEvent, target: HTMLButtonElement) => any>;
   actionButtonStyle?: CSSProperties;
+  /**
+   * Qwik adaptation of sonner's `event.preventDefault()` behaviour: when `true`
+   * the toast is not dismissed after the action runs.
+   */
   preventDefault?: boolean;
 }
 
 export interface ToastT {
   id: number | string;
-  title?: string | JSXOutput;
+  toasterId?: string;
+  title?: string | JSXOutput | (() => JSXOutput | string);
   type?: ToastTypes;
-  icon?: Component;
+  icon?: JSXOutput;
   jsx?: JSXOutput;
+  richColors?: boolean;
   invert?: boolean;
   closeButton?: boolean;
   dismissible?: boolean;
-  description?: JSXOutput | string;
+  description?: string | JSXOutput | (() => JSXOutput | string);
   duration?: number;
   delete?: boolean;
   important?: boolean;
@@ -89,6 +115,7 @@ export interface ToastT {
   classes?: ToastClassnames;
   descriptionClass?: string;
   position?: Position;
+  testId?: string;
 }
 
 export function isAction(action: Action | JSXOutput): action is Action {
@@ -105,6 +132,9 @@ export type Position =
   | "bottom-right"
   | "top-center"
   | "bottom-center";
+
+export type SwipeDirection = "top" | "right" | "bottom" | "left";
+
 export interface HeightT {
   height: number;
   toastId: number | string;
@@ -121,9 +151,22 @@ interface ToastOptions {
   duration?: number;
   unstyled?: boolean;
   classes?: ToastClassnames;
+  closeButtonAriaLabel?: string;
+  toasterId?: string;
 }
 
+export type Offset =
+  | {
+      top?: string | number;
+      right?: string | number;
+      bottom?: string | number;
+      left?: string | number;
+    }
+  | string
+  | number;
+
 export interface ToasterProps {
+  id?: string;
   invert?: Signal<boolean> | boolean;
   theme?: "light" | "dark" | "system";
   position?: Position;
@@ -137,8 +180,10 @@ export interface ToasterProps {
   toastOptions?: ToastOptions;
   class?: string;
   style?: CSSProperties;
-  offset?: string | number;
+  offset?: Offset;
+  mobileOffset?: Offset;
   dir?: "rtl" | "ltr" | "auto";
+  swipeDirections?: SwipeDirection[];
   /**
    * @deprecated Please use the `icons` prop instead:
    * ```jsx
@@ -147,9 +192,15 @@ export interface ToasterProps {
    * />
    * ```
    */
-  loadingIcon?: Component;
+  loadingIcon?: JSXOutput;
   icons?: ToastIcons;
+  customAriaLabel?: string;
   containerAriaLabel?: string;
+  /**
+   * @deprecated In parity with sonner 2.x the timer always pauses while the
+   * page is hidden; this prop is accepted for backwards compatibility but no
+   * longer changes behaviour.
+   */
   pauseWhenPageIsHidden?: boolean;
 }
 
@@ -157,10 +208,11 @@ export interface ToastProps {
   toast: ToastT;
   toasts: ToastT[];
   index: number;
+  swipeDirections?: SwipeDirection[];
   expanded: Signal<boolean>;
   invert: Signal<boolean> | boolean;
   heights: Signal<HeightT[]>;
-  removeToast: (toast: ToastT) => void;
+  removeToast: QRL<(toast: ToastT) => void>;
   gap: number;
   position: Position;
   visibleToasts: number;
@@ -174,11 +226,11 @@ export interface ToastProps {
   class?: string;
   unstyled?: boolean;
   descriptionClass?: string;
-  loadingIcon?: Component;
+  loadingIcon?: JSXOutput;
   classes?: ToastClassnames;
   icons?: ToastIcons;
   closeButtonAriaLabel?: string;
-  pauseWhenPageIsHidden: boolean;
+  defaultRichColors?: boolean;
 }
 
 export enum SwipeStateTypes {
@@ -199,4 +251,5 @@ export type ExternalToast = Omit<
   "id" | "type" | "title" | "jsx" | "delete" | "promise"
 > & {
   id?: number | string;
+  toasterId?: string;
 };

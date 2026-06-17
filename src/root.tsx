@@ -1,14 +1,21 @@
 import { $, component$, useSignal } from "@qwik.dev/core";
 import { Toaster } from "./lib/styled";
 import { toast } from "./lib";
+import { useQwikRouter } from "@qwik.dev/router";
 
 export default component$(() => {
+  useQwikRouter();
+
   const tId = useSignal<number>(0);
+
+  /**
+   * This is the root of a QwikRouter site. It contains the document's `<head>` and `<body>`. You can adjust them as you see fit.
+   */
 
   return (
     <>
       <head>
-        <meta charSet="utf-8" />
+        <meta charset="utf-8" />
         <title>Qwik Blank App</title>
       </head>
       <body>

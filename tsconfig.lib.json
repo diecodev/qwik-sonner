@@ -4,6 +4,7 @@
     "src/lib"
   ],
   "compilerOptions": {
-    "incremental": false
+    "incremental": false,
+    "rootDir": "src/lib"
   }
 }

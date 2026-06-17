@@ -1,5 +1,4 @@
-"use client";
-import { component$ } from "@qwik.dev/core";
+import { ClassList, component$ } from "@qwik.dev/core";
 import type { ToastTypes } from "./types";
 
 export const getAsset = (type: ToastTypes) => {
@@ -23,17 +22,22 @@ export const getAsset = (type: ToastTypes) => {
 
 const bars = Array(12).fill(0);
 
-export const Loader = component$(({ visible }: { visible: boolean }) => {
-  return (
-    <div class="qwik-loading-wrapper" data-visible={String(visible)}>
-      <div class="qwik-spinner">
-        {bars.map((_, i) => (
-          <div class="qwik-loading-bar" key={`spinner-bar-${i}`} />
-        ))}
+export const Loader = component$(
+  ({ visible, class: className }: { visible: boolean; class?: ClassList }) => {
+    return (
+      <div
+        class={["sonner-loading-wrapper", className]}
+        data-visible={String(visible)}
+      >
+        <div class="sonner-spinner">
+          {bars.map((_, i) => (
+            <div class="sonner-loading-bar" key={`spinner-bar-${i}`} />
+          ))}
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 const SuccessIcon = component$(() => (
   <svg
@@ -98,3 +102,20 @@ const ErrorIcon = component$(() => (
     />
   </svg>
 ));
+
+export const CloseIcon = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);

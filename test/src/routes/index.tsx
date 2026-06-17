@@ -3,18 +3,13 @@ import { useLocation, type DocumentHead } from "@qwik.dev/router";
 import { toast, Toaster } from "qwik-sonner";
 
 const promise = $(
-  () =>
-    new Promise((resolve) =>
-      setTimeout(() => resolve({ name: "Sonner" }), 2000)
-    )
+  () => new Promise((resolve) => setTimeout(() => resolve({ name: "Sonner" }), 2000)),
 );
 
 export default component$(() => {
   const params = useLocation().url.searchParams;
 
-  const theme = useSignal<"light" | "dark">(
-    (params.get("theme") as any) ?? "light"
-  );
+  const theme = useSignal<"light" | "dark">((params.get("theme") as any) ?? "light");
   const isFinally = useSignal<boolean>(false);
   const showAutoClose = useSignal<boolean>(false);
   const showDismiss = useSignal<boolean>(false);
@@ -29,23 +24,25 @@ export default component$(() => {
       <button
         data-testid="theme-button"
         class="button"
-        onClick$={() =>
-          (theme.value = theme.value === "light" ? "dark" : "light")
-        }
+        onClick$={() => {
+          console.log("Changing theme");
+          theme.value = theme.value === "light" ? "dark" : "light";
+          console.log("Theme changed to", theme.value);
+        }}
       >
         Change theme
       </button>
-      <button
-        data-testid="default-button"
-        class="button"
-        onClick$={() => toast("My Toast")}
-      >
+      <button data-testid="default-button" class="button" onClick$={() => toast("My Toast")}>
         Render Toast
       </button>
       <button
         data-testid="default-button-top"
         class="button"
-        onClick$={() => toast("My Toast")}
+        onClick$={() => {
+          toast("My Toast", {
+            position: "top-right",
+          });
+        }}
       >
         Render Toast Top
       </button>
@@ -56,11 +53,7 @@ export default component$(() => {
       >
         Render Success Toast
       </button>
-      <button
-        data-testid="error"
-        class="button"
-        onClick$={() => toast.error("My Error Toast")}
-      >
+      <button data-testid="error" class="button" onClick$={() => toast.error("My Error Toast")}>
         Render Error Toast
       </button>
       <button
@@ -92,7 +85,7 @@ export default component$(() => {
           })
         }
       >
-        Render Action Toast
+        Render Action Toast Prevented
       </button>
       <button
         data-testid="promise"
@@ -115,26 +108,21 @@ export default component$(() => {
         data-testid="extended-promise"
         class="button"
         onClick$={() =>
-          toast.promise(
-            new Promise((resolve) => {
-              setTimeout(() => resolve({ name: "Sonner" }), 2000);
-            }),
-            {
-              loading: "Loading...",
-              success: $((data: any) => ({
-                message: `${data.name} toast has been added`,
-                description: "Custom description for the Success state",
-              })),
-              error: {
-                message: "An error occurred",
-                action: {
-                  label: "Retry",
-                  onClick$: $(() => console.log("retrying")),
-                },
+          toast.promise(promise, {
+            loading: "Loading...",
+            success: $((data: any) => ({
+              message: `${data.name} toast has been added`,
+              description: "Custom description for the Success state",
+            })),
+            error: {
+              message: "An error occurred",
+              action: {
+                label: "Retry",
+                onClick$: $(() => console.log("retrying")),
               },
-              description: "Global description",
-            }
-          )
+            },
+            description: "Global description",
+          })
         }
       >
         Extended Promise Toast
@@ -162,7 +150,7 @@ export default component$(() => {
                 },
               },
               description: "Global description",
-            }
+            },
           )
         }
       >
@@ -178,9 +166,7 @@ export default component$(() => {
 
           toast.promise(whatWillHappen, {
             loading: "Saving project...",
-            success: $((result: any) =>
-              result?.ok ? "Project saved" : `${result?.error}`
-            ),
+            success: $((result: any) => (result?.ok ? "Project saved" : `${result?.error}`)),
             error: $((e: any) => `Error Raise: ${e}`),
           });
         }}
@@ -192,7 +178,7 @@ export default component$(() => {
         class="button"
         onClick$={async () => {
           const rejected = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Promise rejected")), 100)
+            setTimeout(() => reject(new Error("Promise rejected")), 100),
           );
           try {
             await toast.promise(rejected, {})?.unwrap();
@@ -210,10 +196,7 @@ export default component$(() => {
           toast.custom((t) => (
             <div>
               <h1>jsx</h1>
-              <button
-                data-testid="dismiss-button"
-                onClick$={() => toast.dismiss(t)}
-              >
+              <button data-testid="dismiss-button" onClick$={() => toast.dismiss(t)}>
                 Dismiss
               </button>
             </div>
@@ -235,7 +218,7 @@ export default component$(() => {
                 </button>
               </div>
             ),
-            { id: undefined }
+            { id: undefined },
           )
         }
       >
@@ -334,9 +317,7 @@ export default component$(() => {
       <button
         data-testid="string-description"
         class="button"
-        onClick$={() =>
-          toast("Custom Description", { description: "string description" })
-        }
+        onClick$={() => toast("Custom Description", { description: "string description" })}
       >
         String Description
       </button>
@@ -368,9 +349,7 @@ export default component$(() => {
       <button
         data-testid="toast-secondary"
         class="button"
-        onClick$={() =>
-          toast("Secondary Toaster Toast", { toasterId: "secondary" })
-        }
+        onClick$={() => toast("Secondary Toaster Toast", { toasterId: "secondary" })}
       >
         Render Toast in Secondary Toaster
       </button>
@@ -384,9 +363,7 @@ export default component$(() => {
       <button
         data-testid="testid-toast-button"
         class="button"
-        onClick$={() =>
-          toast("Toast with test ID", { testId: "my-test-toast" })
-        }
+        onClick$={() => toast("Toast with test ID", { testId: "my-test-toast" })}
       >
         Toast with testId
       </button>
@@ -406,27 +383,20 @@ export default component$(() => {
       </button>
       {showAutoClose.value ? <div data-testid="auto-close-el" /> : null}
       {showDismiss.value ? <div data-testid="dismiss-el" /> : null}
-      {unwrapError.value ? (
-        <div data-testid="unwrap-error">{unwrapError.value}</div>
-      ) : null}
+      {unwrapError.value ? <div data-testid="unwrap-error">{unwrapError.value}</div> : null}
       <Toaster
         position={position}
         toastOptions={{
           actionButtonStyle: { backgroundColor: "rgb(219, 239, 255)" },
           cancelButtonStyle: { backgroundColor: "rgb(254, 226, 226)" },
-          closeButtonAriaLabel: showAriaLabels.value
-            ? "Yeet the notice"
-            : undefined,
+          closeButtonAriaLabel: showAriaLabels.value ? "Yeet the notice" : undefined,
         }}
         theme={theme.value}
         dir={dir}
+        // duration={Number.POSITIVE_INFINITY}
         containerAriaLabel={showAriaLabels.value ? "Notices" : undefined}
       />
-      <Toaster
-        id="secondary"
-        position="top-left"
-        toastOptions={{ class: "secondary-toaster" }}
-      />
+      <Toaster id="secondary" position="top-left" toastOptions={{ class: "secondary-toaster" }} />
     </>
   );
 });

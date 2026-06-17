@@ -5,9 +5,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("Basic functionality", () => {
-  test("toast is rendered and disappears after the default timeout", async ({
-    page,
-  }) => {
+  test("toast is rendered and disappears after the default timeout", async ({ page }) => {
     await page.getByTestId("default-button").click();
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(1);
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(0);
@@ -15,22 +13,16 @@ test.describe("Basic functionality", () => {
 
   test("various toast types are rendered correctly", async ({ page }) => {
     await page.getByTestId("success").click();
-    await expect(
-      page.getByText("My Success Toast", { exact: true })
-    ).toHaveCount(1);
+    await expect(page.getByText("My Success Toast", { exact: true })).toHaveCount(1);
 
     await page.getByTestId("error").click();
-    await expect(page.getByText("My Error Toast", { exact: true })).toHaveCount(
-      1
-    );
+    await expect(page.getByText("My Error Toast", { exact: true })).toHaveCount(1);
 
     await page.getByTestId("action").click();
     await expect(page.locator("[data-button]")).toHaveCount(1);
   });
 
-  test("show correct toast content based on promise state", async ({
-    page,
-  }) => {
+  test("show correct toast content based on promise state", async ({ page }) => {
     await page.getByTestId("promise").click();
     await expect(page.getByText("Loading...")).toHaveCount(1);
     await expect(page.getByText("Loaded")).toHaveCount(1);
@@ -43,9 +35,7 @@ test.describe("Basic functionality", () => {
   // `.unwrap()` and surfaces the rejection into `[data-testid="unwrap-error"]`.
   test("handle toast promise rejections", async ({ page }) => {
     await page.getByTestId("unwrap-reject").click();
-    await expect(page.getByTestId("unwrap-error")).toHaveText(
-      "Promise rejected"
-    );
+    await expect(page.getByTestId("unwrap-error")).toHaveText("Promise rejected");
   });
 
   test("promise toast with extended configuration", async ({ page }) => {
@@ -56,9 +46,7 @@ test.describe("Basic functionality", () => {
 
     // Check success state with custom message and description
     await expect(page.getByText("Sonner toast has been added")).toHaveCount(1);
-    await expect(
-      page.getByText("Custom description for the Success state")
-    ).toHaveCount(1);
+    await expect(page.getByText("Custom description for the Success state")).toHaveCount(1);
 
     // Verify global description is not shown (overridden by success description)
     await expect(page.getByText("Global description")).toHaveCount(0);
@@ -86,9 +74,7 @@ test.describe("Basic functionality", () => {
     await page.getByTestId("error-promise").click();
 
     // Check error state shows the error message correctly
-    await expect(
-      page.getByText("Error Raise: Error: Not implemented")
-    ).toHaveCount(1);
+    await expect(page.getByText("Error Raise: Error: Not implemented")).toHaveCount(1);
   });
 
   test("render custom jsx in toast", async ({ page }) => {
@@ -123,10 +109,7 @@ test.describe("Basic functionality", () => {
     const dragBoundingBox = await toast.boundingBox();
 
     if (!dragBoundingBox) return;
-    await page.mouse.move(
-      dragBoundingBox.x + dragBoundingBox.width / 2,
-      dragBoundingBox.y
-    );
+    await page.mouse.move(dragBoundingBox.x + dragBoundingBox.width / 2, dragBoundingBox.y);
 
     await page.mouse.down();
     await page.mouse.move(0, dragBoundingBox.y + 300);
@@ -173,9 +156,7 @@ test.describe("Basic functionality", () => {
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(1);
   });
 
-  test("toast is not removed if duration is set to infinity", async ({
-    page,
-  }) => {
+  test("toast is not removed if duration is set to infinity", async ({ page }) => {
     await page.getByTestId("infinity-toast").click();
 
     await expect(page.locator("[data-sonner-toast]")).toBeVisible();
@@ -191,17 +172,13 @@ test.describe("Basic functionality", () => {
     await expect(toast).toHaveCount(1);
   });
 
-  test("toast is not removed when event prevented in action", async ({
-    page,
-  }) => {
+  test("toast is not removed when event prevented in action", async ({ page }) => {
     await page.getByTestId("action-prevent").click();
     await page.locator("[data-button]").click();
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(1);
   });
 
-  test("toast's auto close callback gets executed correctly", async ({
-    page,
-  }) => {
+  test("toast's auto close callback gets executed correctly", async ({ page }) => {
     await page.getByTestId("auto-close-toast-callback").click();
     await expect(page.getByTestId("auto-close-el")).toHaveCount(1);
   });
@@ -235,7 +212,7 @@ test.describe("Basic functionality", () => {
     await page.getByTestId("infinity-toast").click();
     await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute(
       "data-sonner-theme",
-      "light"
+      "light",
     );
   });
 
@@ -244,7 +221,7 @@ test.describe("Basic functionality", () => {
     await page.getByTestId("infinity-toast").click();
     await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute(
       "data-sonner-theme",
-      "dark"
+      "dark",
     );
   });
 
@@ -252,12 +229,12 @@ test.describe("Basic functionality", () => {
     await page.getByTestId("infinity-toast").click();
     await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute(
       "data-sonner-theme",
-      "light"
+      "light",
     );
     await page.getByTestId("theme-button").click();
     await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute(
       "data-sonner-theme",
-      "dark"
+      "dark",
     );
   });
 
@@ -274,10 +251,7 @@ test.describe("Basic functionality", () => {
   test("toaster's dir prop is reflected correctly", async ({ page }) => {
     await page.goto("/?dir=rtl");
     await page.getByTestId("default-button").click();
-    await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute(
-      "dir",
-      "rtl"
-    );
+    await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute("dir", "rtl");
   });
 
   test("toaster respects the HTML's dir attribute", async ({ page }) => {
@@ -285,24 +259,16 @@ test.describe("Basic functionality", () => {
       document.documentElement.setAttribute("dir", "rtl");
     });
     await page.getByTestId("default-button").click();
-    await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute(
-      "dir",
-      "rtl"
-    );
+    await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute("dir", "rtl");
   });
 
-  test("toaster respects its own dir attribute over HTML's", async ({
-    page,
-  }) => {
+  test("toaster respects its own dir attribute over HTML's", async ({ page }) => {
     await page.goto("/?dir=ltr");
     await page.evaluate(() => {
       document.documentElement.setAttribute("dir", "rtl");
     });
     await page.getByTestId("default-button").click();
-    await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute(
-      "dir",
-      "ltr"
-    );
+    await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute("dir", "ltr");
   });
 
   test("show correct toast content when updating", async ({ page }) => {
@@ -311,20 +277,14 @@ test.describe("Basic functionality", () => {
     await expect(page.getByText("My Updated Toast")).toHaveCount(1);
   });
 
-  test("should update toast content and duration after 3 seconds", async ({
-    page,
-  }) => {
+  test("should update toast content and duration after 3 seconds", async ({ page }) => {
     await page.getByTestId("update-toast-duration").click();
 
-    const initialToast = page.getByText(
-      "My Unupdated Toast, Updated After 3 Seconds"
-    );
+    const initialToast = page.getByText("My Unupdated Toast, Updated After 3 Seconds");
     await expect(initialToast).toBeVisible();
 
     await page.waitForTimeout(3000);
-    const updatedToast = page.getByText(
-      "My Updated Toast, Close After 1 Second"
-    );
+    const updatedToast = page.getByText("My Updated Toast, Close After 1 Second");
     await expect(updatedToast).toBeVisible();
 
     await expect(initialToast).not.toBeVisible();
@@ -340,9 +300,7 @@ test.describe("Basic functionality", () => {
     await expect(button).toHaveCSS("background-color", "rgb(254, 226, 226)");
   });
 
-  test("cancel button dismisses the custom toast with empty id", async ({
-    page,
-  }) => {
+  test("cancel button dismisses the custom toast with empty id", async ({ page }) => {
     await page.getByTestId("custom-with-empty-id").click();
 
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(1);
@@ -364,85 +322,57 @@ test.describe("Basic functionality", () => {
 
   test("ReactNode description is rendered", async ({ page }) => {
     await page.getByTestId("react-node-description").click();
-    await expect(
-      page.getByText("This is my custom ReactNode description")
-    ).toHaveCount(1);
+    await expect(page.getByText("This is my custom ReactNode description")).toHaveCount(1);
   });
 
   test("aria labels are custom", async ({ page }) => {
     await page.getByRole("button", { name: "With custom ARIA labels" }).click();
-    await expect(page.getByText("Toast with custom ARIA labels")).toHaveCount(
-      1
-    );
+    await expect(page.getByText("Toast with custom ARIA labels")).toHaveCount(1);
     await expect(page.getByLabel("Notices")).toHaveCount(1);
-    await expect(
-      page.getByLabel("Yeet the notice", { exact: true })
-    ).toHaveCount(1);
+    await expect(page.getByLabel("Yeet the notice", { exact: true })).toHaveCount(1);
   });
 
-  test("toast with toasterId only appears in the correct Toaster", async ({
-    page,
-  }) => {
+  test("toast with toasterId only appears in the correct Toaster", async ({ page }) => {
     await page.getByTestId("toast-secondary").click();
     const secondaryToaster = page.locator(
-      '[data-sonner-toaster][data-x-position="left"][data-y-position="top"]'
+      '[data-sonner-toaster][data-x-position="left"][data-y-position="top"]',
     );
-    await expect(
-      secondaryToaster.getByText("Secondary Toaster Toast")
-    ).toHaveCount(1);
+    await expect(secondaryToaster.getByText("Secondary Toaster Toast")).toHaveCount(1);
     const globalToaster = page.locator(
-      '[data-sonner-toaster][data-x-position="right"][data-y-position="bottom"]'
+      '[data-sonner-toaster][data-x-position="right"][data-y-position="bottom"]',
     );
-    await expect(
-      globalToaster.getByText("Secondary Toaster Toast")
-    ).toHaveCount(0);
+    await expect(globalToaster.getByText("Secondary Toaster Toast")).toHaveCount(0);
   });
 
-  test("toast without toasterId only appears in the global Toaster", async ({
-    page,
-  }) => {
+  test("toast without toasterId only appears in the global Toaster", async ({ page }) => {
     await page.getByTestId("toast-global").click();
     const globalToaster = page.locator(
-      '[data-sonner-toaster][data-x-position="right"][data-y-position="bottom"]'
+      '[data-sonner-toaster][data-x-position="right"][data-y-position="bottom"]',
     );
-    await expect(globalToaster.getByText("Global Toaster Toast")).toHaveCount(
-      1
-    );
+    await expect(globalToaster.getByText("Global Toaster Toast")).toHaveCount(1);
     const secondaryToaster = page.locator(
-      '[data-sonner-toaster][data-x-position="left"][data-y-position="top"]'
+      '[data-sonner-toaster][data-x-position="left"][data-y-position="top"]',
     );
-    await expect(
-      secondaryToaster.getByText("Global Toaster Toast")
-    ).toHaveCount(0);
+    await expect(secondaryToaster.getByText("Global Toaster Toast")).toHaveCount(0);
   });
 
-  test("toast with testId renders data-testid attribute correctly", async ({
-    page,
-  }) => {
+  test("toast with testId renders data-testid attribute correctly", async ({ page }) => {
     await page.getByTestId("testid-toast-button").click();
     await expect(page.getByTestId("my-test-toast")).toBeVisible();
-    await expect(page.getByTestId("my-test-toast")).toHaveText(
-      "Toast with test ID"
-    );
+    await expect(page.getByTestId("my-test-toast")).toHaveText("Toast with test ID");
   });
 
-  test("toast without testId does not have data-testid attribute", async ({
-    page,
-  }) => {
+  test("toast without testId does not have data-testid attribute", async ({ page }) => {
     await page.getByTestId("default-button").click();
     const toast = page.locator("[data-sonner-toast]");
     await expect(toast).toBeVisible();
     await expect(toast).not.toHaveAttribute("data-testid");
   });
 
-  test("promise toast with testId maintains testId through state changes", async ({
-    page,
-  }) => {
+  test("promise toast with testId maintains testId through state changes", async ({ page }) => {
     await page.getByTestId("testid-promise-toast-button").click();
     await expect(page.getByTestId("promise-test-toast")).toBeVisible();
-    await expect(page.getByTestId("promise-test-toast")).toHaveText(
-      "Loading..."
-    );
+    await expect(page.getByTestId("promise-test-toast")).toHaveText("Loading...");
     await expect(page.getByTestId("promise-test-toast")).toHaveText("Loaded");
   });
 });

@@ -3,18 +3,13 @@ import {
   component$,
   isBrowser,
   isSignal,
+  sync$,
   useComputed$,
   useOnDocument,
   useSignal,
   useTask$,
 } from "@qwik.dev/core";
-import {
-  isAction,
-  SwipeDirection,
-  ToastClassnames,
-  ToastIcons,
-  ToastProps,
-} from "./types";
+import { isAction, SwipeDirection, ToastClassnames, ToastIcons, ToastProps } from "./types";
 import { SWIPE_THRESHOLD, TIME_BEFORE_UNMOUNT, TOAST_LIFETIME } from "./const";
 import { CloseIcon, getAsset, Loader } from "./icons";
 
@@ -65,9 +60,7 @@ export const Toast = component$<ToastProps>((props) => {
 
   // signals
   const swipeDirection = useSignal<"x" | "y" | null>(null);
-  const swipeOutDirection = useSignal<
-    "left" | "right" | "up" | "down" | null
-  >(null);
+  const swipeOutDirection = useSignal<"left" | "right" | "up" | "down" | null>(null);
   const mounted = useSignal<boolean>(false);
   const removed = useSignal<boolean>(false);
   const swiping = useSignal<boolean>(false);
@@ -75,9 +68,7 @@ export const Toast = component$<ToastProps>((props) => {
   const isSwiped = useSignal<boolean>(false);
   const offsetBeforeRemove = useSignal<number>(0);
   const initialHeight = useSignal<number>(0);
-  const remainingTime = useSignal<number>(
-    props.toast.duration || props.duration || TOAST_LIFETIME
-  );
+  const remainingTime = useSignal<number>(props.toast.duration || props.duration || TOAST_LIFETIME);
   const dragStartTime = useSignal<number | null>(null);
   const toastRef = useSignal<HTMLLIElement>();
   const closeTimerStartTimeRef = useSignal<number>(0);
@@ -97,27 +88,31 @@ export const Toast = component$<ToastProps>((props) => {
   // computed values — read volatile props via `props.*` so they recompute.
   const invert = useComputed$(() => {
     const toasterInvert = props.invert;
-    const invertChecked = isSignal(toasterInvert)
-      ? toasterInvert.value
-      : toasterInvert;
+    const invertChecked = isSignal(toasterInvert) ? toasterInvert.value : toasterInvert;
     return Boolean(props.toast.invert ?? invertChecked ?? false);
   });
   const disabled = toastType === "loading";
 
+  // `heights` is shared across every position group in the Toaster, but a
+  // toast's offset must only account for the other toasts stacked at *its own*
+  // position — otherwise hovering one stack (which flips `expanded`) shifts
+  // toasts at other positions as if they shared a stack. Mirror sonner, which
+  // passes `heights.filter((h) => h.position == toast.position)` to each Toast.
+  const positionHeights = useComputed$(() => {
+    const own = props.toast.position ?? position;
+    return heights.value.filter((h) => h.position === own);
+  });
+
   // Height index is used to calculate the offset as it gets updated before the
   // toast array, which means we can calculate the new layout faster.
   const heightIndex = useComputed$(() => {
-    const idx = heights.value.findIndex((h) => h.toastId === props.toast.id);
+    const idx = positionHeights.value.findIndex((h) => h.toastId === props.toast.id);
     return idx === -1 ? 0 : idx;
   });
-  const closeButton = useComputed$(
-    () => props.toast.closeButton ?? props.closeButton
-  );
-  const duration = useComputed$(
-    () => props.toast.duration || props.duration || TOAST_LIFETIME
-  );
+  const closeButton = useComputed$(() => props.toast.closeButton ?? props.closeButton);
+  const duration = useComputed$(() => props.toast.duration || props.duration || TOAST_LIFETIME);
   const toastsHeightBefore = useComputed$(() => {
-    return heights.value.reduce((prev, curr, reducerIndex) => {
+    return positionHeights.value.reduce((prev, curr, reducerIndex) => {
       // Calculate offset up until current toast
       if (reducerIndex >= heightIndex.value) {
         return prev;
@@ -139,6 +134,45 @@ export const Toast = component$<ToastProps>((props) => {
     setTimeout(() => {
       removeToast(toast);
     }, TIME_BEFORE_UNMOUNT);
+  });
+
+  // Measure the toast's natural height and record it in the shared `heights`
+  // array. Two things must be neutralized during the read:
+  //   1. `height` -> "auto", so a collapsed/non-front toast (CSS-pinned to
+  //      `--front-toast-height`) still reports its real content height.
+  //   2. `transform` -> "none", so the stacking `transform: scale(...)` on
+  //      non-front toasts doesn't shrink the read. A re-measure while stacked
+  //      (e.g. on `document.fonts.ready` or a content update, when the toast
+  //      may no longer be front) otherwise recorded a shrunken height
+  //      (~natural × 0.95/0.90/…), making identical toasts render at different
+  //      sizes.
+  // With the scale removed we can read `getBoundingClientRect().height`, which
+  // keeps the sub-pixel value (e.g. 53.5px) — unlike `offsetHeight`, which
+  // rounds to an integer (54px) and made the expanded toast 0.5px taller than
+  // its collapsed natural height. Ignore zero reads (not laid out / detached).
+  const measureHeight = $((node: HTMLLIElement) => {
+    const originalHeight = node.style.height;
+    const originalTransform = node.style.transform;
+    node.style.height = "auto";
+    node.style.transform = "none";
+    const newHeight = node.getBoundingClientRect().height;
+    node.style.height = originalHeight;
+    node.style.transform = originalTransform;
+
+    if (!newHeight) return;
+
+    initialHeight.value = newHeight;
+    const exists = heights.value.find((h) => h.toastId === props.toast.id);
+    heights.value = exists
+      ? heights.value.map((h) => (h.toastId === props.toast.id ? { ...h, height: newHeight } : h))
+      : [
+          {
+            toastId: props.toast.id,
+            height: newHeight,
+            position: props.toast.position ?? position,
+          },
+          ...heights.value,
+        ];
   });
 
   function getLoadingIcon() {
@@ -165,20 +199,12 @@ export const Toast = component$<ToastProps>((props) => {
     }
 
     return (
-      <Loader
-        class={[classes?.loader, toast?.classes?.loader]}
-        visible={toastType === "loading"}
-      />
+      <Loader class={[classes?.loader, toast?.classes?.loader]} visible={toastType === "loading"} />
     );
   }
 
-  const iconFromIcons = toastType
-    ? icons?.[toastType as keyof ToastIcons]
-    : undefined;
-  const icon =
-    toast.icon ||
-    iconFromIcons ||
-    (toastType ? getAsset(toastType) : null);
+  const iconFromIcons = toastType ? icons?.[toastType as keyof ToastIcons] : undefined;
+  const icon = toast.icon || iconFromIcons || (toastType ? getAsset(toastType) : null);
 
   // tasks
   // Keep `remainingTime` in sync with the (possibly changing) duration.
@@ -201,23 +227,19 @@ export const Toast = component$<ToastProps>((props) => {
     const node = track(() => toastRef.value);
     track(() => props.toast.id);
 
-    if (!node) return;
+    if (!node || !isBrowser) return;
 
-    const height = node.getBoundingClientRect().height;
-    initialHeight.value = height;
-    heights.value = [
-      {
-        toastId: props.toast.id,
-        height,
-        position: props.toast.position ?? position,
-      },
-      ...heights.value,
-    ];
+    // Defer to the next frame so the element is actually laid out (the task
+    // can run before the browser attaches/reflows it → a 0px read), then
+    // re-measure once web fonts finish loading, since their metrics change the
+    // text height after the first paint.
+    requestAnimationFrame(() => measureHeight(node));
+    document.fonts?.ready
+      ?.then(() => requestAnimationFrame(() => measureHeight(node)))
+      .catch(() => {});
 
     cleanup(() => {
-      heights.value = heights.value.filter(
-        (h) => h.toastId !== props.toast.id
-      );
+      heights.value = heights.value.filter((h) => h.toastId !== props.toast.id);
     });
   });
 
@@ -233,26 +255,7 @@ export const Toast = component$<ToastProps>((props) => {
     const node = toastRef.value;
     if (!mountedNow || !node) return;
 
-    const originalHeight = node.style.height;
-    node.style.height = "auto";
-    const newHeight = node.getBoundingClientRect().height;
-    node.style.height = originalHeight;
-
-    initialHeight.value = newHeight;
-
-    const exists = heights.value.find((h) => h.toastId === props.toast.id);
-    heights.value = exists
-      ? heights.value.map((h) =>
-          h.toastId === props.toast.id ? { ...h, height: newHeight } : h
-        )
-      : [
-          {
-            toastId: props.toast.id,
-            height: newHeight,
-            position: props.toast.position ?? position,
-          },
-          ...heights.value,
-        ];
+    measureHeight(node);
   });
 
   // Auto-close timer (pauses on hover/interaction or while the page is hidden).
@@ -318,7 +321,7 @@ export const Toast = component$<ToastProps>((props) => {
     "visibilitychange",
     $(() => {
       isDocumentHidden.value = document.hidden;
-    })
+    }),
   );
 
   return (
@@ -352,18 +355,14 @@ export const Toast = component$<ToastProps>((props) => {
       data-invert={String(invert.value)}
       data-swipe-out={String(swipeOut.value)}
       data-swipe-direction={swipeOutDirection.value ?? undefined}
-      data-expanded={String(
-        Boolean(expanded.value || (expandByDefault && mounted.value))
-      )}
+      data-expanded={String(Boolean(expanded.value || (expandByDefault && mounted.value)))}
       data-testid={toast.testId}
       style={{
         "--index": index,
         "--toasts-before": index,
         "--z-index": toasts.length - index,
         "--offset": `${removed.value ? offsetBeforeRemove.value : offset.value}px`,
-        "--initial-height": expandByDefault
-          ? "auto"
-          : `${initialHeight.value}px`,
+        "--initial-height": expandByDefault ? "auto" : `${initialHeight.value}px`,
         ...style,
         ...toast.style,
       }}
@@ -372,79 +371,96 @@ export const Toast = component$<ToastProps>((props) => {
         swipeDirection.value = null;
         pointerStartRef.value = null;
       }}
-      onPointerDown$={(event) => {
-        const current = props.toast;
-        if (event.button === 2) return; // Return early on right click
-        if (current.type === "loading" || current.dismissible === false) return;
-        dragStartTime.value = Date.now();
-        offsetBeforeRemove.value = offset.value;
-        // Maintain pointer capture even when going outside of the toast.
-        (event.target as HTMLElement).setPointerCapture(event.pointerId);
-        if ((event.target as HTMLElement).tagName === "BUTTON") return;
-        swiping.value = true;
-        pointerStartRef.value = { x: event.clientX, y: event.clientY };
-      }}
-      onPointerUp$={() => {
-        if (swipeOut.value || props.toast.dismissible === false) return;
-
-        pointerStartRef.value = null;
-        const swipeAmountX = Number(
-          toastRef.value?.style
-            .getPropertyValue("--swipe-amount-x")
-            .replace("px", "") || 0
-        );
-        const swipeAmountY = Number(
-          toastRef.value?.style
-            .getPropertyValue("--swipe-amount-y")
-            .replace("px", "") || 0
-        );
-        const timeTaken = Date.now() - (dragStartTime.value ?? Date.now());
-
-        const swipeAmount =
-          swipeDirection.value === "x" ? swipeAmountX : swipeAmountY;
-        const velocity = Math.abs(swipeAmount) / timeTaken;
-
-        if (Math.abs(swipeAmount) >= SWIPE_THRESHOLD || velocity > 0.11) {
+      onPointerDown$={[
+        // Pointer capture must be established synchronously, during the real
+        // pointerdown, so the browser keeps it in lockstep with the active
+        // pointer (and releases it on pointerup). A lazy `$` QRL runs after an
+        // async chunk fetch — too late on the first gesture — which left the
+        // capture out of sync: the toast stayed glued to the cursor (even
+        // outside the window) and needed a second click to recover. `sync$`
+        // can only touch the event/element, which is all `setPointerCapture`
+        // needs. Stateful logic stays in the `$` handler below.
+        sync$((event: PointerEvent, currentTarget: HTMLElement) => {
+          if (event.button === 2) return; // Return early on right click
+          if (
+            currentTarget.getAttribute("data-dismissible") === "false" ||
+            currentTarget.getAttribute("data-type") === "loading"
+          )
+            return;
+          // Maintain pointer capture even when going outside of the toast.
+          (event.target as HTMLElement).setPointerCapture(event.pointerId);
+        }),
+        $((event) => {
+          const current = props.toast;
+          if (event.button === 2) return; // Return early on right click
+          if (current.type === "loading" || current.dismissible === false) return;
+          dragStartTime.value = Date.now();
           offsetBeforeRemove.value = offset.value;
-          props.toast.onDismiss$?.(props.toast);
+          if ((event.target as HTMLElement).tagName === "BUTTON") return;
+          swiping.value = true;
+          pointerStartRef.value = { x: event.clientX, y: event.clientY };
+        }),
+      ]}
+      onPointerUp$={[
+        // Release the capture synchronously the instant the button lifts, so
+        // the toast stops tracking the cursor even if the `$` handler below is
+        // still being fetched/scheduled.
+        sync$((event: PointerEvent) => {
+          const target = event.target as HTMLElement;
+          if (target.hasPointerCapture?.(event.pointerId))
+            target.releasePointerCapture(event.pointerId);
+        }),
+        $(() => {
+          if (swipeOut.value || props.toast.dismissible === false) return;
 
-          if (swipeDirection.value === "x") {
-            swipeOutDirection.value = swipeAmountX > 0 ? "right" : "left";
+          pointerStartRef.value = null;
+          const swipeAmountX = Number(
+            toastRef.value?.style.getPropertyValue("--swipe-amount-x").replace("px", "") || 0,
+          );
+          const swipeAmountY = Number(
+            toastRef.value?.style.getPropertyValue("--swipe-amount-y").replace("px", "") || 0,
+          );
+          const timeTaken = Date.now() - (dragStartTime.value ?? Date.now());
+
+          const swipeAmount = swipeDirection.value === "x" ? swipeAmountX : swipeAmountY;
+          const velocity = Math.abs(swipeAmount) / timeTaken;
+
+          if (Math.abs(swipeAmount) >= SWIPE_THRESHOLD || velocity > 0.11) {
+            offsetBeforeRemove.value = offset.value;
+            props.toast.onDismiss$?.(props.toast);
+
+            if (swipeDirection.value === "x") {
+              swipeOutDirection.value = swipeAmountX > 0 ? "right" : "left";
+            } else {
+              swipeOutDirection.value = swipeAmountY > 0 ? "down" : "up";
+            }
+
+            deleteToast();
+            swipeOut.value = true;
+            return;
           } else {
-            swipeOutDirection.value = swipeAmountY > 0 ? "down" : "up";
+            toastRef.value?.style.setProperty("--swipe-amount-x", "0px");
+            toastRef.value?.style.setProperty("--swipe-amount-y", "0px");
           }
-
-          deleteToast();
-          swipeOut.value = true;
-          return;
-        } else {
-          toastRef.value?.style.setProperty("--swipe-amount-x", "0px");
-          toastRef.value?.style.setProperty("--swipe-amount-y", "0px");
-        }
-        isSwiped.value = false;
-        swiping.value = false;
-        swipeDirection.value = null;
-      }}
+          isSwiped.value = false;
+          swiping.value = false;
+          swipeDirection.value = null;
+        }),
+      ]}
       onPointerMove$={(event) => {
         if (!pointerStartRef.value || props.toast.dismissible === false) return;
 
-        const isHighlighted =
-          (window.getSelection()?.toString().length ?? 0) > 0;
+        const isHighlighted = (window.getSelection()?.toString().length ?? 0) > 0;
         if (isHighlighted) return;
 
         const yDelta = event.clientY - pointerStartRef.value.y;
         const xDelta = event.clientX - pointerStartRef.value.x;
 
-        const swipeDirections =
-          props.swipeDirections ?? getDefaultSwipeDirections(props.position);
+        const swipeDirections = props.swipeDirections ?? getDefaultSwipeDirections(props.position);
 
         // Determine swipe direction if not already locked
-        if (
-          !swipeDirection.value &&
-          (Math.abs(xDelta) > 1 || Math.abs(yDelta) > 1)
-        ) {
-          swipeDirection.value =
-            Math.abs(xDelta) > Math.abs(yDelta) ? "x" : "y";
+        if (!swipeDirection.value && (Math.abs(xDelta) > 1 || Math.abs(yDelta) > 1)) {
+          swipeDirection.value = Math.abs(xDelta) > Math.abs(yDelta) ? "x" : "y";
         }
 
         const swipeAmount = { x: 0, y: 0 };
@@ -456,10 +472,7 @@ export const Toast = component$<ToastProps>((props) => {
 
         // Only apply swipe in the locked direction
         if (swipeDirection.value === "y") {
-          if (
-            swipeDirections.includes("top") ||
-            swipeDirections.includes("bottom")
-          ) {
+          if (swipeDirections.includes("top") || swipeDirections.includes("bottom")) {
             if (
               (swipeDirections.includes("top") && yDelta < 0) ||
               (swipeDirections.includes("bottom") && yDelta > 0)
@@ -468,17 +481,11 @@ export const Toast = component$<ToastProps>((props) => {
             } else {
               // Smoothly transition to dampened movement
               const dampenedDelta = yDelta * getDampening(yDelta);
-              swipeAmount.y =
-                Math.abs(dampenedDelta) < Math.abs(yDelta)
-                  ? dampenedDelta
-                  : yDelta;
+              swipeAmount.y = Math.abs(dampenedDelta) < Math.abs(yDelta) ? dampenedDelta : yDelta;
             }
           }
         } else if (swipeDirection.value === "x") {
-          if (
-            swipeDirections.includes("left") ||
-            swipeDirections.includes("right")
-          ) {
+          if (swipeDirections.includes("left") || swipeDirections.includes("right")) {
             if (
               (swipeDirections.includes("left") && xDelta < 0) ||
               (swipeDirections.includes("right") && xDelta > 0)
@@ -487,10 +494,7 @@ export const Toast = component$<ToastProps>((props) => {
             } else {
               // Smoothly transition to dampened movement
               const dampenedDelta = xDelta * getDampening(xDelta);
-              swipeAmount.x =
-                Math.abs(dampenedDelta) < Math.abs(xDelta)
-                  ? dampenedDelta
-                  : xDelta;
+              swipeAmount.x = Math.abs(dampenedDelta) < Math.abs(xDelta) ? dampenedDelta : xDelta;
             }
           }
         }
@@ -500,14 +504,8 @@ export const Toast = component$<ToastProps>((props) => {
         }
 
         // Apply transform using both x and y values
-        toastRef.value?.style.setProperty(
-          "--swipe-amount-x",
-          `${swipeAmount.x}px`
-        );
-        toastRef.value?.style.setProperty(
-          "--swipe-amount-y",
-          `${swipeAmount.y}px`
-        );
+        toastRef.value?.style.setProperty("--swipe-amount-x", `${swipeAmount.x}px`);
+        toastRef.value?.style.setProperty("--swipe-amount-y", `${swipeAmount.y}px`);
       }}
     >
       {closeButton.value && !toast.jsx && toastType !== "loading" ? (
@@ -539,11 +537,7 @@ export const Toast = component$<ToastProps>((props) => {
 
       <div data-content="" class={[classes?.content, toast?.classes?.content]}>
         <div data-title="" class={[classes?.title, toast?.classes?.title]}>
-          {toast.jsx
-            ? toast.jsx
-            : typeof toast.title === "function"
-              ? toast.title()
-              : toast.title}
+          {toast.jsx ? toast.jsx : typeof toast.title === "function" ? toast.title() : toast.title}
         </div>
         {toast.description ? (
           <div
@@ -555,9 +549,7 @@ export const Toast = component$<ToastProps>((props) => {
               toast?.classes?.description,
             ]}
           >
-            {typeof toast.description === "function"
-              ? toast.description()
-              : toast.description}
+            {typeof toast.description === "function" ? toast.description() : toast.description}
           </div>
         ) : null}
       </div>

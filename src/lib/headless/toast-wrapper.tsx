@@ -41,8 +41,9 @@ function getDocumentDirection(): NonNullable<ToasterProps["dir"]> {
   const dirAttribute = document.documentElement.getAttribute("dir");
 
   if (dirAttribute === "auto" || !dirAttribute) {
-    return window.getComputedStyle(document.documentElement)
-      .direction as NonNullable<ToasterProps["dir"]>;
+    return window.getComputedStyle(document.documentElement).direction as NonNullable<
+      ToasterProps["dir"]
+    >;
   }
 
   return dirAttribute as NonNullable<ToasterProps["dir"]>;
@@ -58,8 +59,7 @@ function assignOffset(defaultOffset?: Offset, mobileOffset?: Offset) {
 
     const assignAll = (value: string | number) => {
       ["top", "right", "bottom", "left"].forEach((key) => {
-        styles[`${prefix}-${key}`] =
-          typeof value === "number" ? `${value}px` : value;
+        styles[`${prefix}-${key}`] = typeof value === "number" ? `${value}px` : value;
       });
     };
 
@@ -67,14 +67,11 @@ function assignOffset(defaultOffset?: Offset, mobileOffset?: Offset) {
       assignAll(offset);
     } else if (typeof offset === "object" && offset !== null) {
       ["top", "right", "bottom", "left"].forEach((key) => {
-        const value = (offset as Record<string, string | number | undefined>)[
-          key
-        ];
+        const value = (offset as Record<string, string | number | undefined>)[key];
         if (value === undefined) {
           styles[`${prefix}-${key}`] = defaultValue;
         } else {
-          styles[`${prefix}-${key}`] =
-            typeof value === "number" ? `${value}px` : value;
+          styles[`${prefix}-${key}`] = typeof value === "number" ? `${value}px` : value;
         }
       });
     } else {
@@ -98,15 +95,11 @@ export function useSonner() {
 
     return ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
-        activeToasts.value = activeToasts.value.filter(
-          (t) => t.id !== incoming.id
-        );
+        activeToasts.value = activeToasts.value.filter((t) => t.id !== incoming.id);
         return;
       }
 
-      const indexOfExistingToast = activeToasts.value.findIndex(
-        (t) => t.id === incoming.id
-      );
+      const indexOfExistingToast = activeToasts.value.findIndex((t) => t.id === incoming.id);
 
       if (indexOfExistingToast !== -1) {
         activeToasts.value = [
@@ -151,9 +144,7 @@ const Toaster = component$<ToasterProps>((props) => {
   const heights = useSignal<HeightT[]>([]);
   const expanded = useSignal(false);
   const interacting = useSignal(false);
-  const actualTheme = useSignal<"light" | "dark">(
-    theme !== "system" ? theme : "light"
-  );
+  const actualTheme = useSignal<"light" | "dark">(theme !== "system" ? theme : "light");
   const listRef = useSignal<HTMLOListElement>();
   const lastFocusedElementRef = useSignal<HTMLElement | null>(null);
   const isFocusWithinRef = useSignal(false);
@@ -169,18 +160,13 @@ const Toaster = component$<ToasterProps>((props) => {
     return Array.from(
       new Set(
         [position].concat(
-          filteredToasts.value
-            .filter((toast) => toast.position)
-            .map((toast) => toast.position!)
-        )
-      )
+          filteredToasts.value.filter((toast) => toast.position).map((toast) => toast.position!),
+        ),
+      ),
     );
   });
 
-  const hotkeyLabel = hotkey
-    .join("+")
-    .replace(/Key/g, "")
-    .replace(/Digit/g, "");
+  const hotkeyLabel = hotkey.join("+").replace(/Key/g, "").replace(/Digit/g, "");
 
   const removeToast = $((toastToRemove: ToastT) => {
     const existing = toasts.value.find((t) => t.id === toastToRemove.id);
@@ -193,15 +179,11 @@ const Toaster = component$<ToasterProps>((props) => {
   const onMountHandler = $((_: QwikVisibleEvent, _1: HTMLElement) => {
     return ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
-        toasts.value = toasts.value.map((t) =>
-          t.id === incoming.id ? { ...t, delete: true } : t
-        );
+        toasts.value = toasts.value.map((t) => (t.id === incoming.id ? { ...t, delete: true } : t));
         return;
       }
 
-      const indexOfExistingToast = toasts.value.findIndex(
-        (t) => t.id === incoming.id
-      );
+      const indexOfExistingToast = toasts.value.findIndex((t) => t.id === incoming.id);
 
       if (indexOfExistingToast !== -1) {
         toasts.value = [
@@ -223,9 +205,7 @@ const Toaster = component$<ToasterProps>((props) => {
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
     actualTheme.value = mql.matches ? "dark" : "light";
     mql.addEventListener("change", (event) => {
-      actualTheme.value = (event as MediaQueryListEvent).matches
-        ? "dark"
-        : "light";
+      actualTheme.value = (event as MediaQueryListEvent).matches ? "dark" : "light";
     });
   });
 
@@ -255,8 +235,7 @@ const Toaster = component$<ToasterProps>((props) => {
     $((ev) => {
       const event = ev as KeyboardEvent;
       const isHotkeyPressed =
-        hotkey.length > 0 &&
-        hotkey.every((key) => (event as any)[key] || event.code === key);
+        hotkey.length > 0 && hotkey.every((key) => (event as any)[key] || event.code === key);
 
       if (isHotkeyPressed) {
         expanded.value = true;
@@ -270,7 +249,7 @@ const Toaster = component$<ToasterProps>((props) => {
       ) {
         expanded.value = false;
       }
-    })
+    }),
   );
 
   // Return focus to the previously-focused element once the toaster empties.
@@ -321,10 +300,7 @@ const Toaster = component$<ToasterProps>((props) => {
               ...assignOffset(offset, mobileOffset),
             }}
             onFocusOut$={(event, target) => {
-              if (
-                isFocusWithinRef.value &&
-                !target.contains(event.relatedTarget as HTMLElement)
-              ) {
+              if (isFocusWithinRef.value && !target.contains(event.relatedTarget as HTMLElement)) {
                 isFocusWithinRef.value = false;
                 if (lastFocusedElementRef.value) {
                   lastFocusedElementRef.value.focus({
@@ -337,15 +313,13 @@ const Toaster = component$<ToasterProps>((props) => {
             onFocusIn$={(event) => {
               const focused = event.target;
               const isNotDismissible =
-                focused instanceof HTMLElement &&
-                focused.dataset.dismissible === "false";
+                focused instanceof HTMLElement && focused.dataset.dismissible === "false";
 
               if (isNotDismissible) return;
 
               if (!isFocusWithinRef.value) {
                 isFocusWithinRef.value = true;
-                lastFocusedElementRef.value =
-                  event.relatedTarget as HTMLElement;
+                lastFocusedElementRef.value = event.relatedTarget as HTMLElement;
               }
             }}
             onMouseEnter$={() => (expanded.value = true)}
@@ -360,8 +334,7 @@ const Toaster = component$<ToasterProps>((props) => {
             onPointerDown$={(event) => {
               const target = event.target;
               const isNotDismissible =
-                target instanceof HTMLElement &&
-                target.dataset.dismissible === "false";
+                target instanceof HTMLElement && target.dataset.dismissible === "false";
 
               if (isNotDismissible) return;
               interacting.value = true;
@@ -369,9 +342,7 @@ const Toaster = component$<ToasterProps>((props) => {
             onPointerUp$={() => (interacting.value = false)}
           >
             {filteredToasts.value
-              .filter(
-                (t) => (!t.position && index === 0) || t.position === pos
-              )
+              .filter((t) => (!t.position && index === 0) || t.position === pos)
               .map((t, i) => (
                 <Toast
                   key={t.id}
@@ -384,9 +355,7 @@ const Toaster = component$<ToasterProps>((props) => {
                   descriptionClass={toastOptions?.descriptionClass}
                   invert={props.invert ?? false}
                   visibleToasts={visibleToasts}
-                  closeButton={
-                    toastOptions?.closeButton ?? props.closeButton ?? false
-                  }
+                  closeButton={toastOptions?.closeButton ?? props.closeButton ?? false}
                   interacting={interacting.value}
                   position={pos}
                   style={toastOptions?.style}
@@ -396,9 +365,7 @@ const Toaster = component$<ToasterProps>((props) => {
                   actionButtonStyle={toastOptions?.actionButtonStyle}
                   closeButtonAriaLabel={toastOptions?.closeButtonAriaLabel}
                   removeToast={removeToast}
-                  toasts={filteredToasts.value.filter(
-                    (item) => item.position === t.position
-                  )}
+                  toasts={filteredToasts.value.filter((item) => item.position === t.position)}
                   heights={heights}
                   expandByDefault={expand ?? false}
                   gap={gap}

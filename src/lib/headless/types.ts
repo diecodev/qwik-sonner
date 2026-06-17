@@ -1,10 +1,4 @@
-import {
-  ClassList,
-  CSSProperties,
-  JSXOutput,
-  QRL,
-  Signal,
-} from "@qwik.dev/core";
+import { ClassList, CSSProperties, JSXOutput, QRL, Signal } from "@qwik.dev/core";
 
 export type ToastTypes =
   | "normal"
@@ -34,9 +28,7 @@ export interface PromiseIExtendedResult extends ExternalToast {
 
 export type PromiseTExtendedResult<Data = any> =
   | PromiseIExtendedResult
-  | QRL<
-      (data: Data) => PromiseIExtendedResult | Promise<PromiseIExtendedResult>
-    >
+  | QRL<(data: Data) => PromiseIExtendedResult | Promise<PromiseIExtendedResult>>
   | ((data: Data) => PromiseIExtendedResult | Promise<PromiseIExtendedResult>);
 
 export type PromiseExternalToast = Omit<ExternalToast, "description">;
@@ -120,8 +112,7 @@ export interface ToastT {
 
 export function isAction(action: Action | JSXOutput): action is Action {
   return (
-    (action as Action).label !== undefined &&
-    typeof (action as Action).onClick$ === "function"
+    (action as Action).label !== undefined && typeof (action as Action).onClick$ === "function"
   );
 }
 
@@ -246,10 +237,7 @@ export interface ToastToDismiss {
   dismiss: boolean;
 }
 
-export type ExternalToast = Omit<
-  ToastT,
-  "id" | "type" | "title" | "jsx" | "delete" | "promise"
-> & {
+export type ExternalToast = Omit<ToastT, "id" | "type" | "title" | "jsx" | "delete" | "promise"> & {
   id?: number | string;
   toasterId?: string;
 };

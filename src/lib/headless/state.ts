@@ -80,7 +80,7 @@ const create = (
     type?: ToastTypes;
     promise?: PromiseT;
     jsx?: JSXOutput;
-  }
+  },
 ) => {
   // NOTE: use native spread + delete instead of `const { message, ...rest }`.
   // The Qwik optimizer rewrites object rest-destructuring into `_restProps()`,
@@ -89,9 +89,7 @@ const create = (
   const rest = { ...data };
   delete rest.message;
   const id =
-    typeof data?.id === "number" || (data.id && data.id?.length > 0)
-      ? data.id
-      : toastsCounter++;
+    typeof data?.id === "number" || (data.id && data.id?.length > 0) ? data.id : toastsCounter++;
   const alreadyExists = toasts.find((toast) => {
     return toast.id === id;
   });
@@ -126,14 +124,10 @@ const create = (
 const dismiss = (id?: number | string) => {
   if (id) {
     dismissedToasts.add(id);
-    scheduleRaf(() =>
-      subscribers.forEach((subscriber) => subscriber({ id, dismiss: true }))
-    );
+    scheduleRaf(() => subscribers.forEach((subscriber) => subscriber({ id, dismiss: true })));
   } else {
     toasts.forEach((toast) => {
-      subscribers.forEach((subscriber) =>
-        subscriber({ id: toast.id, dismiss: true })
-      );
+      subscribers.forEach((subscriber) => subscriber({ id: toast.id, dismiss: true }));
     });
   }
 
@@ -164,10 +158,7 @@ const loading = (message: titleT, data?: ExternalToast) => {
   return create({ ...data, type: "loading", message });
 };
 
-const promise = <ToastData>(
-  promise: PromiseT<ToastData>,
-  data?: PromiseData<ToastData>
-) => {
+const promise = <ToastData>(promise: PromiseT<ToastData>, data?: PromiseData<ToastData>) => {
   if (!data) {
     // Nothing to show
     return;
@@ -180,8 +171,7 @@ const promise = <ToastData>(
       promise,
       type: "loading",
       message: data.loading,
-      description:
-        typeof data.description !== "function" ? data.description : undefined,
+      description: typeof data.description !== "function" ? data.description : undefined,
     });
   }
 
@@ -214,11 +204,11 @@ const promise = <ToastData>(
         shouldDismiss = false;
         const promiseData = await resolveMaybe(
           data.error,
-          `HTTP error! status: ${response.status}`
+          `HTTP error! status: ${response.status}`,
         );
         const description = await resolveMaybe(
           data.description,
-          `HTTP error! status: ${response.status}`
+          `HTTP error! status: ${response.status}`,
         );
         create({ id, type: "error", description, ...buildSettings(promiseData) });
       } else if (response instanceof Error) {
@@ -260,10 +250,8 @@ const promise = <ToastData>(
   const unwrap = () =>
     new Promise<ToastData>((resolve, reject) =>
       originalPromise
-        .then(() =>
-          result[0] === "reject" ? reject(result[1]) : resolve(result[1])
-        )
-        .catch(reject)
+        .then(() => (result[0] === "reject" ? reject(result[1]) : resolve(result[1])))
+        .catch(reject),
     );
 
   if (typeof id !== "string" && typeof id !== "number") {
@@ -274,10 +262,7 @@ const promise = <ToastData>(
   }
 };
 
-const custom = (
-  jsx: (id: number | string) => JSXOutput,
-  data?: ExternalToast
-) => {
+const custom = (jsx: (id: number | string) => JSXOutput, data?: ExternalToast) => {
   const id = data?.id || toastsCounter++;
   create({ jsx: jsx(id), ...data, id });
   return id;
@@ -337,5 +322,5 @@ export const toast = Object.assign(
     dismiss: ToastState.dismiss,
     loading: ToastState.loading,
   },
-  { getHistory, getToasts }
+  { getHistory, getToasts },
 );

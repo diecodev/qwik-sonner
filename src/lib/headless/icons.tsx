@@ -25,10 +25,7 @@ const bars = Array(12).fill(0);
 export const Loader = component$(
   ({ visible, class: className }: { visible: boolean; class?: ClassList }) => {
     return (
-      <div
-        class={["sonner-loading-wrapper", className]}
-        data-visible={String(visible)}
-      >
+      <div class={["sonner-loading-wrapper", className]} data-visible={String(visible)}>
         <div class="sonner-spinner">
           {bars.map((_, i) => (
             <div class="sonner-loading-bar" key={`spinner-bar-${i}`} />
@@ -36,7 +33,7 @@ export const Loader = component$(
         </div>
       </div>
     );
-  }
+  },
 );
 
 const SuccessIcon = component$(() => (

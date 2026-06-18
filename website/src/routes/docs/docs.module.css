@@ -1,0 +1,188 @@
+.layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 48px;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 max(16px, env(safe-area-inset-left)) 96px;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 32px;
+  align-self: start;
+  font-size: 13px;
+}
+
+@media (max-width: 800px) {
+  .sidebar {
+    position: static;
+    border-bottom: 1px solid var(--gray3);
+    padding-bottom: 16px;
+  }
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar a {
+  color: var(--gray11);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition:
+    background 150ms,
+    color 150ms;
+}
+
+.sidebar a:hover {
+  background: var(--gray2);
+  color: var(--gray12);
+}
+
+.sidebar .group {
+  margin-top: 16px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gray9);
+  padding: 0 8px;
+}
+
+.sidebar .group:first-child {
+  margin-top: 0;
+}
+
+.main {
+  min-width: 0;
+}
+
+.topnav {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 32px;
+  font-size: 14px;
+}
+
+.topnav a {
+  color: var(--gray11);
+  text-decoration: none;
+}
+
+.topnav a:hover {
+  color: var(--gray12);
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+  color: var(--gray12);
+}
+
+.lead {
+  font-size: 18px;
+  color: var(--gray11);
+  margin: 0 0 8px;
+}
+
+.section {
+  scroll-margin-top: 24px;
+  margin-top: 56px;
+}
+
+.section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+}
+
+.section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 28px 0 8px;
+  color: var(--gray12);
+}
+
+.section p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--gray11);
+  margin: 0 0 12px;
+}
+
+.section ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  color: var(--gray11);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 12px 0;
+  display: block;
+  overflow-x: auto;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--gray3);
+  vertical-align: top;
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--gray12);
+  white-space: nowrap;
+}
+
+.table td {
+  color: var(--gray11);
+}
+
+.table td:first-child {
+  white-space: nowrap;
+  color: var(--gray12);
+}
+
+.table code {
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.note {
+  border-left: 3px solid var(--gray7);
+  background: var(--gray2);
+  padding: 12px 16px;
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+  color: var(--gray11);
+  margin: 16px 0;
+}
+
+.note strong {
+  color: var(--gray12);
+}

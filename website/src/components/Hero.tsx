@@ -24,6 +24,9 @@ export const Hero = () => {
         >
           Render a toast
         </button>
+        <a class={styles.button} href="/docs">
+          Docs
+        </a>
         <a class={styles.button} href="https://github.com/diecodev/qwik-sonner" target="_blank">
           GitHub
         </a>

@@ -308,8 +308,20 @@ const Toaster = component$<ToasterProps>((props) => {
     }
   });
 
+  // Wire the client-side toast subscription on `qinit` — the Qwik init event the
+  // qwikloader fires once the container is ready. It is dispatched on
+  // `readystatechange` (and immediately on load), with a replay path for
+  // late-registered listeners, so it fires regardless of page-load timing or
+  // scroll position. We can't use the usual alternatives here:
+  //   - `useVisibleTask$` / `qvisible` are IntersectionObserver-based, so they
+  //     never run when the Toaster is rendered below the fold (its `<section>`
+  //     is in normal flow) — the toaster would stay unsubscribed and the first
+  //     toast publishes to zero subscribers (WebKit reproduced this reliably).
+  //   - `DOMContentLoaded` is a one-shot event that has already fired by the
+  //     time the qwikloader wires the listener in some engines (WebKit), so the
+  //     handler never runs there either.
   useOnDocument(
-    "DOMContentLoaded",
+    "qinit",
     $(async () => {
       await onMountHandler();
       await onMountTheme();
@@ -317,14 +329,11 @@ const Toaster = component$<ToasterProps>((props) => {
   );
 
   return (
-    // Remove item from normal navigation flow, only available via hotkey
-    // The outer `<section>` must stay in normal flow (never `display:none`) so
-    // its `onQVisible$` IntersectionObserver fires and wires up the toast
-    // subscription. The popover lives on an inner wrapper instead: a *closed*
-    // popover is `display:none` (UA style), which would suppress `qvisible` and
-    // leave the toaster unsubscribed — so it could never receive the first
-    // toast that would open it (chicken-and-egg). Decoupling them avoids that
-    // without depending on any author CSS (headless entry ships none).
+    // Remove item from normal navigation flow, only available via hotkey.
+    // The popover (top-layer) lives on an inner wrapper, not the outer
+    // `<section>`: a *closed* popover is `display:none` (UA style), which would
+    // suppress any visibility-based wiring on it. The `<section>` stays in
+    // normal flow.
     <section
       aria-label={customAriaLabel ?? `${containerAriaLabel} ${hotkeyLabel}`}
       tabIndex={-1}
@@ -332,7 +341,6 @@ const Toaster = component$<ToasterProps>((props) => {
       aria-relevant="additions text"
       aria-atomic="false"
       data-react-aria-top-layer
-      // onQVisible$={[onMountHandler, onMountTheme]}
     >
       <div
         ref={sectionRef}

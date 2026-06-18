@@ -64,7 +64,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+          key: playwright-v2-${{ runner.os }}-${{ matrix.browser }}-${{ steps.pw.outputs.version }}
 
       - name: Install Playwright (browser + system deps)
         if: steps.pw-cache.outputs.cache-hit != 'true'

@@ -65,7 +65,6 @@ export const Toast = component$<ToastProps>((props) => {
   const index = props.index;
   const toasts = props.toasts;
   const expandByDefault = props.expandByDefault;
-  const defaultRichColors = props.defaultRichColors;
 
   // signals
   const swipeDirection = useSignal<"x" | "y" | null>(null);
@@ -110,6 +109,13 @@ export const Toast = component$<ToastProps>((props) => {
     const toasterInvert = props.invert;
     const invertChecked = isSignal(toasterInvert) ? toasterInvert.value : toasterInvert;
     return Boolean(props.toast.invert ?? invertChecked ?? false);
+  });
+  // Per-toast `richColors` overrides the Toaster's `defaultRichColors` (which may
+  // be a `Signal`; unwrap it so a runtime change re-runs this computed).
+  const richColors = useComputed$(() => {
+    const base = props.defaultRichColors;
+    const resolved = isSignal(base) ? base.value : base;
+    return Boolean(props.toast.richColors ?? resolved ?? false);
   });
   const disabled = toastType === "loading";
 
@@ -358,7 +364,7 @@ export const Toast = component$<ToastProps>((props) => {
         toast?.classes?.[toastType as keyof ToastClassnames],
       ]}
       data-sonner-toast=""
-      data-rich-colors={String(Boolean(toast.richColors ?? defaultRichColors))}
+      data-rich-colors={String(richColors.value)}
       data-styled={String(!(toast.jsx || toast.unstyled || unstyled))}
       data-mounted={String(mounted.value)}
       data-promise={String(Boolean(toast.promise))}

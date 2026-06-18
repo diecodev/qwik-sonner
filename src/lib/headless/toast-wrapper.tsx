@@ -2,6 +2,8 @@ import {
   $,
   component$,
   isBrowser,
+  isSignal,
+  Signal,
   useComputed$,
   useOn,
   useOnDocument,
@@ -10,6 +12,7 @@ import {
 } from "@qwik.dev/core";
 import {
   Action,
+  Direction,
   ExternalToast,
   HeightT,
   Offset,
@@ -33,19 +36,26 @@ import {
 import { ToastState, toast } from "./state";
 import { Toast } from "./toast";
 
-function getDocumentDirection(): NonNullable<ToasterProps["dir"]> {
+function getDocumentDirection(): Direction {
   if (typeof window === "undefined") return "ltr";
   if (typeof document === "undefined") return "ltr"; // For Fresh purpose
 
   const dirAttribute = document.documentElement.getAttribute("dir");
 
   if (dirAttribute === "auto" || !dirAttribute) {
-    return window.getComputedStyle(document.documentElement).direction as NonNullable<
-      ToasterProps["dir"]
-    >;
+    return window.getComputedStyle(document.documentElement).direction as Direction;
   }
 
-  return dirAttribute as NonNullable<ToasterProps["dir"]>;
+  return dirAttribute as Direction;
+}
+
+// Resolve the `dir` prop (plain or `Signal`) to a concrete direction. Reads the
+// signal's `.value` during render so the `<ol>` stays reactive on the resumed
+// singleton, and re-reads the document direction each render so `"auto"` (and an
+// omitted prop) keep tracking the live `<html dir>` (see the dir e2e tests).
+function resolveDir(dir: Signal<Direction> | Direction | undefined): Direction {
+  const d = isSignal(dir) ? dir.value : dir;
+  return d == null || d === "auto" ? getDocumentDirection() : d;
 }
 
 function assignOffset(defaultOffset?: Offset, mobileOffset?: Offset) {
@@ -120,18 +130,15 @@ export function useSonner() {
 
 const Toaster = component$<ToasterProps>((props) => {
   const {
-    position = "bottom-right",
     hotkey = ["altKey", "KeyT"],
     expand,
     class: localClass,
     offset,
     mobileOffset,
-    theme = "light",
     duration,
     style,
     visibleToasts = VISIBLE_TOASTS_AMOUNT,
     toastOptions,
-    dir = getDocumentDirection(),
     gap = GAP,
     loadingIcon,
     icons,
@@ -145,7 +152,10 @@ const Toaster = component$<ToasterProps>((props) => {
   const heights = useSignal<HeightT[]>([]);
   const expanded = useSignal(false);
   const interacting = useSignal(false);
-  const actualTheme = useSignal<"light" | "dark">(theme !== "system" ? theme : "light");
+  // Initial theme for SSR; the task below keeps it in sync afterwards. Unwrap a
+  // `Signal` prop; a plain value (or none) is used as-is.
+  const initialTheme = isSignal(props.theme) ? props.theme.value : (props.theme ?? "light");
+  const actualTheme = useSignal<"light" | "dark">(initialTheme === "dark" ? "dark" : "light");
   const listRef = useSignal<HTMLOListElement>();
   const lastFocusedElementRef = useSignal<HTMLElement | null>(null);
   const isFocusWithinRef = useSignal(false);
@@ -158,9 +168,14 @@ const Toaster = component$<ToasterProps>((props) => {
   });
 
   const possiblePositions = useComputed$(() => {
+    // Resolve `position` reactively: a `Signal<Position>` is read via `.value`
+    // (stays live on the resumed singleton), a plain value is used as-is.
+    const basePosition = isSignal(props.position)
+      ? props.position.value
+      : (props.position ?? "bottom-right");
     return Array.from(
       new Set(
-        [position].concat(
+        [basePosition].concat(
           filteredToasts.value.filter((toast) => toast.position).map((toast) => toast.position!),
         ),
       ),
@@ -223,7 +238,8 @@ const Toaster = component$<ToasterProps>((props) => {
 
   // Resolve the system color scheme (and listen for changes) on the client.
   const onMountTheme = $(() => {
-    if (props.theme !== "system") return;
+    const t = isSignal(props.theme) ? props.theme.value : props.theme;
+    if (t !== "system") return;
 
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
     actualTheme.value = mql.matches ? "dark" : "light";
@@ -232,9 +248,13 @@ const Toaster = component$<ToasterProps>((props) => {
     });
   });
 
-  // Keep `actualTheme` in sync with an explicit `theme` prop (incl. SSR).
+  // Keep `actualTheme` in sync with the `theme` prop (incl. SSR). Tracking the
+  // unwrapped value subscribes to a `Signal` prop's `.value`, so changing the
+  // signal at runtime re-runs this task on the resumed singleton.
   useTask$(({ track }) => {
-    const t = track(() => props.theme) as Theme | undefined;
+    const t = track(() => (isSignal(props.theme) ? props.theme.value : props.theme)) as
+      | Theme
+      | undefined;
     if (t !== "system") {
       actualTheme.value = t === "dark" ? "dark" : "light";
       return;
@@ -327,7 +347,7 @@ const Toaster = component$<ToasterProps>((props) => {
           return (
             <ol
               key={pos}
-              dir={dir === "auto" ? getDocumentDirection() : dir}
+              dir={resolveDir(props.dir)}
               tabIndex={-1}
               ref={listRef}
               class={localClass}

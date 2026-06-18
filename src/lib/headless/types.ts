@@ -124,6 +124,8 @@ export type Position =
   | "top-center"
   | "bottom-center";
 
+export type Direction = "rtl" | "ltr" | "auto";
+
 export type SwipeDirection = "top" | "right" | "bottom" | "left";
 
 export interface HeightT {
@@ -159,10 +161,19 @@ export type Offset =
 export interface ToasterProps {
   id?: string;
   invert?: Signal<boolean> | boolean;
-  theme?: "light" | "dark" | "system";
-  position?: Position;
+  /** Color scheme; pass a `Signal` for reactive runtime changes (see `position`). */
+  theme?: Signal<Theme> | Theme;
+  /**
+   * Corner the toasts stack in. Pass a plain `Position` to set it once, or a
+   * `Signal<Position>` to change it reactively at runtime — the `Toaster` is an
+   * SSR-resumed singleton whose render doesn't re-run on the client, so a plain
+   * prop is read only at mount, while a signal stays live (same pattern as
+   * `invert`). Individual toasts can still override via their own `position`.
+   */
+  position?: Signal<Position> | Position;
   hotkey?: string[];
-  richColors?: boolean;
+  /** Pass a `Signal` for reactive runtime changes (see `position`). */
+  richColors?: Signal<boolean> | boolean;
   expand?: boolean;
   duration?: number;
   gap?: number;
@@ -173,7 +184,8 @@ export interface ToasterProps {
   style?: CSSProperties;
   offset?: Offset;
   mobileOffset?: Offset;
-  dir?: "rtl" | "ltr" | "auto";
+  /** Text direction; pass a `Signal` for reactive runtime changes (see `position`). */
+  dir?: Signal<Direction> | Direction;
   swipeDirections?: SwipeDirection[];
   /**
    * Promote the toaster to the browser's *top layer* via the native Popover
@@ -233,7 +245,7 @@ export interface ToastProps {
   classes?: ToastClassnames;
   icons?: ToastIcons;
   closeButtonAriaLabel?: string;
-  defaultRichColors?: boolean;
+  defaultRichColors?: Signal<boolean> | boolean;
 }
 
 export enum SwipeStateTypes {

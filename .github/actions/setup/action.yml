@@ -1,0 +1,27 @@
+name: Setup
+description: Set up pnpm (pinned via packageManager), Node 22, and install dependencies frozen
+
+inputs:
+  registry-url:
+    description: npm registry URL. Set this only in publish jobs so NODE_AUTH_TOKEN is wired up.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Install pnpm
+      uses: pnpm/action-setup@v6
+      with:
+        version: 11
+
+    - name: Use Node.js 24
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+        cache: pnpm
+        registry-url: ${{ inputs.registry-url }}
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      shell: bash

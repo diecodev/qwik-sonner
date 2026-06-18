@@ -41,8 +41,23 @@ jobs:
       - name: Ensure recent npm
         run: npm install -g npm@latest
 
+      # Prerelease versions (e.g. 2.0.0-beta.0) publish under their identifier
+      # tag (`beta`) so `latest` keeps pointing at the stable line; plain
+      # versions publish under `latest`.
+      - name: Resolve npm dist-tag
+        id: disttag
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *-* ]]; then
+            TAG="${VERSION#*-}"; TAG="${TAG%%.*}"
+          else
+            TAG="latest"
+          fi
+          echo "Publishing $VERSION under dist-tag '$TAG'"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
       - name: Publish via Trusted Publishing (OIDC)
-        run: npm publish *.tgz --provenance --access public
+        run: npm publish *.tgz --provenance --access public --tag ${{ steps.disttag.outputs.tag }}
 
   github_release:
     name: GitHub release & changelog

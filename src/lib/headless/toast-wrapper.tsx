@@ -2,7 +2,6 @@ import {
   $,
   component$,
   isBrowser,
-  QwikVisibleEvent,
   useComputed$,
   useOn,
   useOnDocument,
@@ -138,9 +137,11 @@ const Toaster = component$<ToasterProps>((props) => {
     icons,
     customAriaLabel,
     containerAriaLabel = "Notifications",
+    topLayer = false,
   } = props;
 
   const toasts = useSignal<ToastT[]>([]);
+  const sectionRef = useSignal<HTMLElement>();
   const heights = useSignal<HeightT[]>([]);
   const expanded = useSignal(false);
   const interacting = useSignal(false);
@@ -168,15 +169,36 @@ const Toaster = component$<ToasterProps>((props) => {
 
   const hotkeyLabel = hotkey.join("+").replace(/Key/g, "").replace(/Digit/g, "");
 
-  const removeToast = $((toastToRemove: ToastT) => {
+  // Keep the top-layer popover state in sync with the toast count: show it the
+  // moment a toast appears, hide it once the toaster empties. Runs only from
+  // client event QRLs (`subscribe`/`removeToast`), never a task, so it fires in
+  // consumer bundles too. No-ops when `topLayer` is off or the browser lacks
+  // the Popover API (`showPopover` undefined) — older engines just ignore the
+  // `popover` attribute and fall back to the normal `z-index` stacking.
+  const syncTopLayer = $(() => {
+    if (!topLayer) return;
+    const el = sectionRef.value;
+    if (!el || typeof el.showPopover !== "function") return;
+
+    const hasToasts = toasts.value.length > 0;
+    const isOpen = el.matches(":popover-open");
+    if (hasToasts && !isOpen) {
+      el.showPopover();
+    } else if (!hasToasts && isOpen) {
+      el.hidePopover();
+    }
+  });
+
+  const removeToast = $(async (toastToRemove: ToastT) => {
     const existing = toasts.value.find((t) => t.id === toastToRemove.id);
     if (existing && !existing.delete) {
       ToastState.dismiss(toastToRemove.id);
     }
     toasts.value = toasts.value.filter(({ id }) => id !== toastToRemove.id);
+    await syncTopLayer();
   });
 
-  const onMountHandler = $((_: QwikVisibleEvent, _1: HTMLElement) => {
+  const onMountHandler = $(() => {
     return ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
         toasts.value = toasts.value.map((t) => (t.id === incoming.id ? { ...t, delete: true } : t));
@@ -195,11 +217,12 @@ const Toaster = component$<ToasterProps>((props) => {
       }
 
       toasts.value = [incoming as ToastT, ...toasts.value];
+      void syncTopLayer();
     });
   });
 
   // Resolve the system color scheme (and listen for changes) on the client.
-  const onMountTheme = $((_: QwikVisibleEvent, _1: HTMLElement) => {
+  const onMountTheme = $(() => {
     if (props.theme !== "system") return;
 
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
@@ -265,8 +288,23 @@ const Toaster = component$<ToasterProps>((props) => {
     }
   });
 
+  useOnDocument(
+    "DOMContentLoaded",
+    $(async () => {
+      await onMountHandler();
+      await onMountTheme();
+    }),
+  );
+
   return (
     // Remove item from normal navigation flow, only available via hotkey
+    // The outer `<section>` must stay in normal flow (never `display:none`) so
+    // its `onQVisible$` IntersectionObserver fires and wires up the toast
+    // subscription. The popover lives on an inner wrapper instead: a *closed*
+    // popover is `display:none` (UA style), which would suppress `qvisible` and
+    // leave the toaster unsubscribed — so it could never receive the first
+    // toast that would open it (chicken-and-egg). Decoupling them avoids that
+    // without depending on any author CSS (headless entry ships none).
     <section
       aria-label={customAriaLabel ?? `${containerAriaLabel} ${hotkeyLabel}`}
       tabIndex={-1}
@@ -274,109 +312,118 @@ const Toaster = component$<ToasterProps>((props) => {
       aria-relevant="additions text"
       aria-atomic="false"
       data-react-aria-top-layer
-      onQVisible$={[onMountHandler, onMountTheme]}
+      // onQVisible$={[onMountHandler, onMountTheme]}
     >
-      {possiblePositions.value.map((pos, index) => {
-        const [y, x] = pos.split("-");
+      <div
+        ref={sectionRef}
+        data-sonner-toaster-popover={topLayer ? "" : undefined}
+        popover={topLayer ? "manual" : undefined}
+      >
+        {possiblePositions.value.map((pos, index) => {
+          const [y, x] = pos.split("-");
 
-        if (!filteredToasts.value.length) return null;
+          if (!filteredToasts.value.length) return null;
 
-        return (
-          <ol
-            key={pos}
-            dir={dir === "auto" ? getDocumentDirection() : dir}
-            tabIndex={-1}
-            ref={listRef}
-            class={localClass}
-            data-sonner-toaster
-            data-sonner-theme={actualTheme.value}
-            data-y-position={y}
-            data-x-position={x}
-            style={{
-              "--front-toast-height": `${heights.value[0]?.height ?? 0}px`,
-              "--width": `${TOAST_WIDTH}px`,
-              "--gap": `${gap}px`,
-              ...style,
-              ...assignOffset(offset, mobileOffset),
-            }}
-            onFocusOut$={(event, target) => {
-              if (isFocusWithinRef.value && !target.contains(event.relatedTarget as HTMLElement)) {
-                isFocusWithinRef.value = false;
-                if (lastFocusedElementRef.value) {
-                  lastFocusedElementRef.value.focus({
-                    preventScroll: true,
-                  });
-                  lastFocusedElementRef.value = null;
+          return (
+            <ol
+              key={pos}
+              dir={dir === "auto" ? getDocumentDirection() : dir}
+              tabIndex={-1}
+              ref={listRef}
+              class={localClass}
+              data-sonner-toaster
+              data-sonner-theme={actualTheme.value}
+              data-y-position={y}
+              data-x-position={x}
+              style={{
+                "--front-toast-height": `${heights.value[0]?.height ?? 0}px`,
+                "--width": `${TOAST_WIDTH}px`,
+                "--gap": `${gap}px`,
+                ...style,
+                ...assignOffset(offset, mobileOffset),
+              }}
+              onFocusOut$={(event, target) => {
+                if (
+                  isFocusWithinRef.value &&
+                  !target.contains(event.relatedTarget as HTMLElement)
+                ) {
+                  isFocusWithinRef.value = false;
+                  if (lastFocusedElementRef.value) {
+                    lastFocusedElementRef.value.focus({
+                      preventScroll: true,
+                    });
+                    lastFocusedElementRef.value = null;
+                  }
                 }
-              }
-            }}
-            onFocusIn$={(event) => {
-              const focused = event.target;
-              const isNotDismissible =
-                focused instanceof HTMLElement && focused.dataset.dismissible === "false";
+              }}
+              onFocusIn$={(event) => {
+                const focused = event.target;
+                const isNotDismissible =
+                  focused instanceof HTMLElement && focused.dataset.dismissible === "false";
 
-              if (isNotDismissible) return;
+                if (isNotDismissible) return;
 
-              if (!isFocusWithinRef.value) {
-                isFocusWithinRef.value = true;
-                lastFocusedElementRef.value = event.relatedTarget as HTMLElement;
-              }
-            }}
-            onMouseEnter$={() => (expanded.value = true)}
-            onMouseMove$={() => (expanded.value = true)}
-            onMouseLeave$={() => {
-              // Avoid setting expanded to false when interacting with a toast, e.g. swiping
-              if (!interacting.value) {
-                expanded.value = false;
-              }
-            }}
-            onDragEnd$={() => (expanded.value = false)}
-            onPointerDown$={(event) => {
-              const target = event.target;
-              const isNotDismissible =
-                target instanceof HTMLElement && target.dataset.dismissible === "false";
+                if (!isFocusWithinRef.value) {
+                  isFocusWithinRef.value = true;
+                  lastFocusedElementRef.value = event.relatedTarget as HTMLElement;
+                }
+              }}
+              onMouseEnter$={() => (expanded.value = true)}
+              onMouseMove$={() => (expanded.value = true)}
+              onMouseLeave$={() => {
+                // Avoid setting expanded to false when interacting with a toast, e.g. swiping
+                if (!interacting.value) {
+                  expanded.value = false;
+                }
+              }}
+              onDragEnd$={() => (expanded.value = false)}
+              onPointerDown$={(event) => {
+                const target = event.target;
+                const isNotDismissible =
+                  target instanceof HTMLElement && target.dataset.dismissible === "false";
 
-              if (isNotDismissible) return;
-              interacting.value = true;
-            }}
-            onPointerUp$={() => (interacting.value = false)}
-          >
-            {filteredToasts.value
-              .filter((t) => (!t.position && index === 0) || t.position === pos)
-              .map((t, i) => (
-                <Toast
-                  key={t.id}
-                  icons={icons}
-                  index={i}
-                  toast={t}
-                  defaultRichColors={props.richColors}
-                  duration={toastOptions?.duration ?? duration}
-                  class={toastOptions?.class}
-                  descriptionClass={toastOptions?.descriptionClass}
-                  invert={props.invert ?? false}
-                  visibleToasts={visibleToasts}
-                  closeButton={toastOptions?.closeButton ?? props.closeButton ?? false}
-                  interacting={interacting.value}
-                  position={pos}
-                  style={toastOptions?.style}
-                  unstyled={toastOptions?.unstyled}
-                  classes={toastOptions?.classes}
-                  cancelButtonStyle={toastOptions?.cancelButtonStyle}
-                  actionButtonStyle={toastOptions?.actionButtonStyle}
-                  closeButtonAriaLabel={toastOptions?.closeButtonAriaLabel}
-                  removeToast={removeToast}
-                  toasts={filteredToasts.value.filter((item) => item.position === t.position)}
-                  heights={heights}
-                  expandByDefault={expand ?? false}
-                  gap={gap}
-                  loadingIcon={loadingIcon}
-                  expanded={expanded}
-                  swipeDirections={props.swipeDirections}
-                />
-              ))}
-          </ol>
-        );
-      })}
+                if (isNotDismissible) return;
+                interacting.value = true;
+              }}
+              onPointerUp$={() => (interacting.value = false)}
+            >
+              {filteredToasts.value
+                .filter((t) => (!t.position && index === 0) || t.position === pos)
+                .map((t, i) => (
+                  <Toast
+                    key={t.id}
+                    icons={icons}
+                    index={i}
+                    toast={t}
+                    defaultRichColors={props.richColors}
+                    duration={toastOptions?.duration ?? duration}
+                    class={toastOptions?.class}
+                    descriptionClass={toastOptions?.descriptionClass}
+                    invert={props.invert ?? false}
+                    visibleToasts={visibleToasts}
+                    closeButton={toastOptions?.closeButton ?? props.closeButton ?? false}
+                    interacting={interacting.value}
+                    position={pos}
+                    style={toastOptions?.style}
+                    unstyled={toastOptions?.unstyled}
+                    classes={toastOptions?.classes}
+                    cancelButtonStyle={toastOptions?.cancelButtonStyle}
+                    actionButtonStyle={toastOptions?.actionButtonStyle}
+                    closeButtonAriaLabel={toastOptions?.closeButtonAriaLabel}
+                    removeToast={removeToast}
+                    toasts={filteredToasts.value.filter((item) => item.position === t.position)}
+                    heights={heights}
+                    expandByDefault={expand ?? false}
+                    gap={gap}
+                    loadingIcon={loadingIcon}
+                    expanded={expanded}
+                    swipeDirections={props.swipeDirections}
+                  />
+                ))}
+            </ol>
+          );
+        })}
+      </div>
     </section>
   );
 });

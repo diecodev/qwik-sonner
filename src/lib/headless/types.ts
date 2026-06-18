@@ -176,6 +176,18 @@ export interface ToasterProps {
   dir?: "rtl" | "ltr" | "auto";
   swipeDirections?: SwipeDirection[];
   /**
+   * Promote the toaster to the browser's *top layer* via the native Popover
+   * API so toasts render above native modals (`<dialog>.showModal()`) and
+   * fullscreen elements, which otherwise paint over any `z-index`. Opt-in;
+   * when omitted the toaster stays in the normal DOM tree (sonner parity).
+   * Gracefully no-ops in browsers without Popover API support.
+   *
+   * The styled entry ships the required UA-style reset; consumers of the
+   * headless entry must neutralize the default `[popover]` box themselves
+   * (see `[data-sonner-toaster-popover]` in the docs).
+   */
+  topLayer?: boolean;
+  /**
    * @deprecated Please use the `icons` prop instead:
    * ```jsx
    * <Toaster

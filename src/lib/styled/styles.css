@@ -24,6 +24,32 @@ html[dir="rtl"],
   --toast-close-button-transform: translate(35%, -35%);
 }
 
+/*
+ * Top-layer container (opt-in `topLayer` prop). The toaster `<section>` is
+ * promoted to the browser top layer via the Popover API so toasts paint above
+ * native modals. Neutralize the UA `[popover]` box (centered, bordered,
+ * `fit-content`) so it spans the viewport as a transparent pass-through layer;
+ * the inner `[data-sonner-toaster]` lists keep their own fixed positioning.
+ */
+[data-sonner-toaster-popover]:popover-open {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  pointer-events: none;
+}
+
+[data-sonner-toaster-popover] [data-sonner-toaster] {
+  pointer-events: auto;
+}
+
 [data-sonner-toaster] {
   position: fixed;
   width: var(--width);

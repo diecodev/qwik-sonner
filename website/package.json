@@ -25,7 +25,6 @@
     "@qwik.dev/router": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
-    "autoprefixer": "10.5.0",
     "copy-to-clipboard": "4.0.2",
     "eslint-plugin-qwik": "catalog:",
     "oxfmt": "catalog:",

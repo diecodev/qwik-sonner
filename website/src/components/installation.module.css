@@ -32,6 +32,6 @@
   align-items: center;
 }
 
-.copy div {
+.copy span {
   display: flex;
 }

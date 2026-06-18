@@ -50,9 +50,6 @@ importers:
       '@qwik.dev/core':
         specifier: 'catalog:'
         version: 2.0.0-beta.37(prettier@3.8.4)(vite@7.3.5(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
-      '@qwik.dev/router':
-        specifier: 'catalog:'
-        version: 2.0.0-beta.37(@qwik.dev/core@2.0.0-beta.37(prettier@3.8.4)(vite@7.3.5(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0)))(rollup@4.62.0)(typescript@6.0.3)(vite@7.3.5(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.1(vite@7.3.5(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))

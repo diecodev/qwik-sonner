@@ -3,7 +3,6 @@ import { qwikVite } from "@qwik.dev/core/optimizer";
 import tsconfigPaths from "vite-tsconfig-paths";
 import pkg from "./package.json";
 import tailwindcss from "@tailwindcss/vite";
-import { qwikRouter } from "@qwik.dev/router/vite";
 
 type DepMap = Record<string, string>;
 const { dependencies = {}, peerDependencies = {} } = pkg as {
@@ -44,6 +43,6 @@ export default defineConfig(() => {
         },
       },
     },
-    plugins: [qwikVite(), qwikRouter(), tsconfigPaths(), tailwindcss()],
+    plugins: [qwikVite(), tsconfigPaths(), tailwindcss()],
   };
 });

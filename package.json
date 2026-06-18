@@ -45,17 +45,17 @@
     }
   },
   "scripts": {
-    "build": "qwik build",
+    "build": "pnpm run build.types && pnpm run build.lib",
     "build.lib": "vite build --mode lib",
     "build.types": "tsc --emitDeclarationOnly -p tsconfig.lib.json",
-    "dev": "vite --mode ssr",
-    "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
+    "dev": "pnpm --filter test dev",
+    "dev.debug": "pnpm --filter test dev.debug",
     "fmt": "oxfmt .",
     "fmt.check": "oxfmt --check .",
     "lint": "oxlint --debug=files .",
     "release": "bumpp --commit --tag --push",
     "prepublishOnly": "pnpm run build.types && pnpm run build.lib",
-    "start": "vite --open --mode ssr",
+    "start": "pnpm --filter test start",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "qwik": "qwik"
@@ -63,7 +63,6 @@
   "devDependencies": {
     "@playwright/test": "^1.61.0",
     "@qwik.dev/core": "catalog:",
-    "@qwik.dev/router": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "bumpp": "11.1.0",

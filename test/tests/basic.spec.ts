@@ -188,6 +188,13 @@ test.describe("Basic functionality", () => {
     const toast = page.locator("[data-sonner-toast]");
 
     await toast.waitFor({ state: "visible" });
+    // Wait for the enter animation to settle before measuring/swiping —
+    // otherwise the toast is still sliding in (translateY) and the swipe
+    // starts from a transient position.
+    await page.waitForFunction(() => {
+      const el = document.querySelector("[data-sonner-toast]") as HTMLElement | null;
+      return !!el && parseFloat(getComputedStyle(el).opacity) > 0.99;
+    });
 
     const box = await toast.boundingBox();
     if (!box) return;

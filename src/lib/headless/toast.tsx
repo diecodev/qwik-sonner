@@ -28,6 +28,15 @@ function getDefaultSwipeDirections(position: string): Array<SwipeDirection> {
   return directions;
 }
 
+// Run `cb` after the browser has painted the current frame. One rAF fires
+// *before* the next paint; two fire *after* it — long enough for a just-added
+// element to be painted in its initial state, which is what lets its first CSS
+// transition animate (without this the first toast never animates, because its
+// `<ol>` + `<li>` are created in the same render and the flip beats the paint).
+function afterNextPaint(cb: () => void) {
+  requestAnimationFrame(() => requestAnimationFrame(cb));
+}
+
 export const Toast = component$<ToastProps>((props) => {
   // Stable props (do not change during a toast's lifetime) — safe to destructure.
   const {
@@ -224,13 +233,13 @@ export const Toast = component$<ToastProps>((props) => {
     remainingTime.value = d;
   });
 
-  // Trigger enter animation without using a visible task: defer the
-  // `mounted` flip to the next animation frame so the CSS transition runs.
-  useTask$(() => {
-    if (!isBrowser) return;
-    requestAnimationFrame(() => {
-      mounted.value = true;
-    });
+  // Enter animation: the toast renders collapsed (`data-mounted="false"`); the
+  // CSS transition animates the flip to `"true"`. `track` the ref so this runs
+  // only once the `<li>` is in the DOM, then flip after it has been painted.
+  useTask$(({ track }) => {
+    if (track(() => toastRef.value) && !mounted.value) {
+      afterNextPaint(() => (mounted.value = true));
+    }
   });
 
   // Add toast height to the heights array after it mounts; clean up on unmount.

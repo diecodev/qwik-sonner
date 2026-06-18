@@ -12,6 +12,14 @@ type Pos =
   | "bottom-center"
   | "bottom-right";
 
+const PACKAGE_MANAGERS = ["npm", "pnpm", "yarn", "bun"] as const;
+const INSTALL_COMMANDS: Record<(typeof PACKAGE_MANAGERS)[number], string> = {
+  npm: "npm install qwik-sonner",
+  pnpm: "pnpm add qwik-sonner",
+  yarn: "yarn add qwik-sonner",
+  bun: "bun add qwik-sonner",
+};
+
 export default component$(() => {
   // Live controls wired into the single Toaster rendered at the bottom so the
   // demo buttons actually reflect what each snippet documents.
@@ -20,6 +28,7 @@ export default component$(() => {
   const richColors = useSignal(false);
   const closeButton = useSignal(false);
   const expand = useSignal(false);
+  const pm = useSignal<(typeof PACKAGE_MANAGERS)[number]>("npm");
 
   return (
     <div class="wrapper light">
@@ -101,18 +110,23 @@ export default component$(() => {
           {/* Installation ------------------------------------------------ */}
           <section id="installation" class={styles.section}>
             <h2>Installation</h2>
+            <div class="buttons">
+              {PACKAGE_MANAGERS.map((name) => (
+                <button
+                  key={name}
+                  class="button"
+                  data-active={pm.value === name}
+                  onClick$={() => (pm.value = name)}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
             <CodeBlock
-              code={`# npm
-npm install qwik-sonner
-
-# pnpm
-pnpm add qwik-sonner
-
-# yarn
-yarn add qwik-sonner
-
-# bun
-bun add qwik-sonner`}
+              code={INSTALL_COMMANDS[pm.value]}
+              style={{
+                marginBlockStart: 0,
+              }}
             />
             <div class={styles.note}>
               <strong>Requires Qwik v2</strong> (<code>@qwik.dev/core</code>). qwik-sonner targets

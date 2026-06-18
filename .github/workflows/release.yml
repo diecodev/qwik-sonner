@@ -1,51 +1,62 @@
 name: Release
 
-permissions:
-  contents: write
-
 on:
   push:
     tags:
       - "v*"
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false # never interrupt an in-flight publish
+
+permissions:
+  contents: read
+
 jobs:
-  npm_publish:
+  # Full quality gate (lint + typecheck + lib build + Playwright) before anything ships.
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Publish to npm
+    needs: ci
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC token for npm Trusted Publishing (no NPM_TOKEN needed)
     steps:
-      - name: clone repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
 
-      - name: installing pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      - name: Build library
+        run: pnpm build.types && pnpm build.lib
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-          registry-url: "https://registry.npmjs.org"
+      # Pack with pnpm so `catalog:`/`workspace:` specifiers are rewritten to real
+      # versions in the tarball, but publish with the npm CLI: pnpm publish does
+      # not yet support npm's OIDC Trusted Publishing (pnpm/pnpm#9812, #11513).
+      - name: Pack
+        run: pnpm pack --pack-destination .
 
-      - name: Building library
-        run: pnpm install --no-frozen-lockfile
+      # Trusted Publishing requires npm CLI >= 11.5.1.
+      - name: Ensure recent npm
+        run: npm install -g npm@latest
 
-      - run: npm publish --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Publish via Trusted Publishing (OIDC)
+        run: npm publish *.tgz --provenance --access public
 
-  gh_release:
-    needs: [npm_publish]
+  github_release:
+    name: GitHub release & changelog
+    needs: publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-
-      - run: npx changelogithub # or changelogithub@0.12 if ensure the stable result
+          fetch-depth: 0 # changelogithub needs full history to diff tags
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: npx changelogithub
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

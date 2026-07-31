@@ -20,7 +20,7 @@ jobs:
     name: Lint, typecheck & build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
 
       - name: Lint
@@ -47,7 +47,7 @@ jobs:
       matrix:
         browser: [chromium, webkit]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
 
       # The Playwright webServer runs `pnpm dev` in ./test, which imports the
@@ -61,7 +61,7 @@ jobs:
 
       - name: Cache Playwright browsers
         id: pw-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-v2-${{ runner.os }}-${{ matrix.browser }}-${{ steps.pw.outputs.version }}

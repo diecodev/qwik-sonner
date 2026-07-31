@@ -1,7 +1,7 @@
 import { useDocumentHead, useLocation } from "@qwik.dev/router";
 
 import { component$ } from "@qwik.dev/core";
-const ogImage = "https://qwik-sonner.deno.dev/og.png";
+const ogImage = "https://qwik-sonner.dieco.dev/og.png";
 /**
  * The RouterHead component is placed inside of the document `<head>` element.
  */
@@ -23,7 +23,7 @@ export const RouterHead = component$(() => {
       <meta name="og:image" content={ogImage} />
 
       {/* URL */}
-      <meta name="og:url" content="https://qwik-sonner.deno.dev/" />
+      <meta name="og:url" content="https://qwik-sonner.dieco.dev/" />
 
       {/* General */}
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />

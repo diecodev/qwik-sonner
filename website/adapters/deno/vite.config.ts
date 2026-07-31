@@ -15,7 +15,7 @@ export default extendConfig(baseConfig, () => {
       denoServerAdapter({
         ssg: {
           include: ["/*"],
-          origin: "https://yoursite.dev",
+          origin: "https://qwik-sonner.dieco.dev",
         },
       }),
     ],

@@ -1,50 +1,43 @@
 /*
  * WHAT IS THIS FILE?
  *
- * It's the entry point for the Deno HTTP server when building for production.
+ * It's the entry point for the Deno server when building for production.
  *
  * Learn more about the Deno integration here:
- * - https://qwik.builder.io/docs/deployments/deno/
- * - https://deno.com/manual/examples/http_server
+ * - https://qwik.dev/docs/deployments/deno/
+ * - https://docs.deno.com/runtime/
  *
  */
-import { createQwikCity } from "@builder.io/qwik-city/middleware/deno";
-import qwikCityPlan from "@qwik-city-plan";
-import { manifest } from "@qwik-client-manifest";
+import { createQwikRouter, type ServeHandlerInfo } from "@qwik.dev/router/middleware/deno";
 import render from "./entry.ssr";
-// @ts-ignore
-import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
 
-// Create the Qwik City Deno middleware
-const { router, notFound, staticFile } = createQwikCity({
-  render,
-  qwikCityPlan,
-  manifest,
-});
+// Minimal Deno global surface used below, so `tsc` stays green without Deno's lib types.
+declare const Deno: {
+  env: { get(name: string): string | undefined };
+  serve(
+    options: { port: number },
+    handler: (request: Request, info: ServeHandlerInfo) => Promise<Response>,
+  ): void;
+};
+
+// Create the Qwik Router Deno middleware
+const { router, notFound, staticFile } = createQwikRouter({ render });
 
 // Allow for dynamic port
 const port = Number(Deno.env.get("PORT") ?? 3009);
 
-/* eslint-disable */
-console.log(`Server starter: http://localhost:${port}/app/`);
+Deno.serve({ port }, async (request: Request, info: ServeHandlerInfo) => {
+  const staticResponse = await staticFile(request);
+  if (staticResponse) {
+    return staticResponse;
+  }
 
-serve(
-  async (request: Request, conn: any) => {
-    const staticResponse = await staticFile(request);
-    if (staticResponse) {
-      return staticResponse;
-    }
+  // Server-side render this request with Qwik Router
+  const qwikRouterResponse = await router(request, info);
+  if (qwikRouterResponse) {
+    return qwikRouterResponse;
+  }
 
-    // Server-side render this request with Qwik City
-    const qwikCityResponse = await router(request, conn);
-    if (qwikCityResponse) {
-      return qwikCityResponse;
-    }
-
-    // Path not found
-    return notFound(request);
-  },
-  { port },
-);
-
-declare const Deno: any;
+  // Path not found
+  return notFound(request);
+});

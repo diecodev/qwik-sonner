@@ -1,14 +1,15 @@
 {
   "name": "qwik-sonner",
-  "version": "1.0.3",
+  "version": "2.0.0-beta.1",
+  "private": false,
   "description": "An opinionated toast component for Qwik.",
   "keywords": [
     "qwik",
     "qwik library",
-    "typescript",
-    "toast",
     "qwik sonner",
-    "sonner"
+    "sonner",
+    "toast",
+    "typescript"
   ],
   "author": {
     "name": "diecodev",
@@ -24,75 +25,60 @@
     "type": "git",
     "url": "git+https://github.com/diecodev/qwik-sonner.git"
   },
-  "main": "./lib/index.qwik.mjs",
-  "qwik": "./lib/index.qwik.mjs",
-  "types": "./lib-types/index.d.ts",
   "files": [
     "lib",
     "lib-types"
   ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./lib/index.qwik.mjs",
+  "module": "./lib/index.qwik.mjs",
+  "types": "./lib-types/index.d.ts",
   "exports": {
     ".": {
-      "node": {
-        "import": "./lib/index.qwik.mjs",
-        "require": "./lib/index.qwik.cjs",
-        "types": "./lib-types/index.d.ts"
-      },
-      "default": {
-        "import": "./lib/index.qwik.mjs",
-        "require": "./lib/index.qwik.cjs",
-        "types": "./lib-types/index.d.ts"
-      }
+      "types": "./lib-types/index.d.ts",
+      "import": "./lib/index.qwik.mjs"
     },
     "./headless": {
-      "node": {
-        "import": "./lib/headless.qwik.mjs",
-        "require": "./lib/headless.qwik.cjs",
-        "types": "./lib-types/headless/toast-wrapper.d.ts"
-      },
-      "default": {
-        "import": "./lib/headless.qwik.mjs",
-        "require": "./lib/headless.qwik.cjs",
-        "types": "./lib-types/headless/toast-wrapper.d.ts"
-      }
+      "types": "./lib-types/headless/toast-wrapper.d.ts",
+      "import": "./lib/headless.qwik.mjs"
     }
   },
-  "engines": {
-    "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
-  },
-  "private": false,
-  "type": "module",
   "scripts": {
-    "build": "qwik build",
-    "build.lib": "ENTRY=styled vite build --mode lib && ENTRY=headless vite build --mode lib",
+    "build": "pnpm run build.types && pnpm run build.lib",
+    "build.lib": "vite build --mode lib",
     "build.types": "tsc --emitDeclarationOnly -p tsconfig.lib.json",
-    "dev": "vite --mode ssr",
-    "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
-    "fmt": "prettier --write .",
-    "fmt.check": "prettier --check .",
-    "lint": "eslint \"src/**/*.ts*\"",
+    "dev": "pnpm --filter test dev",
+    "dev.debug": "pnpm --filter test dev.debug",
+    "fmt": "oxfmt .",
+    "fmt.check": "oxfmt --check .",
+    "lint": "oxlint --debug=files .",
     "release": "bumpp --commit --tag --push",
-    "prepublishOnly": "pnpm build",
-    "start": "vite --open --mode ssr",
+    "prepublishOnly": "pnpm run build.types && pnpm run build.lib",
+    "start": "pnpm --filter test start",
     "test": "playwright test",
+    "test:ui": "playwright test --ui",
     "qwik": "qwik"
   },
   "devDependencies": {
-    "@builder.io/qwik": "1.5.3",
-    "@playwright/test": "^1.38.1",
-    "@types/dompurify": "3.0.5",
-    "@types/eslint": "^8.56.10",
-    "@types/node": "^20.12.7",
-    "@typescript-eslint/eslint-plugin": "^7.7.1",
-    "@typescript-eslint/parser": "^7.7.1",
-    "bumpp": "9.4.0",
-    "dompurify": "3.1.2",
-    "eslint-plugin-qwik": "latest",
-    "eslint": "^8.57.0",
-    "prettier": "^3.2.5",
-    "typescript": "5.4.5",
-    "undici": "*",
-    "vite": "^5.2.10",
-    "vite-tsconfig-paths": "^4.2.1"
-  }
+    "@playwright/test": "^1.61.0",
+    "@qwik.dev/core": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@types/node": "catalog:",
+    "bumpp": "11.1.0",
+    "eslint-plugin-qwik": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "typescript": "catalog:",
+    "undici": "catalog:",
+    "vite": "catalog:",
+    "vite-tsconfig-paths": "catalog:"
+  },
+  "peerDependencies": {
+    "@qwik.dev/core": "^2.0.0-beta.37"
+  },
+  "engines": {
+    "node": ">=22.x"
+  },
+  "qwik": "./lib/index.qwik.mjs"
 }

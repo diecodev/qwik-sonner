@@ -43,3 +43,6 @@ bun.lockb
 # Yarn
 .yarn/*
 !.yarn/releases
+
+# Local-only notes
+todos.md

@@ -25,8 +25,9 @@ git checkout -b feature/your-change
 - If you are working on the website, add "website" after the verb in the branch name.
 
 Example:
-  - `feature/update-readme`
-  - `feature-website/add-new-feature`
+
+- `feature/update-readme`
+- `feature-website/add-new-feature`
 
 ### Commit Messages
 

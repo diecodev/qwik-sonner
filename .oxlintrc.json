@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "oxc"],
+  "jsPlugins": ["eslint-plugin-qwik"],
+  "rules": {
+    "no-unused-vars": "error",
+    "qwik/use-method-usage": "error",
+    "qwik/no-react-props": "error",
+    "qwik/unused-server": "error",
+    "qwik/serializer-signal-usage": "error",
+    "qwik/scope-use-task": "error",
+    "qwik/loader-location": "warn",
+    "qwik/prefer-classlist": "warn",
+    "qwik/jsx-no-script-url": "warn",
+    "qwik/jsx-key": "warn",
+    "qwik/jsx-img": "warn",
+    "qwik/jsx-a": "warn",
+    "qwik/no-use-visible-task": "warn",
+    "qwik/no-async-prevent-default": "warn",
+    "qwik/no-await-navigate-in-use-task": "warn"
+  }
+}

@@ -1,47 +1,48 @@
 import { defineConfig } from "vite";
-import pkg from "./package.json";
-import { qwikVite } from "@builder.io/qwik/optimizer";
+import { qwikVite } from "@qwik.dev/core/optimizer";
 import tsconfigPaths from "vite-tsconfig-paths";
+import pkg from "./package.json";
+import tailwindcss from "@tailwindcss/vite";
 
-const { dependencies = {}, peerDependencies = {} } = pkg as any;
-const makeRegex = (dep) => new RegExp(`^${dep}(/.*)?$`);
-const excludeAll = (obj) => Object.keys(obj).map(makeRegex);
+type DepMap = Record<string, string>;
+const { dependencies = {}, peerDependencies = {} } = pkg as {
+  dependencies?: DepMap;
+  peerDependencies?: DepMap;
+};
 
-export default defineConfig(({ command }) => {
-  const env = process.env.ENTRY as "styled" | "headless" | undefined;
+// Anything declared as a (peer)dependency must NOT be bundled into the library.
+// Consumers install these themselves, which keeps the output small and
+// dedupable (e.g. @qwik.dev/core).
+const makeRegex = (dep: string) => new RegExp(`^${dep}(/.*)?$`);
+const external = [
+  /^node:.*/,
+  ...Object.keys(dependencies).map(makeRegex),
+  ...Object.keys(peerDependencies).map(makeRegex),
+];
 
-  if (!env && command === "build") throw new Error("ENTRY env var is required");
-
-  const entry =
-    env === "headless" ? "src/lib/headless/toast-wrapper.tsx" : "src/lib";
-
+export default defineConfig(() => {
   return {
     build: {
       target: "es2020",
       outDir: "lib",
+      emptyOutDir: true,
+      // Single pass, two entry points. Code shared by both (the headless core)
+      // is hoisted into a shared chunk instead of being duplicated.
       lib: {
-        entry,
-        formats: ["es", "cjs"],
-        fileName: (format, file) => {
-          const ext = format === "es" ? "mjs" : "cjs";
-          const name = env === "styled" ? "index" : "headless";
-          return `${name}.qwik.${ext}`;
+        entry: {
+          index: "src/lib/index.ts",
+          headless: "src/lib/headless/toast-wrapper.tsx",
         },
+        formats: ["es"],
+        fileName: (_format, entryName) => `${entryName}.qwik.mjs`,
       },
-      emptyOutDir: env === "styled" ? true : false,
       rollupOptions: {
-        // externalize deps that shouldn't be bundled into the library
-        external: [
-          /^node:.*/,
-          ...excludeAll(dependencies),
-          ...excludeAll(peerDependencies),
-        ],
-        // all the chunks created by vite shuold also have qwik in the name
+        external,
         output: {
-          chunkFileNames: "[name]-[format].qwik.js",
+          chunkFileNames: "[name]-[hash].qwik.mjs",
         },
       },
     },
-    plugins: [qwikVite(), tsconfigPaths()],
+    plugins: [qwikVite(), tsconfigPaths(), tailwindcss()],
   };
 });

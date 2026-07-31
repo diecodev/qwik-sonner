@@ -1,7 +1,7 @@
 import copy from "copy-to-clipboard";
 
 import styles from "./installation.module.css";
-import { component$, useSignal } from "@builder.io/qwik";
+import { component$, useSignal } from "@qwik.dev/core";
 
 export const Installation = component$(() => {
   const copying = useSignal<number>(0);
@@ -22,7 +22,7 @@ export const Installation = component$(() => {
         npm install qwik-sonner{" "}
         <button aria-label="Copy code" class={styles.copy}>
           {copying.value ? (
-            <div key="check">
+            <span key="check">
               <svg
                 viewBox="0 0 24 24"
                 width="14"
@@ -36,9 +36,9 @@ export const Installation = component$(() => {
               >
                 <path d="M20 6L9 17l-5-5"></path>
               </svg>
-            </div>
+            </span>
           ) : (
-            <div key="copy">
+            <span key="copy">
               <svg
                 viewBox="0 0 24 24"
                 width="14"
@@ -52,7 +52,7 @@ export const Installation = component$(() => {
               >
                 <path d="M8 17.929H6c-1.105 0-2-.912-2-2.036V5.036C4 3.91 4.895 3 6 3h8c1.105 0 2 .911 2 2.036v1.866m-6 .17h8c1.105 0 2 .91 2 2.035v10.857C20 21.09 19.105 22 18 22h-8c-1.105 0-2-.911-2-2.036V9.107c0-1.124.895-2.036 2-2.036z"></path>
               </svg>
-            </div>
+            </span>
           )}
         </button>
       </code>

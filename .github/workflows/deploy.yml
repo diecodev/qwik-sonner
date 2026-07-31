@@ -7,7 +7,7 @@ name: Deploy website
 # and uploads only the static output in `website/dist` — the remote build step
 # has nothing to do. The app was created once with:
 #
-#   deno deploy create website/dist --org diecodev --app qwik-sonner \
+#   deno deploy create website/dist --org diecodev-ea --app qwik-sonner \
 #     --source local --runtime-mode static --static-dir . --region us
 #
 # Auth uses a deploy token (app.deno.com -> user/org settings -> tokens)
@@ -33,7 +33,7 @@ permissions:
   contents: read
 
 env:
-  DENO_DEPLOY_ORG: diecodev
+  DENO_DEPLOY_ORG: diecodev-ea
   DENO_DEPLOY_APP: qwik-sonner
 
 jobs:

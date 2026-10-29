@@ -145,6 +145,9 @@ export const Toast = component$<ToastProps>((props) => {
     return idx === -1 ? 0 : idx;
   });
   const closeButton = useComputed$(() => props.toast.closeButton ?? props.closeButton);
+  const allowedSwipeDirections = useComputed$(
+    () => props.swipeDirections ?? getDefaultSwipeDirections(props.position),
+  );
   const duration = useComputed$(() => props.toast.duration || props.duration || TOAST_LIFETIME);
   const toastsHeightBefore = useComputed$(() => {
     return positionHeights.value.reduce((prev, curr, reducerIndex) => {
@@ -461,7 +464,15 @@ export const Toast = component$<ToastProps>((props) => {
           const swipeAmount = swipeDirection.value === "x" ? swipeAmountX : swipeAmountY;
           const velocity = Math.abs(swipeAmount) / timeTaken;
 
-          if (Math.abs(swipeAmount) >= SWIPE_THRESHOLD || velocity > 0.11) {
+          // Movement towards a direction that isn't allowed is dampened, not
+          // blocked, so a fast flick can still pass the velocity check. Only
+          // dismiss if the direction is allowed.
+          const isAllowedDirection =
+            swipeDirection.value === "x"
+              ? allowedSwipeDirections.value.includes(swipeAmountX > 0 ? "right" : "left")
+              : allowedSwipeDirections.value.includes(swipeAmountY > 0 ? "bottom" : "top");
+
+          if (isAllowedDirection && (Math.abs(swipeAmount) >= SWIPE_THRESHOLD || velocity > 0.11)) {
             offsetBeforeRemove.value = offset.value;
             props.toast.onDismiss$?.(props.toast);
 
@@ -499,7 +510,7 @@ export const Toast = component$<ToastProps>((props) => {
         const yDelta = event.clientY - pointerStartRef.value.y;
         const xDelta = event.clientX - pointerStartRef.value.x;
 
-        const swipeDirections = props.swipeDirections ?? getDefaultSwipeDirections(props.position);
+        const swipeDirections = allowedSwipeDirections.value;
 
         // Determine swipe direction if not already locked
         if (!swipeDirection.value && (Math.abs(xDelta) > 1 || Math.abs(yDelta) > 1)) {

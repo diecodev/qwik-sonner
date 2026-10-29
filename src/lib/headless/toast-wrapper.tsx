@@ -115,10 +115,6 @@ export function useSonner() {
     track(() => resumed.value);
     if (!isBrowser) return;
 
-    // Seed with anything already active when subscribing, newest first like
-    // the subscriber below (and the Toaster).
-    activeToasts.value = (ToastState.getActiveToasts() as ToastT[]).reverse();
-
     const unsubscribe = ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
         activeToasts.value = activeToasts.value.filter((t) => t.id !== incoming.id);
@@ -262,22 +258,11 @@ const Toaster = component$<ToasterProps>((props) => {
   //     components (from rc.4 it does, and the resulting re-run is harmless).
   //   - A server-rendered Toaster ran this task on the server, where it is a
   //     no-op; `qinit` flips `resumed` so it runs again on the client.
+  // `ToastState.subscribe` replays the toasts that are already active, so the
+  // ones published before this runs still show.
   useTask$(({ track, cleanup }) => {
     track(() => resumed.value);
     if (!isBrowser) return;
-
-    // Show the toasts that were published before this subscription existed —
-    // fired before this Toaster mounted, by another `qinit` handler that ran
-    // first, or by a click before this task re-ran after `qinit` (on Qwik >=
-    // beta.45 `qinit` no longer runs in the qwikloader's serial queue, so that
-    // click can even beat `qinit`). Newest first, like the subscriber below.
-    const pending = (ToastState.getActiveToasts() as ToastT[]).filter(
-      (t) => !toasts.value.some((existing) => existing.id === t.id),
-    );
-    if (pending.length) {
-      toasts.value = [...pending.reverse(), ...toasts.value];
-      void syncTopLayer(true);
-    }
 
     const unsubscribe = ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {

@@ -63,6 +63,11 @@ const hasId = (id: unknown): id is number | string =>
 // We use arrow functions to maintain the correct `this` reference
 const subscribe = (subscriber: (toast: ToastT | ToastToDismiss) => void) => {
   subscribers.push(subscriber);
+  // A toast can be published before a Toaster subscribes — fired before it
+  // mounted, by a `qinit` handler that ran before its own, or by a click right
+  // after load (on Qwik >= beta.45 `qinit` no longer runs in the qwikloader's
+  // serial queue). Replay whatever is still active so it doesn't get lost.
+  getActiveToasts().forEach((toast) => subscriber(toast));
 
   return () => {
     const index = subscribers.indexOf(subscriber);

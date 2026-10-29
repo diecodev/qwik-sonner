@@ -6,4 +6,12 @@ export {
   type ToastClassnames,
   type ToastToDismiss,
   type Action,
+  type Position,
+  type Theme,
+  type Direction,
+  type SwipeDirection,
+  type ToastIcons,
+  type ToastTypes,
+  type Offset,
+  type PromiseData,
 } from "./headless/types";

@@ -33,4 +33,12 @@ test.describe("sonner 2.0.8 parity: toast rendering", () => {
     await page.getByTestId("close-button-toast").click();
     await expect(page.locator("[data-close-button] svg")).toHaveAttribute("aria-hidden", "true");
   });
+
+  test("the content takes the room the icon and the buttons leave", async ({ page }) => {
+    await page.goto("/parity/");
+    await page.getByTestId("plain-toast").click();
+    const content = page.locator("[data-sonner-toast] [data-content]");
+    await expect(content).toHaveCSS("flex-grow", "1");
+    await expect(content).toHaveCSS("min-width", "0px");
+  });
 });

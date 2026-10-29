@@ -336,8 +336,8 @@ const Toaster = component$<ToasterProps>((props) => {
   });
 
   useTask$(({ track }) => {
-    const list = track(() => toasts.value);
-    // Ensure expanded is always false when no toasts are present / only one left
+    const list = track(() => filteredToasts.value);
+    // Ensure expanded is always false when none of our toasts are present / only one left
     if (list.length <= 1) {
       expanded.value = false;
     }
@@ -365,11 +365,12 @@ const Toaster = component$<ToasterProps>((props) => {
     }),
   );
 
-  // Return focus to the previously-focused element once the toaster empties.
+  // Return focus to the previously-focused element once the toaster has none of
+  // its own toasts left (other Toasters' toasts in `toasts` don't count).
   // (Qwik doesn't reset refs on unmount, so React's "ol unmount" cleanup can't
   // be replicated via the ref — key off the toast count instead.)
   useTask$(({ track }) => {
-    const count = track(() => toasts.value.length);
+    const count = track(() => filteredToasts.value.length);
     if (count === 0 && isFocusWithinRef.value) {
       const last = lastFocusedElementRef.value;
       lastFocusedElementRef.value = null;

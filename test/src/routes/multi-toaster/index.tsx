@@ -22,6 +22,26 @@ export default component$(() => {
       >
         Toast in the top-layer Toaster
       </button>
+      <button
+        data-testid="fire-layer-sticky"
+        class="button"
+        onClick$={() => toast("Sticky top-layer toast", { toasterId: "layer", duration: Infinity })}
+      >
+        Sticky toast in the top-layer Toaster
+      </button>
+      <button
+        data-testid="fire-custom"
+        class="button"
+        onClick$={() =>
+          toast.custom((t) => (
+            <button data-testid="custom-dismiss" onClick$={() => toast.dismiss(t)}>
+              Dismiss
+            </button>
+          ))
+        }
+      >
+        Custom toast in the default Toaster
+      </button>
       <Toaster />
       {/* Away from the buttons: a toast under the pointer pauses its timer. */}
       <Toaster id="layer" topLayer position="bottom-left" />

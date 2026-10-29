@@ -5,7 +5,6 @@ import {
   isSignal,
   Signal,
   useComputed$,
-  useOn,
   useOnDocument,
   useSignal,
   useTask$,
@@ -97,13 +96,19 @@ function assignOffset(defaultOffset?: Offset, mobileOffset?: Offset) {
  */
 export function useSonner() {
   const activeToasts = useSignal<ToastT[]>([]);
+  // Same subscription scheme as the `Toaster` (see there): a task that is a
+  // no-op on the server, re-run on the client by `qinit` when server-rendered.
+  const resumed = useSignal(false);
 
-  const subscribe = $(() => {
-    // Seed with anything already active when this component becomes visible,
-    // newest first like the subscriber below (and the Toaster).
+  useTask$(({ track, cleanup }) => {
+    track(() => resumed.value);
+    if (!isBrowser) return;
+
+    // Seed with anything already active when subscribing, newest first like
+    // the subscriber below (and the Toaster).
     activeToasts.value = (ToastState.getActiveToasts() as ToastT[]).reverse();
 
-    return ToastState.subscribe((incoming) => {
+    const unsubscribe = ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
         activeToasts.value = activeToasts.value.filter((t) => t.id !== incoming.id);
         return;
@@ -122,9 +127,16 @@ export function useSonner() {
 
       activeToasts.value = [incoming as ToastT, ...activeToasts.value];
     });
+
+    cleanup(unsubscribe);
   });
 
-  useOn("qvisible", subscribe);
+  useOnDocument(
+    "qinit",
+    $(() => {
+      resumed.value = true;
+    }),
+  );
 
   return { toasts: activeToasts };
 }

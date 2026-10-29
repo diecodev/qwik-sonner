@@ -38,3 +38,30 @@ test.describe("Client-rendered Toaster", () => {
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(1);
   });
 });
+
+/** `useSonner()` subscribes the same way, so it has the same failure modes. */
+test.describe("Client-rendered useSonner", () => {
+  test("a useSonner counter on a page reached with <Link> reflects the toasts", async ({
+    page,
+  }) => {
+    await page.goto("/nav/");
+    await page.getByTestId("nav-link").click();
+    await expect(page).toHaveURL(/\/nav\/target\/$/);
+    await expect(page.getByTestId("toast-count")).toHaveText("0");
+
+    await page.getByTestId("fire-toast").click();
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(1);
+    await expect(page.getByTestId("toast-count")).toHaveText("1");
+
+    // The default toast auto-closes; the counter follows it back to zero.
+    await expect(page.getByTestId("toast-count")).toHaveText("0", { timeout: 10_000 });
+  });
+
+  test("a useSonner counter on a page loaded directly (SSR) reflects the toasts", async ({
+    page,
+  }) => {
+    await page.goto("/nav/target/");
+    await page.getByTestId("fire-toast").click();
+    await expect(page.getByTestId("toast-count")).toHaveText("1");
+  });
+});

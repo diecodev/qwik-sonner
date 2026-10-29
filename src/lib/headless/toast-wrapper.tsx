@@ -99,8 +99,9 @@ export function useSonner() {
   const activeToasts = useSignal<ToastT[]>([]);
 
   const subscribe = $(() => {
-    // Seed with anything already active when this component becomes visible.
-    activeToasts.value = ToastState.getActiveToasts() as ToastT[];
+    // Seed with anything already active when this component becomes visible,
+    // newest first like the subscriber below (and the Toaster).
+    activeToasts.value = (ToastState.getActiveToasts() as ToastT[]).reverse();
 
     return ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
@@ -214,6 +215,18 @@ const Toaster = component$<ToasterProps>((props) => {
   });
 
   const onMountHandler = $(() => {
+    // Show the toasts that were published before this subscription existed —
+    // e.g. fired by another `qinit` handler that ran first, or (on Qwik >=
+    // beta.45, where `qinit` no longer runs in the qwikloader's serial queue)
+    // by a click right after load. Newest first, like the subscriber below.
+    const pending = (ToastState.getActiveToasts() as ToastT[]).filter(
+      (t) => !toasts.value.some((existing) => existing.id === t.id),
+    );
+    if (pending.length) {
+      toasts.value = [...pending.reverse(), ...toasts.value];
+      void syncTopLayer();
+    }
+
     return ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
         toasts.value = toasts.value.map((t) => (t.id === incoming.id ? { ...t, delete: true } : t));

@@ -229,6 +229,36 @@ test.describe("Basic functionality", () => {
     await expect(page.getByTestId("dismiss-el")).toHaveCount(1);
   });
 
+  // While dragging, the swipe offset lives in `--swipe-amount-*` vars set on the
+  // `<li>` by hand. Qwik rewrites the whole `style` attribute whenever the `<li>`
+  // re-renders, so a re-render between the last move and the release (here:
+  // another toast arriving) must not reset the swipe.
+  test("a swipe still dismisses when the toast re-renders before the release", async ({ page }) => {
+    await page.getByTestId("dismiss-toast-callback").click();
+    const toast = page.locator("[data-sonner-toast]");
+    await toast.waitFor({ state: "visible" });
+    await waitForEnterAnimation(page);
+    const box = await toast.boundingBox();
+    if (!box) return;
+    const startX = box.x + box.width / 2;
+    const startY = box.y + box.height / 2;
+
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await expect(toast).toHaveAttribute("data-swiping", "true");
+    await page.mouse.move(startX, startY + 20, { steps: 5 });
+    await page.mouse.move(startX, startY + 300, { steps: 10 });
+    await expect(toast).toHaveAttribute("data-swiped", "true");
+
+    await page.evaluate(() =>
+      (document.querySelector('[data-testid="default-button"]') as HTMLElement).click(),
+    );
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(2);
+    await page.mouse.up();
+
+    await expect(page.getByTestId("dismiss-el")).toHaveCount(1);
+  });
+
   test("toaster's theme should be light", async ({ page }) => {
     await page.getByTestId("infinity-toast").click();
     await expect(page.locator("[data-sonner-toaster]")).toHaveAttribute(

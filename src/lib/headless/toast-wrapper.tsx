@@ -214,11 +214,28 @@ const Toaster = component$<ToasterProps>((props) => {
     await syncTopLayer();
   });
 
-  const onMountHandler = $(() => {
+  // Flipped by `qinit` (see below) so the subscription task re-runs on the
+  // client for a server-rendered Toaster.
+  const resumed = useSignal(false);
+
+  // Subscribe to the toast state on the client; `cleanup` unsubscribes on
+  // unmount and before a re-run, so re-running never double-subscribes.
+  //   - A Toaster first rendered on the client (behind a condition, or on a
+  //     page reached with `<Link>`) subscribes as soon as this task runs. It
+  //     can't wait for `qinit`: before Qwik 2.0.0-rc.4 the qwikloader fires it
+  //     only once, at page load, so it never reaches client-rendered
+  //     components (from rc.4 it does, and the resulting re-run is harmless).
+  //   - A server-rendered Toaster ran this task on the server, where it is a
+  //     no-op; `qinit` flips `resumed` so it runs again on the client.
+  useTask$(({ track, cleanup }) => {
+    track(() => resumed.value);
+    if (!isBrowser) return;
+
     // Show the toasts that were published before this subscription existed —
-    // e.g. fired by another `qinit` handler that ran first, or (on Qwik >=
-    // beta.45, where `qinit` no longer runs in the qwikloader's serial queue)
-    // by a click right after load. Newest first, like the subscriber below.
+    // fired before this Toaster mounted, by another `qinit` handler that ran
+    // first, or by a click before this task re-ran after `qinit` (on Qwik >=
+    // beta.45 `qinit` no longer runs in the qwikloader's serial queue, so that
+    // click can even beat `qinit`). Newest first, like the subscriber below.
     const pending = (ToastState.getActiveToasts() as ToastT[]).filter(
       (t) => !toasts.value.some((existing) => existing.id === t.id),
     );
@@ -227,7 +244,7 @@ const Toaster = component$<ToasterProps>((props) => {
       void syncTopLayer();
     }
 
-    return ToastState.subscribe((incoming) => {
+    const unsubscribe = ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
         toasts.value = toasts.value.map((t) => (t.id === incoming.id ? { ...t, delete: true } : t));
         return;
@@ -247,6 +264,8 @@ const Toaster = component$<ToasterProps>((props) => {
       toasts.value = [incoming as ToastT, ...toasts.value];
       void syncTopLayer();
     });
+
+    cleanup(unsubscribe);
   });
 
   // Resolve the system color scheme (and listen for changes) on the client.
@@ -321,11 +340,12 @@ const Toaster = component$<ToasterProps>((props) => {
     }
   });
 
-  // Wire the client-side toast subscription on `qinit` — the Qwik init event the
-  // qwikloader fires once the container is ready. It is dispatched on
-  // `readystatechange` (and immediately on load), with a replay path for
-  // late-registered listeners, so it fires regardless of page-load timing or
-  // scroll position. We can't use the usual alternatives here:
+  // Resume a server-rendered Toaster on `qinit` — the Qwik init event the
+  // qwikloader fires once the container is ready — which re-runs the
+  // subscription task on the client. It is dispatched on `readystatechange`
+  // (and immediately on load), with a replay path for late-registered
+  // listeners, so it fires regardless of page-load timing or scroll position.
+  // We can't use the usual alternatives here:
   //   - `useVisibleTask$` / `qvisible` are IntersectionObserver-based, so they
   //     never run when the Toaster is rendered below the fold (its `<section>`
   //     is in normal flow) — the toaster would stay unsubscribed and the first
@@ -336,7 +356,7 @@ const Toaster = component$<ToasterProps>((props) => {
   useOnDocument(
     "qinit",
     $(async () => {
-      await onMountHandler();
+      resumed.value = true;
       await onMountTheme();
     }),
   );

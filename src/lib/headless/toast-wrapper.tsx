@@ -57,6 +57,12 @@ function resolveDir(dir: Signal<Direction> | Direction | undefined): Direction {
   return d == null || d === "auto" ? getDocumentDirection() : d;
 }
 
+// A Toaster without an `id` owns the toasts that have no `toasterId`; one with
+// an `id` owns only the toasts addressed to it.
+function isOwnToast(toast: ToastT, toasterId: string | undefined) {
+  return toasterId ? toast.toasterId === toasterId : !toast.toasterId;
+}
+
 function assignOffset(defaultOffset?: Offset, mobileOffset?: Offset) {
   const styles: Record<string, string> = {};
 
@@ -173,12 +179,9 @@ const Toaster = component$<ToasterProps>((props) => {
   const lastFocusedElementRef = useSignal<HTMLElement | null>(null);
   const isFocusWithinRef = useSignal(false);
 
-  const filteredToasts = useComputed$(() => {
-    if (props.id) {
-      return toasts.value.filter((t) => t.toasterId === props.id);
-    }
-    return toasts.value.filter((t) => !t.toasterId);
-  });
+  // `toasts` also holds other Toasters' toasts (like sonner, so a partial update
+  // without `toasterId` keeps the owner it was created with); render only ours.
+  const filteredToasts = useComputed$(() => toasts.value.filter((t) => isOwnToast(t, props.id)));
 
   const possiblePositions = useComputed$(() => {
     // Resolve `position` reactively: a `Signal<Position>` is read via `.value`
@@ -197,23 +200,38 @@ const Toaster = component$<ToasterProps>((props) => {
 
   const hotkeyLabel = hotkey.join("+").replace(/Key/g, "").replace(/Digit/g, "");
 
-  // Keep the top-layer popover state in sync with the toast count: show it the
-  // moment a toast appears, hide it once the toaster empties. Runs only from
+  // Keep the top-layer popover state in sync with this Toaster's own toasts:
+  // show it the moment one appears, hide it once they are gone. Runs only from
   // client event QRLs (`subscribe`/`removeToast`), never a task, so it fires in
   // consumer bundles too. No-ops when `topLayer` is off or the browser lacks
   // the Popover API (`showPopover` undefined) — older engines just ignore the
   // `popover` attribute and fall back to the normal `z-index` stacking.
-  const syncTopLayer = $(() => {
+  //
+  // `raise` (a new toast of ours arrived): the top layer stacks in opening
+  // order, so a modal `<dialog>` (or fullscreen element, or popover) opened
+  // after ours paints over it. Hiding and re-showing the popover moves it back
+  // on top; it's done only while something else is in the top layer, and both
+  // calls run in the same task, so the toasts are never rendered hidden (their
+  // running animations carry on).
+  const syncTopLayer = $((raise?: boolean) => {
     if (!topLayer) return;
     const el = sectionRef.value;
     if (!el || typeof el.showPopover !== "function") return;
 
-    const hasToasts = toasts.value.length > 0;
+    const hasToasts = filteredToasts.value.length > 0;
     const isOpen = el.matches(":popover-open");
     if (hasToasts && !isOpen) {
       el.showPopover();
     } else if (!hasToasts && isOpen) {
       el.hidePopover();
+    } else if (hasToasts && raise) {
+      const isCovered = Array.from(document.querySelectorAll(":modal, :popover-open")).some(
+        (other) => other !== el && !el.contains(other),
+      );
+      if (isCovered) {
+        el.hidePopover();
+        el.showPopover();
+      }
     }
   });
 
@@ -253,12 +271,17 @@ const Toaster = component$<ToasterProps>((props) => {
     );
     if (pending.length) {
       toasts.value = [...pending.reverse(), ...toasts.value];
-      void syncTopLayer();
+      void syncTopLayer(true);
     }
 
     const unsubscribe = ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
-        toasts.value = toasts.value.map((t) => (t.id === incoming.id ? { ...t, delete: true } : t));
+        // Our own toasts animate out (the `Toast` then calls `removeToast`).
+        // Another Toaster's toasts are never rendered here, so nothing would
+        // ever remove them: drop them now.
+        toasts.value = toasts.value
+          .filter((t) => t.id !== incoming.id || isOwnToast(t, props.id))
+          .map((t) => (t.id === incoming.id ? { ...t, delete: true } : t));
         return;
       }
 
@@ -274,7 +297,7 @@ const Toaster = component$<ToasterProps>((props) => {
       }
 
       toasts.value = [incoming as ToastT, ...toasts.value];
-      void syncTopLayer();
+      if (isOwnToast(incoming as ToastT, props.id)) void syncTopLayer(true);
     });
 
     cleanup(unsubscribe);

@@ -136,4 +136,92 @@ test.describe("Top layer (Popover API) support", () => {
     await page.getByTestId("success").click();
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(2);
   });
+
+  test("with topLayer a toast fired from a modal opened after the popover paints above it", async ({
+    page,
+  }) => {
+    await page.goto("/?topLayer=1");
+    const container = page.locator("[data-sonner-toaster-popover]");
+
+    // A long-lived toast keeps the popover open while the modal opens over it:
+    // the top layer stacks in opening order, so the modal now paints on top.
+    await page.getByTestId("infinity-toast").click();
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(1);
+    await expect.poll(() => container.evaluate((el) => el.matches(":popover-open"))).toBe(true);
+
+    await page.getByTestId("open-modal").click();
+    await expect(page.getByTestId("native-dialog")).toBeVisible();
+    await page.getByTestId("modal-fire-toast").click();
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(2);
+
+    // The new toast (first in the DOM) must paint above the modal.
+    await expect.poll(() => toastPaintsAboveModal(page)).toBe(true);
+  });
+
+  test("with topLayer raising the popover again does not restart running animations", async ({
+    page,
+  }) => {
+    await page.goto("/?topLayer=1");
+    await page.getByTestId("loading-toast").click();
+    await expect(page.locator(".sonner-loading-bar").first()).toBeVisible();
+
+    // Keep hold of the spinner's running CSS animations. A popover that is
+    // hidden and re-rendered (`display: none` in between) would cancel them and
+    // start new ones.
+    const spinning = await page.evaluate(() => {
+      const w = window as unknown as { spinner: Animation[] };
+      w.spinner = document
+        .getAnimations()
+        .filter((a) => (a as CSSAnimation).animationName === "sonner-spin");
+      return w.spinner.length;
+    });
+    expect(spinning).toBeGreaterThan(0);
+
+    await page.getByTestId("open-modal").click();
+    await page.getByTestId("modal-fire-toast").click();
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(2);
+    await expect.poll(() => toastPaintsAboveModal(page)).toBe(true);
+
+    const stillRunning = await page.evaluate(() =>
+      (window as unknown as { spinner: Animation[] }).spinner.every(
+        (a) => a.playState === "running",
+      ),
+    );
+    expect(stillRunning).toBe(true);
+  });
+});
+
+/**
+ * With several Toasters, each Toaster must only track its own toasts: a
+ * top-layer Toaster that kept other Toasters' toasts opened its popover for
+ * them and, since it never renders (nor removes) them, never closed it again.
+ */
+test.describe("Top layer with several Toasters", () => {
+  test("a toast for another Toaster does not open the popover", async ({ page }) => {
+    await page.goto("/multi-toaster/");
+    const container = page.locator("[data-sonner-toaster-popover]");
+    await expect(container).toHaveAttribute("popover", "manual");
+
+    await page.getByTestId("fire-default").click();
+    await expect(page.getByText("Default Toaster toast")).toHaveCount(1);
+
+    // Give the top-layer Toaster time to (wrongly) react before asserting.
+    await page.waitForTimeout(500);
+    expect(await container.evaluate((el) => el.matches(":popover-open"))).toBe(false);
+  });
+
+  test("the popover closes once its own toasts are gone", async ({ page }) => {
+    await page.goto("/multi-toaster/");
+    const container = page.locator("[data-sonner-toaster-popover]");
+
+    await page.getByTestId("fire-layer").click();
+    await page.getByTestId("fire-default").click();
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(2);
+    await expect.poll(() => container.evaluate((el) => el.matches(":popover-open"))).toBe(true);
+
+    // Both toasts auto-close; the default Toaster's toast must not keep the
+    // top-layer Toaster's popover open.
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 10_000 });
+    await expect.poll(() => container.evaluate((el) => el.matches(":popover-open"))).toBe(false);
+  });
 });

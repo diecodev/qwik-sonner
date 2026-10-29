@@ -55,6 +55,11 @@ const isHttpResponse = (data: any): data is Response => {
   );
 };
 
+// Whether the caller passed a toast id: any number (`0` included — it's falsy,
+// not missing) or a non-empty string.
+const hasId = (id: unknown): id is number | string =>
+  typeof id === "number" || (typeof id === "string" && id.length > 0);
+
 // We use arrow functions to maintain the correct `this` reference
 const subscribe = (subscriber: (toast: ToastT | ToastToDismiss) => void) => {
   subscribers.push(subscriber);
@@ -88,8 +93,7 @@ const create = (
   const message = data.message;
   const rest = { ...data };
   delete rest.message;
-  const id =
-    typeof data?.id === "number" || (data.id && data.id?.length > 0) ? data.id : toastsCounter++;
+  const id = hasId(data.id) ? data.id : toastsCounter++;
   const alreadyExists = toasts.find((toast) => {
     return toast.id === id;
   });
@@ -122,7 +126,7 @@ const create = (
 };
 
 const dismiss = (id?: number | string) => {
-  if (id) {
+  if (hasId(id)) {
     dismissedToasts.add(id);
     scheduleRaf(() => subscribers.forEach((subscriber) => subscriber({ id, dismiss: true })));
   } else {
@@ -263,7 +267,7 @@ const promise = <ToastData>(promise: PromiseT<ToastData>, data?: PromiseData<Toa
 };
 
 const custom = (jsx: (id: number | string) => JSXOutput, data?: ExternalToast) => {
-  const id = data?.id || toastsCounter++;
+  const id = hasId(data?.id) ? data.id : toastsCounter++;
   create({ jsx: jsx(id), ...data, id });
   return id;
 };
@@ -293,7 +297,7 @@ export const ToastState = {
 
 // bind this to the toast function
 const toastFunction = (message: titleT, data?: ExternalToast) => {
-  const id = data?.id || toastsCounter++;
+  const id = hasId(data?.id) ? data.id : toastsCounter++;
 
   ToastState.addToast({
     title: message,

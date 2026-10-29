@@ -22,4 +22,15 @@ test.describe("sonner 2.0.8 parity: toast rendering", () => {
     await page.getByTestId("loading-with-icon").click();
     await expect(page.getByTestId("custom-loading-icon")).toBeVisible();
   });
+
+  test("the built-in icons are hidden from assistive technology", async ({ page }) => {
+    await page.goto("/parity/");
+    await page.getByTestId("success-toast").click();
+    await expect(page.locator("[data-sonner-toast] [data-icon] svg")).toHaveAttribute(
+      "aria-hidden",
+      "true",
+    );
+    await page.getByTestId("close-button-toast").click();
+    await expect(page.locator("[data-close-button] svg")).toHaveAttribute("aria-hidden", "true");
+  });
 });

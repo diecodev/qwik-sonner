@@ -43,6 +43,7 @@ const SuccessIcon = component$(() => (
     fill="currentColor"
     height="20"
     width="20"
+    aria-hidden="true"
   >
     <path
       fill-rule="evenodd"
@@ -59,6 +60,7 @@ const WarningIcon = component$(() => (
     fill="currentColor"
     height="20"
     width="20"
+    aria-hidden="true"
   >
     <path
       fill-rule="evenodd"
@@ -75,6 +77,7 @@ const InfoIcon = component$(() => (
     fill="currentColor"
     height="20"
     width="20"
+    aria-hidden="true"
   >
     <path
       fill-rule="evenodd"
@@ -91,6 +94,7 @@ const ErrorIcon = component$(() => (
     fill="currentColor"
     height="20"
     width="20"
+    aria-hidden="true"
   >
     <path
       fill-rule="evenodd"
@@ -111,6 +115,7 @@ export const CloseIcon = (
     stroke-width="1.5"
     stroke-linecap="round"
     stroke-linejoin="round"
+    aria-hidden="true"
   >
     <line x1="18" y1="6" x2="6" y2="18"></line>
     <line x1="6" y1="6" x2="18" y2="18"></line>

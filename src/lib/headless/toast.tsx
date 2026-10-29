@@ -573,9 +573,11 @@ export const Toast = component$<ToastProps>((props) => {
       toast.icon !== null &&
       (iconFromIcons !== null || toast.icon) ? (
         <div data-icon="" class={[classes?.icon, toast?.classes?.icon]}>
-          {toast.promise || (toastType === "loading" && !toast.icon)
+          {toastType === "loading"
             ? toast.icon || getLoadingIcon()
-            : null}
+            : toast.promise
+              ? getLoadingIcon()
+              : null}
           {toastType !== "loading" ? icon : null}
         </div>
       ) : null}

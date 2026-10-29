@@ -16,4 +16,10 @@ test.describe("sonner 2.0.8 parity: toast rendering", () => {
       /default-class/,
     );
   });
+
+  test("a loading toast shows its custom icon", async ({ page }) => {
+    await page.goto("/parity/");
+    await page.getByTestId("loading-with-icon").click();
+    await expect(page.getByTestId("custom-loading-icon")).toBeVisible();
+  });
 });

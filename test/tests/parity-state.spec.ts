@@ -50,4 +50,19 @@ test.describe("sonner 2.0.8 parity: toast state", () => {
     await expect(page.getByText("Fresh")).toHaveCount(1);
     await expect(page.locator("[data-action]")).toHaveCount(0);
   });
+
+  test("toast(message, { id }) turns a loading toast into a plain one", async ({ page }) => {
+    await page.goto("/parity/");
+    await page.getByTestId("loading-then-plain").click();
+    const toast = page.locator("[data-sonner-toast]");
+    await expect(toast).toHaveText("Done");
+    await expect(toast).not.toHaveAttribute("data-type", "loading");
+  });
+
+  test("toast.custom(jsx, { id }) drops the type of the toast it replaces", async ({ page }) => {
+    await page.goto("/parity/");
+    await page.getByTestId("loading-then-custom").click();
+    await expect(page.getByTestId("custom-replacement")).toHaveCount(1);
+    await expect(page.locator("[data-sonner-toast]")).not.toHaveAttribute("data-type", "loading");
+  });
 });

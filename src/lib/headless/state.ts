@@ -175,7 +175,9 @@ const dismiss = (id?: number | string) => {
 };
 
 const message = (message: titleT, data?: ExternalToast) => {
-  return create({ ...data, message });
+  // `type: undefined` resets the type when this updates a toast that had one,
+  // e.g. turning a loading toast into a plain one.
+  return create({ ...data, message, type: undefined });
 };
 
 const error = (message: titleT, data?: ExternalToast) => {
@@ -304,7 +306,8 @@ const promise = <ToastData>(promise: PromiseT<ToastData>, data?: PromiseData<Toa
 
 const custom = (jsx: (id: number | string) => JSXOutput, data?: ExternalToast) => {
   const id = hasId(data?.id) ? data.id : toastsCounter++;
-  create({ jsx: jsx(id), ...data, id });
+  // A custom toast has no type, so it resets the one of the toast it replaces.
+  create({ ...data, jsx: jsx(id), id, type: undefined });
   return id;
 };
 
@@ -333,14 +336,7 @@ export const ToastState = {
 
 // bind this to the toast function
 const toastFunction = (message: titleT, data?: ExternalToast) => {
-  const id = hasId(data?.id) ? data.id : toastsCounter++;
-
-  ToastState.addToast({
-    title: message,
-    ...data,
-    id,
-  });
-  return id;
+  return ToastState.message(message, data);
 };
 
 const basicToast = toastFunction;

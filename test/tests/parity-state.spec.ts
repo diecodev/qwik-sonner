@@ -65,4 +65,10 @@ test.describe("sonner 2.0.8 parity: toast state", () => {
     await expect(page.getByTestId("custom-replacement")).toHaveCount(1);
     await expect(page.locator("[data-sonner-toast]")).not.toHaveAttribute("data-type", "loading");
   });
+
+  test("the toast history keeps at most 100 toasts", async ({ page }) => {
+    await page.goto("/history/");
+    await page.getByTestId("overflow-history").click();
+    await expect(page.getByTestId("history-length")).toHaveText("100");
+  });
 });

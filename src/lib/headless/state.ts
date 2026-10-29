@@ -11,6 +11,11 @@ import type {
 
 let toastsCounter = 1;
 
+// Amount of toasts kept in `toast.getHistory()`. Dismissed toasts above this
+// limit are dropped so long-running apps don't hold on to them (and their JSX)
+// forever.
+const MAX_HISTORY_SIZE = 100;
+
 type titleT = (() => JSXOutput | string) | JSXOutput | string;
 
 const subscribers: Array<(toast: ToastT | ToastToDismiss) => void> = [];
@@ -85,6 +90,21 @@ const publish = (data: ToastT) => {
 const addToast = (data: ToastT) => {
   publish(data);
   toasts = [...toasts, data];
+  trimHistory();
+};
+
+// Keeps the history bounded without ever dropping a toast that's still on screen.
+const trimHistory = () => {
+  let toRemove = toasts.length - MAX_HISTORY_SIZE;
+  if (toRemove <= 0) return;
+  toasts = toasts.filter((toast) => {
+    if (toRemove > 0 && dismissedToasts.has(toast.id)) {
+      dismissedToasts.delete(toast.id);
+      toRemove--;
+      return false;
+    }
+    return true;
+  });
 };
 
 const create = (

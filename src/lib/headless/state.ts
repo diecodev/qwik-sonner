@@ -16,15 +16,18 @@ type titleT = (() => JSXOutput | string) | JSXOutput | string;
 const subscribers: Array<(toast: ToastT | ToastToDismiss) => void> = [];
 let toasts: Array<ToastT | ToastToDismiss> = [];
 const dismissedToasts = new Set<string | number>();
+// Dismissals scheduled for the next frame, by toast id.
+const pendingDismissals = new Map<string | number, number>();
 
 // `requestAnimationFrame` only exists in the browser; toasts are always
 // triggered client-side, but guard anyway so the module is import-safe on SSR.
+// Returns the frame handle, or `undefined` when `cb` already ran.
 const scheduleRaf = (cb: () => void) => {
   if (typeof requestAnimationFrame !== "undefined") {
-    requestAnimationFrame(cb);
-  } else {
-    cb();
+    return requestAnimationFrame(cb);
   }
+  cb();
+  return undefined;
 };
 
 // Qwik does not expose a public `isJSXNode`, so detect a JSX node structurally
@@ -99,14 +102,29 @@ const create = (
   const rest = { ...data };
   delete rest.message;
   const id = hasId(data.id) ? data.id : toastsCounter++;
-  const alreadyExists = toasts.find((toast) => {
-    return toast.id === id;
-  });
-  const dismissible = data.dismissible === undefined ? true : data.dismissible;
 
-  if (dismissedToasts.has(id)) {
+  // A dismissal that hasn't reached the subscribers yet gets cancelled: the
+  // toast is still on screen, so this is an update of it rather than a new
+  // toast. Otherwise the pending dismissal would remove the toast just created.
+  const pendingDismissal = pendingDismissals.get(id);
+  if (pendingDismissal !== undefined) {
+    cancelAnimationFrame(pendingDismissal);
+    pendingDismissals.delete(id);
     dismissedToasts.delete(id);
   }
+
+  const wasDismissed = dismissedToasts.has(id);
+  const dismissible = data.dismissible === undefined ? true : data.dismissible;
+
+  if (wasDismissed) {
+    dismissedToasts.delete(id);
+    // The previous toast with this id is gone, so this is a brand new toast.
+    // Drop the old one instead of merging into it, otherwise its props (e.g.
+    // `action`) leak into the new one.
+    toasts = toasts.filter((toast) => toast.id !== id);
+  }
+
+  const alreadyExists = wasDismissed ? undefined : toasts.find((toast) => toast.id === id);
 
   if (alreadyExists) {
     toasts = toasts.map((toast) => {
@@ -142,7 +160,17 @@ const dismiss = (id?: number | string) => {
   }
 
   dismissedToasts.add(id);
-  scheduleRaf(() => subscribers.forEach((subscriber) => subscriber({ id, dismiss: true })));
+  const alreadyPending = pendingDismissals.get(id);
+  if (alreadyPending !== undefined) {
+    cancelAnimationFrame(alreadyPending);
+  }
+  const frame = scheduleRaf(() => {
+    pendingDismissals.delete(id);
+    subscribers.forEach((subscriber) => subscriber({ id, dismiss: true }));
+  });
+  if (frame !== undefined) {
+    pendingDismissals.set(id, frame);
+  }
   return id;
 };
 

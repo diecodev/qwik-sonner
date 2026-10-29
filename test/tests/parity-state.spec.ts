@@ -24,4 +24,30 @@ test.describe("sonner 2.0.8 parity: toast state", () => {
     await page.waitForTimeout(500);
     expect(await page.locator("[data-sonner-toast]").count()).toBe(0);
   });
+
+  test("a toast re-created while its dismissal is pending stays", async ({ page }) => {
+    await page.goto("/parity/");
+    await page.getByTestId("action-toast").click();
+    await expect(page.getByText("Original")).toHaveCount(1);
+
+    await page.getByTestId("dismiss-and-recreate").click();
+    await expect(page.getByText("Recreated")).toHaveCount(1);
+    await page.waitForTimeout(500);
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(1);
+    await expect(page.getByText("Recreated")).toHaveCount(1);
+  });
+
+  test("a toast re-created after it was dismissed doesn't inherit the old one's props", async ({
+    page,
+  }) => {
+    await page.goto("/parity/");
+    await page.getByTestId("action-toast").click();
+    await expect(page.locator("[data-action]")).toHaveCount(1);
+    await page.getByTestId("dismiss-same").click();
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(0);
+
+    await page.getByTestId("recreate").click();
+    await expect(page.getByText("Fresh")).toHaveCount(1);
+    await expect(page.locator("[data-action]")).toHaveCount(0);
+  });
 });

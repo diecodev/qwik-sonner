@@ -106,6 +106,8 @@ export const Toast = component$<ToastProps>((props) => {
   const isFront = index === 0;
   const isVisible = index + 1 <= visibleToasts;
   const toastType = toast.type;
+  // Toasts created with `toast()` have no type; `classes.default` is the key for those.
+  const toastTypeKey = (toastType ?? "default") as keyof ToastClassnames;
   const dismissible = toast.dismissible !== false;
   const toastClass = toast.class ?? "";
   const toastDescriptionClass = toast.descriptionClass ?? "";
@@ -366,9 +368,8 @@ export const Toast = component$<ToastProps>((props) => {
         toastClass,
         classes?.toast,
         toast?.classes?.toast,
-        classes?.default,
-        classes?.[toastType as keyof ToastClassnames],
-        toast?.classes?.[toastType as keyof ToastClassnames],
+        classes?.[toastTypeKey],
+        toast?.classes?.[toastTypeKey],
       ]}
       data-sonner-toast=""
       data-rich-colors={String(richColors.value)}

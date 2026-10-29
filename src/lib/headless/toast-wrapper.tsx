@@ -249,8 +249,8 @@ const Toaster = component$<ToasterProps>((props) => {
     await syncTopLayer();
   });
 
-  // Flipped by `qinit` (see below) so the subscription task re-runs on the
-  // client for a server-rendered Toaster.
+  // Flipped by `qinit` (see below) so the subscription and system-theme tasks
+  // re-run on the client for a server-rendered Toaster.
   const resumed = useSignal(false);
 
   // Subscribe to the toast state on the client; `cleanup` unsubscribes on
@@ -308,22 +308,12 @@ const Toaster = component$<ToasterProps>((props) => {
     cleanup(unsubscribe);
   });
 
-  // Resolve the system color scheme (and listen for changes) on the client.
-  const onMountTheme = $(() => {
-    const t = isSignal(props.theme) ? props.theme.value : props.theme;
-    if (t !== "system") return;
-
-    const mql = window.matchMedia("(prefers-color-scheme: dark)");
-    actualTheme.value = mql.matches ? "dark" : "light";
-    mql.addEventListener("change", (event) => {
-      actualTheme.value = (event as MediaQueryListEvent).matches ? "dark" : "light";
-    });
-  });
-
   // Keep `actualTheme` in sync with the `theme` prop (incl. SSR). Tracking the
   // unwrapped value subscribes to a `Signal` prop's `.value`, so changing the
   // signal at runtime re-runs this task on the resumed singleton.
-  useTask$(({ track }) => {
+  // With `"system"`, follow the OS color scheme on the client; `cleanup` drops
+  // the listener as soon as the prop changes or the Toaster unmounts.
+  useTask$(({ track, cleanup }) => {
     const t = track(() => (isSignal(props.theme) ? props.theme.value : props.theme)) as
       | Theme
       | undefined;
@@ -331,10 +321,18 @@ const Toaster = component$<ToasterProps>((props) => {
       actualTheme.value = t === "dark" ? "dark" : "light";
       return;
     }
+    // The OS scheme is only known on the client: a server-rendered Toaster
+    // resolves it once `qinit` resumes it.
+    track(() => resumed.value);
     if (!isBrowser) return;
-    actualTheme.value = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const syncTheme = () => {
+      actualTheme.value = mql.matches ? "dark" : "light";
+    };
+    syncTheme();
+    mql.addEventListener("change", syncTheme);
+    cleanup(() => mql.removeEventListener("change", syncTheme));
   });
 
   useTask$(({ track }) => {
@@ -382,10 +380,10 @@ const Toaster = component$<ToasterProps>((props) => {
 
   // Resume a server-rendered Toaster on `qinit` — the Qwik init event the
   // qwikloader fires once the container is ready — which re-runs the
-  // subscription task on the client. It is dispatched on `readystatechange`
-  // (and immediately on load), with a replay path for late-registered
-  // listeners, so it fires regardless of page-load timing or scroll position.
-  // We can't use the usual alternatives here:
+  // subscription and system-theme tasks on the client. It is dispatched on
+  // `readystatechange` (and immediately on load), with a replay path for
+  // late-registered listeners, so it fires regardless of page-load timing or
+  // scroll position. We can't use the usual alternatives here:
   //   - `useVisibleTask$` / `qvisible` are IntersectionObserver-based, so they
   //     never run when the Toaster is rendered below the fold (its `<section>`
   //     is in normal flow) — the toaster would stay unsubscribed and the first
@@ -395,9 +393,8 @@ const Toaster = component$<ToasterProps>((props) => {
   //     handler never runs there either.
   useOnDocument(
     "qinit",
-    $(async () => {
+    $(() => {
       resumed.value = true;
-      await onMountTheme();
     }),
   );
 

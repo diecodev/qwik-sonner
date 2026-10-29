@@ -22,6 +22,9 @@ export default component$(() => {
       <button data-testid="fire-toast" class="button" onClick$={() => toast("Client toast")}>
         Fire Toast
       </button>
+      <button data-testid="dismiss-all" class="button" onClick$={() => toast.dismiss()}>
+        Dismiss all
+      </button>
       {show.value && <Toaster topLayer={topLayer} />}
     </>
   );

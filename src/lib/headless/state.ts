@@ -126,15 +126,18 @@ const create = (
 };
 
 const dismiss = (id?: number | string) => {
-  if (hasId(id)) {
-    dismissedToasts.add(id);
-    scheduleRaf(() => subscribers.forEach((subscriber) => subscriber({ id, dismiss: true })));
-  } else {
-    toasts.forEach((toast) => {
+  // No id: dismiss every active toast. Mark them dismissed too, so they stop
+  // counting as active (and a Toaster that subscribes later doesn't show them).
+  if (id == null) {
+    getActiveToasts().forEach((toast) => {
+      dismissedToasts.add(toast.id);
       subscribers.forEach((subscriber) => subscriber({ id: toast.id, dismiss: true }));
     });
+    return id;
   }
 
+  dismissedToasts.add(id);
+  scheduleRaf(() => subscribers.forEach((subscriber) => subscriber({ id, dismiss: true })));
   return id;
 };
 

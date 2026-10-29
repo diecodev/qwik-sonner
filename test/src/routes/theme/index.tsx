@@ -5,6 +5,7 @@ import { toast, Toaster, type Theme } from "qwik-sonner";
 export default component$(() => {
   const params = useLocation().url.searchParams;
   const theme = useSignal<Theme>((params.get("theme") as Theme | null) ?? "system");
+  const show = useSignal(true);
 
   return (
     <>
@@ -24,7 +25,14 @@ export default component$(() => {
       >
         Fire Toast
       </button>
-      <Toaster theme={theme} />
+      <button
+        data-testid="toggle-toaster"
+        class="button"
+        onClick$={() => (show.value = !show.value)}
+      >
+        Toggle Toaster
+      </button>
+      {show.value && <Toaster theme={theme} />}
     </>
   );
 });

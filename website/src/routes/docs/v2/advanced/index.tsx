@@ -1,7 +1,8 @@
 import { component$ } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { CodeBlock } from "~/components/CodeBlock";
-import { Callout, H2, H3 } from "~/components/docs/ui";
+import { H2, H3 } from "~/components/docs/ui";
+import { GITHUB_URL } from "~/lib/versions";
 import styles from "../../pages.module.css";
 
 const multiCode = `// Unnamed: renders every toast without a toasterId
@@ -168,16 +169,15 @@ export default component$(() => {
 
       <H2 id="known-issues">Known issues</H2>
       <p>
-        The issues found in 2.0.0-beta.1 are fixed in 2.0.0-beta.2 — see the{" "}
-        <Link href="/docs/changelog/">changelog</Link>. One remains, in development only:
+        None right now. The issues found in 2.0.0-beta.1 were fixed in 2.0.0-beta.2, and the
+        dev-server stall with two toasts fired back to back went away with Qwik 2.0.0-rc.4
+        (qwik-sonner 2.0.0-beta.3) — see the <Link href="/docs/changelog/">changelog</Link>. Found
+        one?{" "}
+        <a href={`${GITHUB_URL}/issues`} target="_blank" rel="noreferrer">
+          Open an issue
+        </a>
+        .
       </p>
-      <Callout type="note" title="Two toasts back to back on the dev server">
-        <p>
-          With Qwik 2.0.0-beta.37's dev server, a plain <code>toast()</code> followed right away by
-          a typed one (<code>toast.success()</code>…), before the first has rendered, can stall the
-          Toaster until the page reloads. Production builds aren't affected.
-        </p>
-      </Callout>
     </>
   );
 });

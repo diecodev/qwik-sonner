@@ -14,10 +14,11 @@ It ships two entry points:
 - **Styled** (default): `import { Toaster, toast } from "qwik-sonner";`
 - **Headless**: `import { ... } from "qwik-sonner/headless";`
 
-## ⚠️ This project targets Qwik v2 (beta)
+## ⚠️ This project targets Qwik v2 (release candidate)
 
-The codebase was migrated from Qwik 1.x to **Qwik 2.0 beta** (`@qwik.dev/core` /
-`@qwik.dev/router`, `2.0.0-beta.37`). Qwik v2 is still in beta — APIs can shift between betas.
+The codebase was migrated from Qwik 1.x to **Qwik 2.0** (`@qwik.dev/core` / `@qwik.dev/router`,
+`2.0.0-rc.4`; the library's peer range is `^2.0.0-rc.4`). Qwik v2 isn't stable yet — APIs can still
+shift between release candidates.
 **Do not reintroduce v1 (`@builder.io/*`) packages or imports.**
 
 ### v1 → v2 renames (memorize these)
@@ -48,13 +49,14 @@ The codebase was migrated from Qwik 1.x to **Qwik 2.0 beta** (`@qwik.dev/core` /
   `manifest` where applicable). Don't add a `qwikRouterConfig` option back.
 - **`isSignal(x)` takes no type argument** in v2 (was `isSignal<T>(x)` in v1).
 - **`tsconfig` uses `moduleResolution: "bundler"`** and `jsxImportSource: "@qwik.dev/core"`.
-- **Vite is pinned to v7** (Qwik's peer range is `>=6 <9`, so v8 installs, but **do not use it**).
-  Vite 8 switches the bundler to **Rolldown**, and under Rolldown the Qwik optimizer fails to
-  register its internal runtime QRL symbols (`_run`, `_task`) in the **production** build. The
-  result is `QWIK ERROR Code(Q14)` (`qrlMissingChunk`) during production SSR for _every_ event
-  handler that captures lexical scope — i.e. `pnpm preview` and any real deploy throw, while
-  `pnpm dev` works (dev has a `_`-symbol fallback). e2e tests also pass because Playwright runs
-  against `pnpm dev`. **Keep `vite` on `^7` in the catalog** until Qwik v2 fixes Rolldown support.
+- **Vite 8 (Rolldown).** Qwik 2.0.0-rc.4 requires `vite >=8 <9`. Under the betas, Rolldown broke
+  production SSR (`QWIK ERROR Code(Q14)`, `qrlMissingChunk`, for every event handler that captures
+  lexical scope) while `pnpm dev` and the e2e suite still passed; with rc.4 the production build
+  works. Playwright runs against `pnpm dev`, so after a Qwik or Vite upgrade also run the suite
+  against a production build: `pnpm -C test build.client && pnpm -C test build.preview`, then
+  `vite preview` (`pnpm -C test exec vite preview`).
+- **Vite 8 config:** `build.rolldownOptions` (not `rollupOptions`), `resolve: { tsconfigPaths:
+true }` (no `vite-tsconfig-paths` plugin), and JSON imports need `with { type: "json" }`.
 
 When in doubt about a v2 API, check the installed type defs under
 `node_modules/.pnpm/@qwik.dev+*/node_modules/@qwik.dev/{core,router}/**/*.d.ts` — they are

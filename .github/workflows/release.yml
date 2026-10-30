@@ -105,7 +105,7 @@ jobs:
           fetch-depth: 0 # changelogithub needs full history to diff tags
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
       # A draft until the staged version is approved on npm: edit its notes in
       # the meantime (the website shows them). The `published` job publishes it.
       - run: npx changelogithub@15.0.5 --draft ${{ contains(github.ref_name, '-') && '--prerelease' || '' }}

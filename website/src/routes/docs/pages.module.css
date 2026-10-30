@@ -338,7 +338,7 @@
 @media (min-width: 641px) {
   .releaseAside {
     position: sticky;
-    top: 80px;
+    top: calc(var(--docs-top, 56px) + 24px);
     align-self: start;
   }
 }

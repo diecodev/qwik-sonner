@@ -16,7 +16,6 @@ import {
   VERSIONS,
   type VersionId,
 } from "~/lib/versions";
-import { LATEST, majorOf } from "~/lib/release";
 import { Logo } from "../Logo";
 import { QwikV2Badge } from "../QwikV2Badge";
 import { ThemeToggle } from "../ThemeToggle";
@@ -178,52 +177,35 @@ export const DocsHeader = component$<{ version: VersionId; navOpen: Signal<boole
 
 /* Version banner ---------------------------------------------------------- */
 
+/** Shown on the docs of an older line, pointing to the current one. */
 export const VersionBanner = component$<{ version: VersionId }>(({ version }) => {
   const loc = useLocation();
   const v = VERSIONS[version];
   const current = VERSIONS[CURRENT_VERSION];
 
-  if (version !== CURRENT_VERSION) {
-    return (
-      <div class={styles.banner} data-tone="warning" role="note">
-        <p>
+  return (
+    <div class={styles.banner} data-tone="warning" role="note">
+      {/* One line at any width (it sticks under the header): a shorter text on narrow screens. */}
+      <p>
+        <span class={styles.bannerLong}>
           You're reading the docs for <strong>qwik-sonner {v.version}</strong>, the {v.qwik} (
           <code>{v.qwikPackage}</code>) line. It no longer receives new features.
-        </p>
-        <Link href={equivalentHref(loc.url.pathname, CURRENT_VERSION)} class={styles.bannerLink}>
-          Go to the {current.qwik} docs ({CURRENT_VERSION})<span aria-hidden="true">→</span>
-        </Link>
-      </div>
-    );
-  }
-
-  if (v.status === "prerelease") {
-    // While `latest` is still an older major, say what a plain install gets.
-    const olderLatest = LATEST !== null && majorOf(LATEST) < v.major ? LATEST : null;
-    return (
-      <div class={styles.banner} data-tone="info" role="note">
-        <p>
-          <strong>
-            {CURRENT_VERSION} is in {v.tag ?? "pre-release"} ({v.version}).
-          </strong>{" "}
-          Install it with <code>{v.spec}</code>
-          {olderLatest ? (
-            <>
-              {" "}
-              — plain <code>qwik-sonner</code> still resolves to {olderLatest}
-            </>
-          ) : null}
-          .
-        </p>
-        <Link href={`${v.basePath}/#installation`} class={styles.bannerLink}>
-          Installation
-          <span aria-hidden="true">→</span>
-        </Link>
-      </div>
-    );
-  }
-
-  return null;
+        </span>
+        <span class={styles.bannerShort}>
+          Docs for <strong>{v.version}</strong> ({v.qwik})
+        </span>
+      </p>
+      <Link href={equivalentHref(loc.url.pathname, CURRENT_VERSION)} class={styles.bannerLink}>
+        <span class={styles.bannerLong}>
+          Go to the {current.qwik} docs ({CURRENT_VERSION})
+        </span>
+        <span class={styles.bannerShort}>{current.qwik} docs</span>
+        <span aria-hidden="true" class={styles.bannerArrow}>
+          →
+        </span>
+      </Link>
+    </div>
+  );
 });
 
 /* Sidebar ----------------------------------------------------------------- */

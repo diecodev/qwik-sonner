@@ -404,6 +404,74 @@
   margin: 2px 0;
 }
 
+/* A color per kind of change (`data-kind`, set by lib/github.ts), as in the legend */
+.release .notes :global([data-kind]),
+.legendItem {
+  --k: var(--gray9);
+}
+
+.release .notes :global([data-kind="breaking"]),
+.legendItem[data-kind="breaking"] {
+  --k: var(--error-text);
+}
+
+.release .notes :global([data-kind="feature"]),
+.legendItem[data-kind="feature"] {
+  --k: var(--success-text);
+}
+
+.release .notes :global([data-kind="fix"]),
+.legendItem[data-kind="fix"] {
+  --k: var(--info-text);
+}
+
+.release .notes :global([data-kind="deprecated"]),
+.legendItem[data-kind="deprecated"] {
+  --k: var(--warning-text);
+}
+
+.release .notes :global(:is(h1, h2, h3, h4, h5, h6)[data-kind]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--k);
+}
+
+.release .notes :global(:is(h1, h2, h3, h4, h5, h6)[data-kind])::before,
+.legendItem::before {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--k);
+}
+
+.release .notes :global(ul[data-kind]) {
+  margin-left: 3px;
+  padding-left: 19px;
+  border-left: 2px solid color-mix(in srgb, var(--k) 45%, transparent);
+}
+
+.release .notes :global(ul[data-kind] > li)::marker {
+  color: var(--k);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: -16px 0 28px;
+  font-size: 13px;
+  color: var(--gray11);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .release .notes :global(samp) {
   font-family: var(--font-mono);
   font-size: 12px;

@@ -1,6 +1,6 @@
 import { component$, useSignal } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
-import type { Releases } from "~/lib/github";
+import type { ChangeKind, Releases } from "~/lib/github";
 import { majorOf, newestFirst, NPM, tagsOf } from "~/lib/release";
 import { GITHUB_URL, NPM_URL } from "~/lib/versions";
 import styles from "../pages.module.css";
@@ -13,6 +13,15 @@ const FILTERS = [
 ] as const;
 
 type Filter = (typeof FILTERS)[number]["id"];
+
+// The kinds the notes are colored by (see lib/github.ts); performance and docs
+// sections stay gray.
+const LEGEND: { kind: ChangeKind; label: string }[] = [
+  { kind: "breaking", label: "Breaking change" },
+  { kind: "feature", label: "Feature" },
+  { kind: "fix", label: "Fix" },
+  { kind: "deprecated", label: "Deprecated" },
+];
 
 // The notes of each GitHub release: vite.config.ts reads them when the site
 // builds and defines `__RELEASES__` with them, so only this page carries them.
@@ -83,6 +92,14 @@ export default component$(() => {
           >
             {f.label}
           </button>
+        ))}
+      </div>
+
+      <div class={styles.legend} role="list" aria-label="Kinds of change">
+        {LEGEND.map(({ kind, label }) => (
+          <span key={kind} class={styles.legendItem} data-kind={kind} role="listitem">
+            {label}
+          </span>
         ))}
       </div>
 

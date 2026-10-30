@@ -89,6 +89,13 @@ from GitHub Actions (`.github/workflows/website.yml`, Vercel CLI) after each rel
 (`website/scripts/vercel-preview.sh`). Versions, dist-tags and dates on the site come from npm at
 build time (`website/src/lib/npm.ts`). Details: `website/README.md`.
 
+## Releases
+
+A `v*` tag (pushed by `pnpm release`) runs `.github/workflows/release.yml`: CI → tag/version check →
+pack + contents check → `npm stage publish` (Trusted Publishing) → draft GitHub release
+(changelogithub) → waits until a maintainer runs `npm stage approve` (2FA) → publishes the release →
+deploys the website. Steps: `CONTRIBUTING.md` → Releases.
+
 ## Public API of the library
 
 - `Toaster` — the styled component you render once near the app root. Props typed as `ToasterProps`.

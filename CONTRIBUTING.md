@@ -58,6 +58,35 @@ Make sure to include:
 
 If your changes require a package version update, clearly state it in the PR. Provide reasons and justifications for the version update.
 
+## Releases
+
+Maintainers only. On an up-to-date `v2` (`main` once `v2` merges), `pnpm release` asks for the new
+version (`2.0.0-beta.2`…), commits it, tags it and pushes. The tag runs
+[`release.yml`](./.github/workflows/release.yml):
+
+1. the CI, and a check that the tag matches the version in `package.json`;
+2. it builds and packs the library, checks the package contents and **stages** it on npm through
+   Trusted Publishing (a prerelease under its identifier, like `beta`; a plain version under
+   `latest`);
+3. it drafts a GitHub release with the changelog generated from the commits. Edit its notes while it
+   waits: the generator only lists `feat`, `fix` and `perf` commits, and only marks a change as
+   breaking when its commit has a `!` or a `BREAKING CHANGE:` footer.
+
+Nothing is public until a maintainer approves the staged version with 2FA (npm 11.15 or later):
+
+```sh
+npm stage list qwik-sonner
+npm stage approve <stage-id> # asks for the one-time password
+```
+
+The workflow waits for that (up to 6 hours), then publishes the GitHub release and deploys the
+website, which reads the new version from npm. If the approval takes longer, publish the draft
+release by hand and run the Website workflow (Actions → Website → Run workflow). To drop a staged
+version, `npm stage reject <stage-id>` and delete the draft release.
+
+Staging needs the npm Trusted Publisher of `qwik-sonner` (GitHub Actions, `release.yml`) to allow
+`npm stage publish`. Keep the workflow's file name: the Trusted Publisher is tied to it.
+
 ## Website
 
 The docs site lives in `website/` and consumes the library through `workspace:*`, so build the

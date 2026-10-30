@@ -142,7 +142,7 @@ export default component$(() => {
       <p class="lead">
         The last argument of every <code>toast</code> helper — typed as <code>ExternalToast</code>.
         Toaster-wide defaults live in{" "}
-        <Link href="/docs/v2/toaster/#toast-options">
+        <Link href="/docs/toaster/#toast-options">
           <code>toastOptions</code>
         </Link>
         .

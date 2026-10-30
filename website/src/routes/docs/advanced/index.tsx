@@ -3,7 +3,7 @@ import { Link, type DocumentHead } from "@qwik.dev/router";
 import { CodeBlock } from "~/components/CodeBlock";
 import { H2, H3 } from "~/components/docs/ui";
 import { GITHUB_URL } from "~/lib/versions";
-import styles from "../../pages.module.css";
+import styles from "../pages.module.css";
 
 const multiCode = `// Unnamed: renders every toast without a toasterId
 <Toaster />
@@ -106,11 +106,11 @@ export default component$(() => {
         </li>
         <li>
           With the headless entry, add the{" "}
-          <Link href="/docs/v2/styling/#headless-top-layer">popover reset</Link> yourself.
+          <Link href="/docs/styling/#headless-top-layer">popover reset</Link> yourself.
         </li>
       </ul>
       <p>
-        See it next to a real dialog in the <Link href="/docs/v2/examples/#dialog">examples</Link>.
+        See it next to a real dialog in the <Link href="/docs/examples/#dialog">examples</Link>.
       </p>
 
       <H2 id="use-sonner">useSonner()</H2>

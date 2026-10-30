@@ -4,7 +4,7 @@ import { toast } from "qwik-sonner";
 import { CodeBlock } from "~/components/CodeBlock";
 import { Callout, H2, H3, PropsTable, type PropRow } from "~/components/docs/ui";
 import { POSITIONS, useToasterControls, type Theme } from "~/lib/toaster-context";
-import styles from "../../pages.module.css";
+import styles from "../pages.module.css";
 
 const THEMES: Theme[] = ["light", "dark", "system"];
 
@@ -366,7 +366,7 @@ export default component$(() => {
       <H2 id="icons">Icons</H2>
       <p>
         Any key you leave out keeps the default icon. To change one toast's icon use its{" "}
-        <Link href="/docs/v2/options/">
+        <Link href="/docs/options/">
           <code>icon</code> option
         </Link>
         .
@@ -385,7 +385,7 @@ export default component$(() => {
       <Callout type="note">
         <p>
           Need toasts in different places at once? Give each Toaster an <code>id</code> — see{" "}
-          <Link href="/docs/v2/advanced/#multiple-toasters">multiple toasters</Link>.
+          <Link href="/docs/advanced/#multiple-toasters">multiple toasters</Link>.
         </p>
       </Callout>
     </>

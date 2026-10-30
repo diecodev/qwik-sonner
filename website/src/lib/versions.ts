@@ -12,10 +12,15 @@ export interface DocsVersion extends Line {
   status: "stable" | "prerelease" | "legacy";
   /** Text of the status pill: `Stable`, the dist-tag (`beta`, `rc`) or `Legacy`. */
   statusLabel: string;
-  basePath: `/docs/${VersionId}`;
+  /** `/docs` for the current line, `/docs/v1` for an older one */
+  basePath: "/docs" | `/docs/${VersionId}`;
 }
 
-/** Newest docs line — what `/docs` redirects to and what other versions link to. */
+/**
+ * Newest docs line: its pages live at `/docs/…` (routes/docs/), the older lines' at `/docs/v<n>/…`
+ * (routes/docs/v<n>/), and vercel.json sends `/docs/v<n>/…` of the current line to `/docs/…`. When a
+ * new major ships, move the current pages to routes/docs/v<n>/ and the new ones to routes/docs/.
+ */
 export const CURRENT_VERSION: VersionId = "v2";
 
 export const VERSION_ORDER: VersionId[] = ["v2", "v1"];
@@ -30,7 +35,7 @@ const docsVersion = (id: VersionId, line: Line, qwik: string, qwikPackage: strin
     status,
     statusLabel:
       status === "legacy" ? "Legacy" : status === "stable" ? "Stable" : (line.tag ?? "Pre-release"),
-    basePath: `/docs/${id}`,
+    basePath: id === CURRENT_VERSION ? "/docs" : `/docs/${id}`,
   };
 };
 
@@ -40,9 +45,13 @@ export const VERSIONS: Record<VersionId, DocsVersion> = {
   v1: docsVersion("v1", V1, "Qwik 1", "@builder.io/qwik"),
 };
 
+/** The docs line a page belongs to; `null` for pages of none (the changelog) and outside the docs. */
 export const versionFromPath = (pathname: string): VersionId | null => {
   const match = /^\/docs\/(v\d+)(\/|$)/.exec(pathname);
-  return match && match[1] in VERSIONS ? (match[1] as VersionId) : null;
+  if (match) return match[1] in VERSIONS ? (match[1] as VersionId) : null;
+  return /^\/docs(\/|$)/.test(pathname) && !pathname.startsWith("/docs/changelog")
+    ? CURRENT_VERSION
+    : null;
 };
 
 export const GITHUB_URL = "https://github.com/diecodev/qwik-sonner";

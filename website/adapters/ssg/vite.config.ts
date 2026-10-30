@@ -14,9 +14,6 @@ export default extendConfig(baseConfig, () => {
     plugins: [
       ssgAdapter({
         origin: "https://qwik-sonner.dieco.dev",
-        // `/docs` only redirects: vercel.json answers it in production, and a
-        // redirect can't be prerendered.
-        exclude: ["/docs"],
       }),
     ],
   };

@@ -7,8 +7,8 @@
   "outputDirectory": "website/dist",
   "trailingSlash": true,
   "redirects": [
-    { "source": "/docs", "destination": "/docs/v2/", "permanent": true },
-    { "source": "/docs/", "destination": "/docs/v2/", "permanent": true }
+    { "source": "/docs/v2", "destination": "/docs/", "permanent": true },
+    { "source": "/docs/v2/:path*", "destination": "/docs/:path*", "permanent": true }
   ],
   "headers": [
     {

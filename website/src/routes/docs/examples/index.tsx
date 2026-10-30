@@ -4,7 +4,7 @@ import { toast, useSonner } from "qwik-sonner";
 import { CodeBlock } from "~/components/CodeBlock";
 import { Callout, Demo, H2 } from "~/components/docs/ui";
 import { SECONDARY_TOASTER } from "~/lib/toaster-context";
-import styles from "../../pages.module.css";
+import styles from "../pages.module.css";
 import ex from "./examples.module.css";
 
 /* Undo ------------------------------------------------------------------- */

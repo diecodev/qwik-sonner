@@ -58,7 +58,8 @@ const EQUIVALENT_SLUG: Record<VersionId, Record<string, string>> = {
 
 /** URL of the page in `target` that best matches `pathname`. */
 export const equivalentHref = (pathname: string, target: VersionId) => {
-  const match = /^\/docs\/v\d+\/([^/]+)?/.exec(pathname);
+  // `/docs/<slug>/` on the current line, `/docs/v<n>/<slug>/` on an older one
+  const match = /^\/docs\/(?:v\d+\/)?([^/]+)?/.exec(pathname);
   const slug = match?.[1] ?? "";
   const mapped = EQUIVALENT_SLUG[target][slug] ?? "";
   return `${VERSIONS[target].basePath}/${mapped ? `${mapped}/` : ""}`;

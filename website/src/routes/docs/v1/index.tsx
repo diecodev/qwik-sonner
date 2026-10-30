@@ -93,7 +93,7 @@ export default component$(() => {
       <H2 id="upgrade">Upgrading to Qwik 2</H2>
       <p>
         qwik-sonner 2 supports Qwik 2 and adds swipe directions, top-layer rendering, multiple
-        toasters and more. Read the <Link href="/docs/v2/migration/">migration guide</Link>.
+        toasters and more. Read the <Link href="/docs/migration/">migration guide</Link>.
       </p>
     </>
   );

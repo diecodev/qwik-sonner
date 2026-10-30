@@ -157,7 +157,7 @@ export default component$(() => {
                 {release.previous ? "Commits" : "Source"}
               </a>
               {!release.newestOfMajor ? null : release.major >= 2 ? (
-                <Link href="/docs/v2/migration/">Migration guide</Link>
+                <Link href="/docs/migration/">Migration guide</Link>
               ) : release.major === 1 ? (
                 <Link href="/docs/v1/">v1 docs</Link>
               ) : null}

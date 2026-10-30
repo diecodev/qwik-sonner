@@ -87,7 +87,8 @@ files — no functions. Build settings live in `vercel.json` at the repo root. P
 from GitHub Actions (`.github/workflows/website.yml`, Vercel CLI) after each release and on pushes to
 `v2` that touch `website/`; Vercel's Git integration only builds previews for other branches
 (`website/scripts/vercel-preview.sh`). Versions, dist-tags and dates on the site come from npm at
-build time (`website/src/lib/npm.ts`). Details: `website/README.md`.
+build time (`website/src/lib/npm.ts`); the changelog's notes are the published GitHub releases, read
+at build time too (`website/src/lib/github.ts`). Details: `website/README.md`.
 
 ## Releases
 

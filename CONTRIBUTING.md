@@ -69,8 +69,9 @@ version (`2.0.0-beta.2`…), commits it, tags it and pushes. The tag runs
    Trusted Publishing (a prerelease under its identifier, like `beta`; a plain version under
    `latest`);
 3. it drafts a GitHub release with the changelog generated from the commits. Edit its notes while it
-   waits: the generator only lists `feat`, `fix` and `perf` commits, and only marks a change as
-   breaking when its commit has a `!` or a `BREAKING CHANGE:` footer.
+   waits: they are also the website's changelog for that version, and the generator only lists
+   `feat`, `fix` and `perf` commits, and only marks a change as breaking when its commit has a `!` or
+   a `BREAKING CHANGE:` footer.
 
 Nothing is public until a maintainer approves the staged version with 2FA (npm 11.15 or later):
 

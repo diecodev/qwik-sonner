@@ -18,13 +18,19 @@ pnpm preview        # production build served locally by Vite
 
 From the repo root, `pnpm build.website` runs the whole chain (library + client + SSG), as Vercel does.
 
-## Versions come from npm
+## Versions come from npm, release notes from GitHub
 
 The version menu, the install commands, the banners, the Qwik v2 badge and the changelog's versions,
 dist-tags and dates are read from the npm registry when the site builds (`vite.config.ts` →
-`src/lib/npm.ts` → `src/lib/release.ts`). Only the release notes are written by hand, in
-`src/lib/changelog.ts`, per `major.minor` series. Offline, a local build shows the repo's version as
+`src/lib/npm.ts` → `src/lib/release.ts`). Offline, a local build shows the repo's version as
 unreleased; in CI (`CI` set) the build fails instead.
+
+The changelog's notes are the published GitHub releases, as GitHub renders them (`vite.config.ts` →
+`src/lib/github.ts` → `src/lib/release-notes.ts`): to change what the site says about a version, edit
+its release on GitHub and redeploy. A release is a draft until its version is approved on npm, so the
+site never shows notes for a version that isn't out (see `CONTRIBUTING.md` → Releases). Set
+`GITHUB_TOKEN` to read them with a token. Offline or rate-limited, a local or preview build goes on
+without notes; in GitHub Actions the build fails instead.
 
 ## Deployment (Vercel)
 

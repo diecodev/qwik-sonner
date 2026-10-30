@@ -1,25 +1,26 @@
 .wrapper {
+  margin-top: 164px;
   padding: 32px 0;
   border-top: 1px solid var(--gray3);
   background: var(--gray1);
-  margin-top: 164px;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .p {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   margin: 0;
   font-size: 14px;
-}
-
-.p img {
-  border-radius: 50%;
+  color: var(--gray11);
 }
 
 .p a {
   font-weight: 600;
-  color: inherit;
+  color: var(--gray12);
   text-decoration: none;
 }
 
@@ -27,9 +28,26 @@
   text-decoration: underline;
 }
 
+.links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 14px;
+}
+
+.links a {
+  display: inline-flex;
+  color: var(--gray11);
+  text-decoration: none;
+}
+
+.links a:hover {
+  color: var(--gray12);
+}
+
 @media (max-width: 600px) {
   .wrapper {
     margin-top: 128px;
-    padding: 16px 0;
+    padding: 20px 0;
   }
 }

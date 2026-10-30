@@ -2,6 +2,9 @@ https://github.com/diecodev/qwik-sonner/assets/51871681/e7a7e4a6-c422-44b2-af7e-
 
 # qwik-sonner
 
+[![npm](https://img.shields.io/npm/v/qwik-sonner?label=npm&color=111)](https://www.npmjs.com/package/qwik-sonner)
+[![Qwik v2](https://img.shields.io/npm/v/qwik-sonner/beta?label=qwik%20v2&color=ac7ef4)](https://qwik-sonner.dieco.dev/docs/)
+
 An opinionated toast component for qwik.
 Based on [emilkowalski](https://github.com/emilkowalski)'s React [implementation](https://sonner.emilkowal.ski/).
 
@@ -284,9 +287,7 @@ You can pass `onDismiss` and `onAutoClose` callbacks. `onDismiss` gets fired whe
 ```js
 toast("Event has been created", {
   onDismiss: $((t) => console.log(`Toast with id ${t.id} has been dismissed`)),
-  onAutoClose: $((t) =>
-    console.log(`Toast with id ${t.id} has been closed automatically`)
-  ),
+  onAutoClose: $((t) => console.log(`Toast with id ${t.id} has been closed automatically`)),
 });
 ```
 

@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, v2]
+  # Every base, not only main: in a stack each pull request targets the branch below it.
+  pull_request:
+  workflow_call: # lets release.yml reuse this exact gate
+
+# Playwright runs in e2e.yml, only when the library or the test app change.
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # cancel superseded PR runs, but never cancel pushes to main or v2
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lint, typecheck & build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build library (types + lib)
+        run: pnpm build.types && pnpm build.lib
+
+      - name: Typecheck website
+        run: pnpm build.types && pnpm lint
+        working-directory: website
+
+      # The website imports the library built above, as Vercel builds it.
+      - name: Build website (client + SSG)
+        run: pnpm build.client && pnpm build.server
+        working-directory: website
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # the changelog reads the GitHub releases
+
+      - name: Typecheck test app
+        run: pnpm build.types && pnpm lint
+        working-directory: test

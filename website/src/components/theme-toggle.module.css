@@ -1,0 +1,56 @@
+.toggle {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--gray11);
+  cursor: pointer;
+  transition:
+    color 150ms,
+    background 150ms,
+    transform 160ms var(--ease-out);
+}
+
+.toggle:hover {
+  color: var(--gray12);
+  background: var(--gray3);
+}
+
+.toggle:active {
+  transform: scale(0.94);
+}
+
+.icon {
+  grid-area: 1 / 1;
+  transition:
+    opacity 300ms var(--ease-out),
+    transform 300ms var(--ease-out);
+}
+
+/* Show the icon of the theme you'd switch to: the moon while light. */
+.icon[data-icon="sun"],
+:global(:root[data-theme="dark"]) .icon[data-icon="moon"] {
+  opacity: 0;
+  transform: rotate(-60deg) scale(0.6);
+}
+
+:global(:root[data-theme="dark"]) .icon[data-icon="sun"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .icon[data-icon="moon"] {
+    opacity: 0;
+    transform: rotate(-60deg) scale(0.6);
+  }
+
+  :global(:root:not([data-theme="light"])) .icon[data-icon="sun"] {
+    opacity: 1;
+    transform: none;
+  }
+}

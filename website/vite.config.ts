@@ -1,11 +1,23 @@
 import { defineConfig, type UserConfig } from "vite";
-import { qwikVite } from "@builder.io/qwik/optimizer";
-import { qwikCity } from "@builder.io/qwik-city/vite";
-import tsconfigPaths from "vite-tsconfig-paths";
+import { qwikVite } from "@qwik.dev/core/optimizer";
+import { qwikRouter } from "@qwik.dev/router/vite";
+import library from "../package.json" with { type: "json" };
+import { readReleases } from "./src/lib/github.ts";
+import { readNpm } from "./src/lib/npm.ts";
 
-export default defineConfig((): UserConfig => {
+export default defineConfig(async (): Promise<UserConfig> => {
+  // The published versions, their dist-tags and days, and the notes of each
+  // GitHub release, for src/lib/release.ts: read once per build (or dev-server
+  // start) and inlined as constants, so nothing hits npm or GitHub at runtime.
+  const [npm, releases] = await Promise.all([readNpm(library.version), readReleases()]);
+
   return {
-    plugins: [qwikCity(), qwikVite(), tsconfigPaths()],
+    define: {
+      __NPM__: JSON.stringify(npm),
+      __RELEASES__: JSON.stringify(releases),
+    },
+    resolve: { tsconfigPaths: true },
+    plugins: [qwikRouter(), qwikVite()],
     server: {
       headers: {
         "Cache-Control": "public, max-age=0",

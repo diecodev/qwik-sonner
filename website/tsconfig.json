@@ -5,7 +5,7 @@
     "module": "ESNext",
     "lib": ["es2022", "DOM", "WebWorker", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "jsxImportSource": "@builder.io/qwik",
+    "jsxImportSource": "@qwik.dev/core",
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
@@ -16,11 +16,11 @@
     "isolatedModules": true,
     "outDir": "tmp",
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "types": ["node", "vite/client"],
     "paths": {
       "~/*": ["./src/*"]
     }
   },
-  "files": ["./.eslintrc.cjs"],
   "include": ["src", "./*.d.ts", "./*.config.ts"]
 }

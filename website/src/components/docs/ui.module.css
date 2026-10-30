@@ -1,0 +1,249 @@
+/* Headings with a hover anchor ------------------------------------------- */
+
+.heading {
+  position: relative;
+  scroll-margin-top: calc(var(--docs-top, 56px) + 32px);
+}
+
+.anchor {
+  color: inherit;
+  text-decoration: none;
+}
+
+.anchor::before {
+  content: "#";
+  position: absolute;
+  left: -0.9em;
+  color: var(--gray8);
+  font-weight: 400;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+
+.anchor:hover::before,
+.anchor:focus-visible::before {
+  opacity: 1;
+}
+
+/* Callout ----------------------------------------------------------------- */
+
+.callout {
+  --c-bg: var(--gray1);
+  --c-border: var(--gray4);
+  --c-text: var(--gray11);
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  background: var(--c-bg);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.callout[data-type="note"] {
+  --c-bg: var(--info-bg);
+  --c-border: var(--info-border);
+  --c-text: var(--info-text);
+}
+
+.callout[data-type="tip"] {
+  --c-bg: var(--success-bg);
+  --c-border: var(--success-border);
+  --c-text: var(--success-text);
+}
+
+.callout[data-type="warning"] {
+  --c-bg: var(--warning-bg);
+  --c-border: var(--warning-border);
+  --c-text: var(--warning-text);
+}
+
+.callout[data-type="danger"] {
+  --c-bg: var(--error-bg);
+  --c-border: var(--error-border);
+  --c-text: var(--error-text);
+}
+
+.calloutIcon {
+  display: flex;
+  padding-top: 3px;
+  color: var(--c-text);
+}
+
+.calloutBody {
+  min-width: 0;
+  color: var(--gray12);
+}
+
+.calloutBody > :global(p) {
+  margin: 0;
+}
+
+.calloutBody > :global(p + p) {
+  margin-top: 8px;
+}
+
+.calloutTitle {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+/* API table --------------------------------------------------------------- */
+
+.tableWrap {
+  margin: 16px 0 28px;
+  border: 1px solid var(--gray4);
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.table th {
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray11);
+  background: var(--gray1);
+  border-bottom: 1px solid var(--gray4);
+}
+
+.table td {
+  padding: 10px 14px 0;
+  vertical-align: top;
+}
+
+.rowHead td {
+  white-space: nowrap;
+}
+
+.rowDesc td {
+  padding-top: 4px;
+  padding-bottom: 12px;
+  color: var(--gray11);
+  border-bottom: 1px solid var(--gray3);
+  line-height: 1.55;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.propName {
+  font-weight: 500;
+  color: var(--gray12);
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 13px;
+}
+
+.propName[data-deprecated="true"] {
+  text-decoration: line-through;
+  text-decoration-color: var(--gray8);
+}
+
+.type {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--gray11);
+  font-size: 12.5px;
+  white-space: normal;
+}
+
+.pill {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--info-text);
+  background: var(--info-bg);
+  box-shadow: inset 0 0 0 1px var(--info-border);
+  vertical-align: 1px;
+}
+
+.pill[data-tone="warning"] {
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  box-shadow: inset 0 0 0 1px var(--warning-border);
+}
+
+/* Demo -------------------------------------------------------------------- */
+
+.demo {
+  margin: 16px 0 8px;
+  padding: 20px;
+  border: 1px solid var(--gray4);
+  border-radius: 12px;
+  background-color: var(--gray1);
+  background-image: radial-gradient(var(--gray5) 1px, transparent 1px);
+  background-size: 14px 14px;
+  background-position: -7px -7px;
+}
+
+.demo .demoHint {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: var(--gray11);
+}
+
+/* Install tabs ------------------------------------------------------------ */
+
+.tabs {
+  margin: 16px 0 24px;
+}
+
+.tabList {
+  --tab-w: 64px;
+  position: relative;
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--gray3);
+}
+
+.tab {
+  position: relative;
+  z-index: 1;
+  width: var(--tab-w);
+  height: 28px;
+  border: 0;
+  background: none;
+  font: 500 13px/1 var(--font-sans);
+  color: var(--gray11);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 200ms;
+}
+
+.tab[aria-selected="true"] {
+  color: var(--gray12);
+}
+
+.tabIndicator {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: var(--tab-w);
+  height: 28px;
+  border-radius: 6px;
+  background: var(--gray0);
+  box-shadow: var(--shadow-button);
+  transform: translateX(calc(var(--tab-index) * var(--tab-w)));
+  transition: transform 300ms var(--ease-drawer);
+}
+
+.tabCode {
+  margin-top: 8px;
+}

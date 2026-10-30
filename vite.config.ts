@@ -1,47 +1,66 @@
-import { defineConfig } from "vite";
-import pkg from "./package.json";
-import { qwikVite } from "@builder.io/qwik/optimizer";
-import tsconfigPaths from "vite-tsconfig-paths";
+import { defineConfig, type Plugin } from "vite";
+import { qwikVite } from "@qwik.dev/core/optimizer";
+import pkg from "./package.json" with { type: "json" };
+import tailwindcss from "@tailwindcss/vite";
 
-const { dependencies = {}, peerDependencies = {} } = pkg as any;
-const makeRegex = (dep) => new RegExp(`^${dep}(/.*)?$`);
-const excludeAll = (obj) => Object.keys(obj).map(makeRegex);
+type DepMap = Record<string, string>;
+const { dependencies = {}, peerDependencies = {} } = pkg as {
+  dependencies?: DepMap;
+  peerDependencies?: DepMap;
+};
 
-export default defineConfig(({ command }) => {
-  const env = process.env.ENTRY as "styled" | "headless" | undefined;
+// Anything declared as a (peer)dependency must NOT be bundled into the library.
+// Consumers install these themselves, which keeps the output small and
+// dedupable (e.g. @qwik.dev/core).
+const makeRegex = (dep: string) => new RegExp(`^${dep}(/.*)?$`);
+const external = [
+  /^node:.*/,
+  ...Object.keys(dependencies).map(makeRegex),
+  ...Object.keys(peerDependencies).map(makeRegex),
+];
 
-  if (!env && command === "build") throw new Error("ENTRY env var is required");
+// `qwikVite()` emits an app manifest (`q-manifest.json` + `*-bundle-graph.json`)
+// for every client build, lib mode included. A library has no use for it, and
+// `lib/` is published as-is, so drop it once Qwik has emitted it.
+const dropAppManifest: Plugin = {
+  name: "qwik-sonner:drop-app-manifest",
+  enforce: "post",
+  generateBundle: {
+    order: "post",
+    handler(_options, bundle) {
+      for (const fileName of Object.keys(bundle)) {
+        if (fileName === "q-manifest.json" || fileName.endsWith("-bundle-graph.json")) {
+          delete bundle[fileName];
+        }
+      }
+    },
+  },
+};
 
-  const entry =
-    env === "headless" ? "src/lib/headless/toast-wrapper.tsx" : "src/lib";
-
+export default defineConfig(() => {
   return {
     build: {
       target: "es2020",
       outDir: "lib",
+      emptyOutDir: true,
+      // Single pass, two entry points. Code shared by both (the headless core)
+      // is hoisted into a shared chunk instead of being duplicated.
       lib: {
-        entry,
-        formats: ["es", "cjs"],
-        fileName: (format, file) => {
-          const ext = format === "es" ? "mjs" : "cjs";
-          const name = env === "styled" ? "index" : "headless";
-          return `${name}.qwik.${ext}`;
+        entry: {
+          index: "src/lib/index.ts",
+          headless: "src/lib/headless/toast-wrapper.tsx",
         },
+        formats: ["es"],
+        fileName: (_format, entryName) => `${entryName}.qwik.mjs`,
       },
-      emptyOutDir: env === "styled" ? true : false,
-      rollupOptions: {
-        // externalize deps that shouldn't be bundled into the library
-        external: [
-          /^node:.*/,
-          ...excludeAll(dependencies),
-          ...excludeAll(peerDependencies),
-        ],
-        // all the chunks created by vite shuold also have qwik in the name
+      rolldownOptions: {
+        external,
         output: {
-          chunkFileNames: "[name]-[format].qwik.js",
+          chunkFileNames: "[name]-[hash].qwik.mjs",
         },
       },
     },
-    plugins: [qwikVite(), tsconfigPaths()],
+    resolve: { tsconfigPaths: true },
+    plugins: [qwikVite(), tailwindcss(), dropAppManifest],
   };
 });

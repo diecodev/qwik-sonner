@@ -1,0 +1,105 @@
+.badge {
+  --dot: var(--gray9);
+  display: inline-flex;
+  align-items: stretch;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--gray1);
+  box-shadow: var(--shadow-button);
+  font-size: 12.5px;
+  line-height: 1;
+  color: var(--gray12);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  transition:
+    box-shadow 200ms,
+    transform 160ms var(--ease-out);
+}
+
+.badge:hover {
+  box-shadow:
+    var(--shadow-button),
+    0 0 0 1px var(--gray6);
+}
+
+.badge:active {
+  transform: scale(0.98);
+}
+
+.badge[data-size="sm"] {
+  height: 24px;
+  font-size: 12px;
+}
+
+.badge[data-channel="stable"] {
+  --dot: var(--success-text);
+}
+
+.badge[data-channel="prerelease"] {
+  --dot: var(--warning-text);
+}
+
+.lead {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px 0 11px;
+  font-weight: 500;
+}
+
+.dot {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+/* A slow halo on the dot while a release exists — calm, not a notification. */
+.badge:not([data-channel="none"]) .dot::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--dot);
+  opacity: 0;
+  animation: halo 2.4s var(--ease-out) infinite;
+}
+
+@keyframes halo {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.45;
+  }
+  70%,
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px 0 10px;
+  border-left: 1px solid var(--gray4);
+  background: var(--gray2);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--gray11);
+}
+
+.tag {
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--warning-text);
+  background: var(--warning-bg);
+  box-shadow: inset 0 0 0 1px var(--warning-border);
+}

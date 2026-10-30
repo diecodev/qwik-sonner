@@ -1,9 +1,9 @@
-ol[dir='ltr'] .headlessClose {
+ol[dir="ltr"] .headlessClose {
   --headless-close-start: unset;
   --headless-close-end: 6px;
 }
 
-ol[dir='rtl'] .headlessClose {
+ol[dir="rtl"] .headlessClose {
   --headless-close-start: 6px;
   --headless-close-end: unset;
 }

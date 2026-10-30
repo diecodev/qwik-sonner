@@ -1,5 +1,5 @@
-import { component$, useSignal } from "@builder.io/qwik";
-import { Toaster, type ToasterProps } from "qwik-sonner";
+import { component$, useStyles$ } from "@qwik.dev/core";
+import { Link, type DocumentHead } from "@qwik.dev/router";
 import { Hero } from "../components/Hero";
 import { Installation } from "../components/Installation";
 import { Usage } from "../components/Usage";
@@ -8,51 +8,45 @@ import { Position } from "../components/Position";
 import { ExpandModes } from "../components/ExpandModes";
 import { Other } from "../components/Other";
 import { Footer } from "../components/Footer";
+import { Logo } from "../components/Logo";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { useToasterControls } from "~/lib/toaster-context";
+import { GITHUB_URL } from "~/lib/versions";
+import styles from "./landing.css?inline";
 
 export default component$(() => {
-  const expand = useSignal<boolean>(false);
-  const position =
-    useSignal<Required<Pick<ToasterProps, "position">>["position"]>(
-      "bottom-left",
-    );
-  const richColors = useSignal<boolean>(false);
-  const closeButton = useSignal<boolean>(false);
+  useStyles$(styles);
+  const controls = useToasterControls();
 
   return (
-    <div class="wrapper light">
-      <Toaster
-        theme="light"
-        richColors={richColors.value}
-        closeButton={closeButton.value}
-        expand={expand.value}
-        position={position.value}
-      />
+    <div class="landing">
+      <header class="landing-nav container">
+        <Logo />
+        <nav>
+          <Link href="/docs/">Docs</Link>
+          <Link href="/docs/changelog/">Changelog</Link>
+          <a href={GITHUB_URL} target="_blank" rel="noreferrer">
+            GitHub
+          </a>
+          <ThemeToggle />
+        </nav>
+      </header>
       <main class="container">
         <Hero />
-        <p class="!mt-12 rounded-md bg-amber-100 p-2 !text-sm">
-          Due to the resumability, the{" "}
-          <span class="rounded-lg border border-amber-200 bg-amber-200/65 p-1 font-mono text-xs font-semibold">{`<Toaster />`}</span>{" "}
-          component should be positioned at the beginning of where you want to
-          use it. This way, you won't encounter{" "}
-          <a
-            href="https://github.com/diecodev/qwik-sonner/issues/13"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="font-bold underline"
-          >
-            rendering issues.
-          </a>
-        </p>
         <div class="content">
           <Installation />
           <Usage />
           <Types />
-          <Position position={position} />
-          <ExpandModes expand={expand} />
-          <Other closeButton={closeButton} richColors={richColors} />
+          <Position position={controls.position} />
+          <ExpandModes expand={controls.expand} />
+          <Other closeButton={controls.closeButton} richColors={controls.richColors} />
         </div>
       </main>
       <Footer />
     </div>
   );
 });
+
+export const head: DocumentHead = {
+  title: "Qwik Sonner — an opinionated toast component for Qwik",
+};

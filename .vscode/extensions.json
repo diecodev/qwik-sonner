@@ -1,8 +1,7 @@
 {
   "recommendations": [
-    "esbenp.prettier-vscode",
-    "dbaeumer.vscode-eslint",
+    "oxc.oxc-vscode",
     "seatonjiang.gitmoji-vscode",
-    "vivaxy.vscode-conventional-commits",
+    "vivaxy.vscode-conventional-commits"
   ]
 }

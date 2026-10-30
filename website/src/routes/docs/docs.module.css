@@ -1,0 +1,174 @@
+.shell {
+  /* Height of what sticks at the top: the header, plus the banner on the docs
+     of an older line. Sticky and fixed parts of the page start below it. */
+  --docs-top: 56px;
+  min-height: 100dvh;
+}
+
+.shell[data-banner] {
+  /* the 57px header (its border included) and the one-line banner */
+  --docs-top: 98px;
+}
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.skip {
+  position: absolute;
+  left: 12px;
+  top: -40px;
+  z-index: 100;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--gray12);
+  color: var(--gray0);
+  text-decoration: none;
+  transition: top 200ms var(--ease-out);
+}
+
+.skip:focus {
+  top: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 200px;
+  gap: 56px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 max(20px, env(safe-area-inset-left));
+}
+
+@media (max-width: 1180px) {
+  .grid {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 48px;
+  }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.main {
+  min-width: 0;
+  max-width: 720px;
+  padding: 40px 0 64px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray10);
+}
+
+/* Prose ------------------------------------------------------------------- */
+
+.prose {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--gray12);
+  animation: page-in 350ms var(--ease-out);
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.prose h1 {
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.prose h1 code {
+  font-size: 0.88em;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.prose :global(.lead) {
+  margin-bottom: 32px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--gray11);
+}
+
+.prose h2 {
+  margin: 56px 0 12px;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+}
+
+.prose h3 {
+  margin: 36px 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.prose h2 + h3 {
+  margin-top: 16px;
+}
+
+.prose p {
+  margin: 0 0 16px;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0 0 16px;
+  padding-left: 22px;
+}
+
+.prose li {
+  margin: 4px 0;
+}
+
+.prose li::marker {
+  color: var(--gray9);
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose hr {
+  margin: 48px 0;
+  border: 0;
+  height: 1px;
+  background: var(--gray4);
+}
+
+.pageFooter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--gray4);
+  font-size: 13px;
+  color: var(--gray10);
+}
+
+.pageFooter a {
+  color: var(--gray11);
+}

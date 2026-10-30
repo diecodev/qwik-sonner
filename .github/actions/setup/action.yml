@@ -1,0 +1,27 @@
+name: Setup
+description: Set up pnpm (the version in packageManager), Node 26, and install dependencies frozen
+
+inputs:
+  registry-url:
+    description: npm registry URL. Set this only in publish jobs so NODE_AUTH_TOKEN is wired up.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    # Without `version` it installs the one in package.json's packageManager,
+    # the same pnpm Vercel reads for preview builds.
+    - name: Install pnpm
+      uses: pnpm/action-setup@v6
+
+    - name: Use Node.js 26
+      uses: actions/setup-node@v7
+      with:
+        node-version: 26
+        cache: pnpm
+        registry-url: ${{ inputs.registry-url }}
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+      shell: bash

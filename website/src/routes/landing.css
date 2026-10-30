@@ -1,0 +1,86 @@
+/* Landing page — sonner's single-column layout. */
+
+.landing {
+  --side-padding: 16px;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing .container {
+  width: 100%;
+  max-width: 642px;
+  margin: 0 auto;
+  padding-left: max(var(--side-padding), env(safe-area-inset-left));
+  padding-right: max(var(--side-padding), env(safe-area-inset-right));
+}
+
+.landing-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.landing-nav nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.landing-nav nav a {
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--gray11);
+  text-decoration: none;
+  transition:
+    color 150ms,
+    background 150ms;
+}
+
+.landing-nav nav a:hover {
+  color: var(--gray12);
+  background: var(--gray3);
+}
+
+.landing main {
+  flex: 1;
+  padding-top: 72px;
+}
+
+.landing h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.landing h2 + p {
+  margin-top: -4px;
+}
+
+.landing .content {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  margin-top: 64px;
+}
+
+.landing .content .buttons {
+  margin: 0 calc(-1 * var(--side-padding));
+  padding: 4px var(--side-padding);
+}
+
+@media (max-width: 600px) {
+  .landing .content .buttons {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 16px,
+      black calc(100% - 16px),
+      transparent
+    );
+  }
+}

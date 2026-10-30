@@ -1,35 +1,36 @@
-import { useDocumentHead, useLocation } from "@builder.io/qwik-city";
+import { useDocumentHead, useLocation } from "@qwik.dev/router";
 
-import { component$ } from "@builder.io/qwik";
-const ogImage = "https://qwik-sonner.deno.dev/og.png";
+import { component$ } from "@qwik.dev/core";
+const ogImage = "https://qwik-sonner.dieco.dev/og.png";
+const DEFAULT_TITLE = "Qwik Sonner";
+const DEFAULT_DESCRIPTION = "An opinionated toast component for Qwik.";
 /**
  * The RouterHead component is placed inside of the document `<head>` element.
+ * Each page's `head` export sets the title and description; the defaults cover
+ * pages without one.
  */
 export const RouterHead = component$(() => {
   const head = useDocumentHead();
   const loc = useLocation();
+  const title = head.title || DEFAULT_TITLE;
+  const description =
+    head.meta.find((m) => m.name === "description")?.content ?? DEFAULT_DESCRIPTION;
 
   return (
     <>
-      <title>Qwik Sonner</title>
-      <meta name="og:title" content="Qwik Sonner" />
+      <title>{title}</title>
+      <meta name="og:title" content={title} />
 
       {/* Description */}
-      <meta
-        name="description"
-        content="An opinionated toast component for Qwik."
-      />
-      <meta
-        name="og:description"
-        content="An opinionated toast component for Qwik."
-      />
+      <meta name="description" content={description} />
+      <meta name="og:description" content={description} />
 
       {/* Image */}
       <meta name="twitter:image" content={ogImage} />
       <meta name="og:image" content={ogImage} />
 
       {/* URL */}
-      <meta name="og:url" content="https://qwik-sonner.deno.dev/" />
+      <meta name="og:url" content={loc.url.href} />
 
       {/* General */}
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -41,18 +42,16 @@ export const RouterHead = component$(() => {
       {/* Favicons */}
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content="#ffffff" />
-      <link rel="shortcut icon" href="favicon.ico" />
-      <link
-        rel="apple-touch-icon"
-        sizes="180x180"
-        href="apple-touch-icon.png"
-      />
+      <link rel="shortcut icon" href="/favicon.ico" />
 
       <link rel="canonical" href={loc.url.href} />
 
-      {head.meta.map((m) => (
-        <meta key={m.key} {...m} />
-      ))}
+      {/* The description is already rendered above. */}
+      {head.meta
+        .filter((m) => m.name !== "description")
+        .map((m) => (
+          <meta key={m.key} {...m} />
+        ))}
 
       {head.links.map((l) => (
         <link key={l.key} {...l} />

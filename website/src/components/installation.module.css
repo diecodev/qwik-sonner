@@ -1,37 +1,31 @@
 .code {
-  padding: 0 62px 0 12px;
-  border-radius: 6px;
-  background: linear-gradient(to top, var(--gray2), var(--gray1) 8px);
-  font-family: var(--font-mono);
-  font-size: 14px;
   position: relative;
-  cursor: copy;
-  height: 40px;
-  border: 1px solid var(--gray3);
   display: flex;
   align-items: center;
-  color: var(--gray12);
-}
-
-.copy {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  border-radius: 50%;
-  border: none;
+  height: 44px;
+  padding: 0 52px 0 14px;
   border: 1px solid var(--gray4);
-  background: #fff;
-  color: var(--gray12);
-  border-radius: 5px;
-  width: 26px;
-  height: 26px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  border-radius: 10px;
+  background: linear-gradient(to top, var(--gray2), var(--gray1) 8px);
 }
 
-.copy div {
-  display: flex;
+.code code {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  color: var(--gray12);
+}
+
+.code .copy {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  margin-top: -14px;
+}
+
+.note {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  color: var(--gray11);
 }

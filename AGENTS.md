@@ -1,0 +1,169 @@
+# AGENTS.md — qwik-sonner
+
+Guidance for AI coding agents (Claude Code, Codex, Gemini, Cursor, etc.) working in this
+repository. This is the single source of truth; `CLAUDE.md` and `GEMINI.md` point here.
+
+## What this project is
+
+`qwik-sonner` is an opinionated toast component for **Qwik**, ported from
+[sonner](https://sonner.emilkowal.ski/) (React). It is a **published npm library**, so changes to
+its public API, build output, or `package.json#exports` are user-facing — treat them carefully.
+
+It ships two entry points:
+
+- **Styled** (default): `import { Toaster, toast } from "qwik-sonner";`
+- **Headless**: `import { ... } from "qwik-sonner/headless";`
+
+## ⚠️ This project targets Qwik v2 (release candidate)
+
+The codebase was migrated from Qwik 1.x to **Qwik 2.0** (`@qwik.dev/core` / `@qwik.dev/router`,
+`2.0.0-rc.4`; the library's peer range is `^2.0.0-rc.4`). Qwik v2 isn't stable yet — APIs can still
+shift between release candidates.
+**Do not reintroduce v1 (`@builder.io/*`) packages or imports.**
+
+### v1 → v2 renames (memorize these)
+
+| Qwik v1                                                                                                                                           | Qwik v2                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `@builder.io/qwik`                                                                                                                                | `@qwik.dev/core`                            |
+| `@builder.io/qwik/optimizer`                                                                                                                      | `@qwik.dev/core/optimizer`                  |
+| `@builder.io/qwik/server`                                                                                                                         | `@qwik.dev/core/server`                     |
+| `@builder.io/qwik-city`                                                                                                                           | `@qwik.dev/router`                          |
+| `@builder.io/qwik-city/vite` → `qwikCity()`                                                                                                       | `@qwik.dev/router/vite` → `qwikRouter()`    |
+| `createQwikCity()` (middleware)                                                                                                                   | `createQwikRouter()`                        |
+| `<QwikCityProvider>`                                                                                                                              | `<QwikRouterProvider>`                      |
+| `@qwik-city-plan` (virtual module)                                                                                                                | `@qwik-router-config`                       |
+| `jsxImportSource: "@builder.io/qwik"`                                                                                                             | `jsxImportSource: "@qwik.dev/core"`         |
+| `qwikVite()` from `/optimizer`                                                                                                                    | **unchanged** (still `qwikVite`)            |
+| `renderToStream`, `renderToString` (`/server`)                                                                                                    | **unchanged**                               |
+| `routeLoader$`, `useLocation`, `DocumentHead`, `RequestHandler`, `RouterOutlet`                                                                   | **unchanged** (now from `@qwik.dev/router`) |
+| Core APIs: `component$`, `useSignal`, `useStore`, `useComputed$`, `useTask$`, `useVisibleTask$`, `useStyles$`, `$`, `Slot`, `JSXOutput`, `Signal` | **unchanged** (from `@qwik.dev/core`)       |
+
+### v2 behavioral gotchas already handled here (don't undo them)
+
+- **Service worker removed.** v2 uses `<link rel="modulepreload">` for prefetching. The
+  `src/routes/service-worker.ts` files were deleted. Keep `<ServiceWorkerRegister />` in
+  `root.tsx` — in v2 it exists only to _unregister_ stale service workers from old visitors.
+- **`createQwikRouter()` no longer takes `qwikCityPlan`/`qwikRouterConfig`.** The router config is
+  imported internally via `await import("@qwik-router-config")`. Pass only `{ render }` (and
+  `manifest` where applicable). Don't add a `qwikRouterConfig` option back.
+- **`isSignal(x)` takes no type argument** in v2 (was `isSignal<T>(x)` in v1).
+- **`tsconfig` uses `moduleResolution: "bundler"`** and `jsxImportSource: "@qwik.dev/core"`.
+- **Vite 8 (Rolldown).** Qwik 2.0.0-rc.4 requires `vite >=8 <9`. Under the betas, Rolldown broke
+  production SSR (`QWIK ERROR Code(Q14)`, `qrlMissingChunk`, for every event handler that captures
+  lexical scope) while `pnpm dev` and the e2e suite still passed; with rc.4 the production build
+  works. Playwright runs against `pnpm dev`, so after a Qwik or Vite upgrade also run the suite
+  against a production build: `pnpm -C test build.client && pnpm -C test build.preview`, then
+  `vite preview` (`pnpm -C test exec vite preview`).
+- **Vite 8 config:** `build.rolldownOptions` (not `rollupOptions`), `resolve: { tsconfigPaths:
+true }` (no `vite-tsconfig-paths` plugin), and JSON imports need `with { type: "json" }`.
+
+When in doubt about a v2 API, check the installed type defs under
+`node_modules/.pnpm/@qwik.dev+*/node_modules/@qwik.dev/{core,router}/**/*.d.ts` — they are
+authoritative for this beta. Official docs: <https://qwik.dev/docs/> (Qwik City is now "Qwik Router").
+
+## Repository layout (pnpm monorepo)
+
+```
+.                      # root = the published library (package "qwik-sonner")
+├── src/
+│   ├── index.ts                 # public entry (styled): exports Toaster, toast, types
+│   ├── lib/
+│   │   ├── index.ts             # alt entry barrel
+│   │   ├── styled/              # styled Toaster + styles.css
+│   │   └── headless/            # core logic: state, toast, toast-wrapper, types, icons, const
+│   ├── root.tsx / entry.*.tsx   # dev/SSR harness (not published)
+├── website/              # demo + docs site (Qwik Router app, prerendered and hosted on Vercel)
+├── test/                 # Qwik Router app used by Playwright e2e tests
+├── pnpm-workspace.yaml   # workspaces: ".", "website", "test"
+└── playwright.config.ts
+```
+
+`pnpm-workspace.yaml` also lists `onlyBuiltDependencies` / `allowBuilds` for `esbuild` and
+`sharp` — these must stay approved or `pnpm install` blocks build scripts.
+
+## Website hosting (Vercel)
+
+The site is fully prerendered (Qwik Router's SSG adapter), so Vercel serves `website/dist` as static
+files — no functions. Build settings live in `vercel.json` at the repo root. Production deploys run
+from GitHub Actions (`.github/workflows/website.yml`, Vercel CLI) after each release and on pushes to
+`v2` that touch `website/`; Vercel's Git integration only builds previews for other branches
+(`website/scripts/vercel-preview.sh`). Versions, dist-tags and dates on the site come from npm at
+build time (`website/src/lib/npm.ts`); the changelog's notes are the published GitHub releases, read
+at build time too (`website/src/lib/github.ts`). Details: `website/README.md`.
+
+## Releases
+
+A `v*` tag (pushed by `pnpm release`) runs `.github/workflows/release.yml`: CI + e2e → tag/version check →
+pack + contents check → `npm stage publish` (Trusted Publishing) → draft GitHub release
+(changelogithub) → waits until a maintainer runs `pnpm stage approve` (2FA) → publishes the release →
+deploys the website. Steps: `CONTRIBUTING.md` → Releases.
+
+## Public API of the library
+
+- `Toaster` — the styled component you render once near the app root. Props typed as `ToasterProps`.
+- `toast` — callable + namespaced helpers: `toast.success`, `.error`, `.info`, `.warning`,
+  `.message`, `.loading`, `.promise`, `.dismiss`, `.custom`.
+- Types: `Toast` (aliased from `ToastT`), `ExternalToast`, `ToasterProps`.
+
+Headless entry (`qwik-sonner/headless`) exposes the unstyled `Toaster` wrapper + `toast` for
+consumers who bring their own styles.
+
+## Commands
+
+Run library commands from the repo root; site/e2e commands from their workspace.
+
+```bash
+pnpm install              # install all workspaces (build scripts for esbuild/sharp are approved)
+
+# Library (root)
+pnpm build.types          # tsc --emitDeclarationOnly -> lib-types/  (typecheck)
+pnpm build.lib            # single-pass vite lib build -> lib/ (styled + headless, ESM-only, shared chunk)
+pnpm lint                 # oxlint . (whole repo: src + website + test; loads eslint-plugin-qwik via jsPlugins)
+pnpm fmt                  # oxfmt . (whole repo)
+
+# Website (cd website)
+pnpm build.types          # tsc --noEmit (typecheck)
+pnpm build.client         # vite client build
+pnpm build.server         # prerenders every route into dist/ (SSG adapter)
+pnpm dev                  # local dev server
+
+# Website, as Vercel builds it (root): library + client + SSG -> website/dist
+pnpm build.website
+
+# e2e (cd test, then root)
+pnpm --filter test build  # build the test app
+pnpm test                 # playwright (from root)
+```
+
+After any change to `src/`, the minimum green bar is: **`pnpm build.types` + `pnpm build.lib`**
+pass at the root, and `pnpm build.types` passes in `website/` and `test/`.
+
+In GitHub Actions, `ci.yml` (lint, types, the library and website builds) runs on every push to
+`main`/`v2` and every pull request; `e2e.yml` (Playwright, chromium + webkit) only when `src/`,
+`test/`, the Playwright/Vite/TS config, the dependencies or the CI setup change. The release runs
+both whatever changed.
+
+## Qwik authoring conventions (apply to all `.tsx` here)
+
+- Components are declared with `component$(() => { ... })`. Event handlers and inline closures that
+  cross the serialization boundary must be wrapped in `$(...)` (e.g. `onClick$={$(() => ...)}`).
+- State: `useSignal` for single values, `useStore` for objects, `useComputed$` for derived values.
+- Side effects: `useTask$` (runs on server+client, tracks signals) and `useVisibleTask$`
+  (client-only, after render). A task callback must return `void`/`Promise<void>` — don't return a
+  value from it (v2 types are strict; assign inside a block instead).
+- Styles via `useStyles$(stylesString)`. The styled entry imports `styles.css` as a string.
+- Anything captured by a `$`-closure must be **serializable** (no class instances, DOM nodes, etc.).
+- Prefer signals/`.value` over local mutable variables that need to survive re-renders.
+
+## Conventions & guardrails
+
+- **Package manager: pnpm only** (workspace protocol `workspace:*` links the site/test to the lib).
+- TypeScript is `strict`. Keep it green; don't add `any` to silence errors — fix the type.
+- Formatting is **oxfmt**; linting is **oxlint**, which loads `eslint-plugin-qwik` through oxlint's
+  `jsPlugins` (see `.oxlintrc.json`). Run `pnpm fmt` before finishing. Note: oxlint's JS-plugin
+  runtime has no type information, so the type-aware Qwik rules `valid-lexical-scope` and
+  `use-async-top` are intentionally omitted — TypeScript `strict` still covers types.
+- Don't edit anything in `lib/`, `lib-types/`, `dist/`, or `tmp/` — they are build output.
+- Keep `package.json#exports` intact (both `.` and `./headless`); breaking it breaks consumers.
+- This is a published package — call out any change that affects the public API or build output.

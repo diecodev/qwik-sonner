@@ -43,3 +43,9 @@ bun.lockb
 # Yarn
 .yarn/*
 !.yarn/releases
+
+# Local-only notes
+todos.md
+
+# Vercel CLI (vercel pull / build)
+.vercel

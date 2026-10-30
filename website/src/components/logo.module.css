@@ -1,0 +1,20 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--gray12);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mark {
+  fill: currentColor;
+  transition: transform 300ms var(--ease-out);
+}
+
+.logo:hover .mark {
+  transform: translateY(-1px);
+}

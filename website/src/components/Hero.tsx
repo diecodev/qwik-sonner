@@ -1,19 +1,21 @@
+import { component$ } from "@qwik.dev/core";
+import { Link } from "@qwik.dev/router";
 import { toast } from "qwik-sonner";
-
+import { GITHUB_URL } from "~/lib/versions";
+import { QwikV2Badge } from "./QwikV2Badge";
 import styles from "./hero.module.css";
 
-export const Hero = () => {
+export const Hero = component$(() => {
   return (
     <div class={styles.wrapper}>
-      <div class={styles.toastWrapper}>
+      <QwikV2Badge />
+      <div class={styles.toastWrapper} aria-hidden="true">
         <div class={styles.toast} />
         <div class={styles.toast} />
         <div class={styles.toast} />
       </div>
       <h1 class={styles.heading}>Qwik Sonner</h1>
-      <p style={{ marginTop: 0, fontSize: 18 }}>
-        An opinionated toast component for Qwik.
-      </p>
+      <p class={styles.subheading}>An opinionated toast component for Qwik.</p>
       <div class={styles.buttons}>
         <button
           data-primary=""
@@ -26,14 +28,13 @@ export const Hero = () => {
         >
           Render a toast
         </button>
-        <a
-          class={styles.button}
-          href="https://github.com/diecodev/qwik-sonner"
-          target="_blank"
-        >
+        <Link class={styles.button} href="/docs/">
+          Documentation
+        </Link>
+        <a class={styles.button} href={GITHUB_URL} target="_blank" rel="noreferrer">
           GitHub
         </a>
       </div>
     </div>
   );
-};
+});

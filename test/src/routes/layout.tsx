@@ -1,6 +1,6 @@
-import { component$, Slot } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
-import type { RequestHandler } from "@builder.io/qwik-city";
+import { component$, Slot } from "@qwik.dev/core";
+import { routeLoader$ } from "@qwik.dev/router";
+import type { RequestHandler } from "@qwik.dev/router";
 
 export const onGet: RequestHandler = async ({ cacheControl }) => {
   // Control caching for this request for best performance and to reduce hosting costs:

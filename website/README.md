@@ -1,298 +1,78 @@
-# qwik-sonner
+# qwik-sonner website
 
-An opinionated toast component for qwik.
-Based on [emilkowalski](https://github.com/emilkowalski)'s React [implementation](https://sonner.emilkowal.ski/).
+Demo and docs site for `qwik-sonner`, built with Qwik v2 + [Qwik Router](https://qwik.dev/docs/) and
+hosted on [Vercel](https://vercel.com/docs) at <https://qwik-sonner.dieco.dev>.
 
-> [!NOTE]
-> This readme was created using the svelte-sonner readme as template
+It consumes the library through `workspace:*`, i.e. from the built `lib/` folder at the repo root,
+so **build the library first** (`pnpm build.types && pnpm build.lib` from the root).
 
-## Quick start
+## Commands
 
-Install it:
-
-```bash
-npm i qwik-sonner
-# or
-yarn add qwik-sonner
-# or
-pnpm add qwik-sonner
-# or
-bun add qwik-sonner
+```shell
+pnpm dev            # dev server (SSR)
+pnpm build.types    # typecheck
+pnpm build.client   # client build -> dist/
+pnpm build.server   # prerenders every route into dist/ (SSG), plus 404.html and sitemap.xml
+pnpm preview        # production build served locally by Vite
 ```
 
-Add `<Toaster />` to your app, it will be the place where all your toasts will be rendered. After that, you can use `toast()` from anywhere in your app.
+From the repo root, `pnpm build.website` runs the whole chain (library + client + SSG), as Vercel does.
 
-```jsx
-import { Toaster, toast } from "qwik-sonner";
+## Versions come from npm, release notes from GitHub
 
-export const QwikComponent = component$(() => {
-  return (
-    <div>
-      <Toaster />
-      <button onClick$={() => toast("My first toast")}>Give me a toast</button>
-    </div>
-  );
-});
-```
+The version menu, the install commands, the banners, the Qwik v2 badge and the changelog's versions,
+dist-tags and dates are read from the npm registry when the site builds (`vite.config.ts` →
+`src/lib/npm.ts` → `src/lib/release.ts`). Offline, a local build shows the repo's version as
+unreleased; in CI (`CI` set) the build fails instead.
 
-## Types
+The changelog's notes are the published GitHub releases, as GitHub renders them (`vite.config.ts` →
+`src/lib/github.ts` → `src/routes/docs/changelog/`): to change what the site says about a version, edit
+its release on GitHub and redeploy. A release is a draft until its version is approved on npm, so the
+site never shows notes for a version that isn't out (see `CONTRIBUTING.md` → Releases). Set
+`GITHUB_TOKEN` to read them with a token. Offline or rate-limited, a local or preview build goes on
+without notes; in GitHub Actions the build fails instead.
 
-### Default
+## Deployment (Vercel)
 
-Most basic toast. You can customize it (and any other type) by passing an options object as the second argument.
+The site is fully prerendered, so Vercel serves `dist/` as static files: no functions.
 
-```js
-toast("Event has been created");
-```
+**Production** deploys from GitHub Actions ([`website.yml`](../.github/workflows/website.yml)), which
+builds with the Vercel CLI (`vercel build --prod`, then `vercel deploy --prebuilt --prod`):
 
-With custom icon and description:
+- after each release, once the new version is on npm (`release.yml` calls it);
+- on each push to `v2` that changes `website/` or `vercel.json`;
+- by hand (Actions → Website → Run workflow).
 
-```js
-import Icon from "./Icon.tsx";
+It needs three repository secrets: `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`.
 
-toast("Event has been created", {
-  description: "Monday, January 3rd at 6:00pm",
-  icon: Icon,
-});
-```
+**Previews** come from Vercel's Git integration, which builds nothing for `main` or `v2`
+(`git.deploymentEnabled`). Its Ignored Build Step, [`scripts/vercel-preview.sh`](./scripts/vercel-preview.sh),
+skips every branch that doesn't change `website/` or `vercel.json` compared with `v2`.
 
-### Success
+> When `v2` merges into `main`, switch the production branch to `main` in `website.yml`,
+> `scripts/vercel-preview.sh` and `vercel.json` (`git.deploymentEnabled`).
 
-Renders a checkmark icon in front of the message.
+The build settings live in [`vercel.json`](../vercel.json) at the repo root:
 
-```js
-toast.success("Event has been created");
-```
+| Setting          | Value                                                |
+| ---------------- | ---------------------------------------------------- |
+| Root directory   | repo root (the default): the build needs the library |
+| Framework preset | none (`"framework": null`)                           |
+| Install command  | the default: `pnpm install`                          |
+| Build command    | `pnpm build.website`                                 |
+| Output directory | `website/dist`                                       |
 
-### Info
+pnpm is the one in the root `package.json`'s `packageManager`: the CI's setup installs it, and
+Vercel reads it for the previews.
 
-Renders a question mark icon in front of the message.
+`trailingSlash` matches the URLs of the pages (`/docs/toast/`), `/docs/v2/…` redirects to `/docs/…`
+(see below), `404.html` answers missing pages, and `/build/` and `/assets/` (hashed file names) are
+cached for a year.
 
-```js
-toast.info("Event has new information");
-```
+## Docs URLs
 
-### Warning
-
-Renders a warning icon in front of the message.
-
-```js
-toast.warning("Event has warning");
-```
-
-### Error
-
-Renders an error icon in front of the message.
-
-```js
-toast.error("Event has not been created");
-```
-
-### Action
-
-Renders a button.
-
-```js
-toast("Event has been created", {
-  action: {
-    label: "Undo",
-    onClick: $(() => console.log("Undo")),
-  },
-});
-```
-
-> [!CAUTION]
-> You must import the dollar sign when passing a onClick function.
-
-### Promise
-
-Starts in a loading state and will update automatically after the promise resolves or fails.
-
-```js
-toast.promise(() => new Promise((resolve) => setTimeout(resolve, 2000)), {
-  loading: "Loading",
-  success: "Success",
-  error: "Error",
-});
-```
-
-You can pass a function to the success/error messages to incorporate the result/error of the promise.
-
-```js
-toast.promise(promise, {
-  loading: "Loading...",
-  success: (data) => {
-    return `${data.name} has been added!`;
-  },
-  error: "Error",
-});
-```
-
-### Custom Component
-
-You can pass a component as the first argument instead of a string to render custom component while maintaining default styling. You can use the headless version below for a custom, unstyled toast.
-
-```js
-toast(<div>My custom toast</div>);
-```
-
-### Updating a toast
-
-You can update a toast by using the `toast` function and passing it the id of the toast you want to update, the rest stays the same.
-
-```js
-const toastId = toast("Sonner");
-
-toast.success("Toast has been updated", {
-  id: toastId,
-});
-```
-
-## Customization
-
-### Headless
-
-You can use `toast.custom` to render an unstyled toast with custom component while maintaining the functionality.
-
-```tsx
-toast.custom((t) => (
-  <div>
-    <h1>Custom toast</h1>
-     <button onClick={$(() => toast.dismiss(t))}>Dismiss</button>
-  </div>
-```
-
-### Theme
-
-You can change the theme using the `theme` prop. Default theme is light.
-
-```tsx
-<Toaster theme="dark" />
-```
-
-### Position
-
-You can change the position through the `position` prop on the `<Toaster />` component. Default is `bottom-right`.
-
-```tsx
-// Available positions
-// top-left, top-center, top-right, bottom-left, bottom-center, bottom-right
-
-<Toaster position="top-center" />
-```
-
-### Expanded
-
-Toasts can also be expanded by default through the `expand` prop. You can also change the amount of visible toasts which is 3 by default.
-
-```tsx
-<Toaster expand visibleToasts={9} />
-```
-
-### Styling for all toasts
-
-You can style your toasts globally with the `toastOptions` prop in the `Toaster` component.
-
-```tsx
-<Toaster
-  toastOptions={{
-    style: "background: red;",
-    class: "my-toast",
-    descriptionClass: "my-toast-description",
-  }}
-/>
-```
-
-### Styling for individual toast
-
-```js
-toast("Event has been created", {
-  style: "background: red;",
-  class: "my-toast",
-  descriptionClass: "my-toast-description",
-});
-```
-
-### Close button
-
-Add a close button to all toasts that shows on hover by adding the `closeButton` prop.
-
-```tsx
-<Toaster closeButton />
-```
-
-### Rich colors
-
-You can make error and success state more colorful by adding the `richColors` prop.
-
-```tsx
-<Toaster richColors />
-```
-
-### Custom offset
-
-Offset from the edges of the screen.
-
-```tsx
-<Toaster offset="80px" />
-```
-
-### Programmatically remove toast
-
-To remove a toast programmatically use `toast.dismiss(id)`.
-
-```js
-const toastId = toast("Event has been created");
-
-toast.dismiss(toastId);
-```
-
-You can also dismiss all toasts at once by calling `toast.dismiss()` without an id.
-
-```js
-toast.dismiss();
-```
-
-### Duration
-
-You can change the duration of each toast by using the `duration` property, or change the duration of all toasts like this:
-
-```tsx
-<Toaster duration={10000} />
-```
-
-```js
-toast("Event has been created", {
-  duration: 10000,
-});
-
-// Persisent toast
-toast("Event has been created", {
-  duration: Number.POSITIVE_INFINITY,
-});
-```
-
-### On Close Callback
-
-You can pass `onDismiss` and `onAutoClose` callbacks. `onDismiss` gets fired when either the close button gets clicked or the toast is swiped. `onAutoClose` fires when the toast disappears automatically after it's timeout (`duration` prop).
-
-```js
-toast("Event has been created", {
-  onDismiss: $((t) => console.log(`Toast with id ${t.id} has been dismissed`)),
-  onAutoClose: $((t) =>
-    console.log(`Toast with id ${t.id} has been closed automatically`)
-  ),
-});
-```
-
-## Keyboard focus
-
-You can focus on the toast area by pressing ⌥/alt + T. You can override it by providing an array of `event.code` values for each key.
-
-```tsx
-<Toaster hotkey={["KeyC"]} />
-```
-
-## License
-
-MIT
+The current line's docs live at `/docs/…` (`src/routes/docs/`), an older line's at `/docs/v<n>/…`
+(`src/routes/docs/v1/`), and `vercel.json` redirects `/docs/v<current>/…` to `/docs/…`, so both
+addresses work. The paths come from `CURRENT_VERSION` in `src/lib/versions.ts`. When a new major
+ships: move the current pages into `src/routes/docs/v<n>/`, put the new ones in `src/routes/docs/`,
+set `CURRENT_VERSION`, and point the redirects in `vercel.json` at the new major.

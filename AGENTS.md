@@ -94,7 +94,7 @@ at build time too (`website/src/lib/github.ts`). Details: `website/README.md`.
 
 ## Releases
 
-A `v*` tag (pushed by `pnpm release`) runs `.github/workflows/release.yml`: CI → tag/version check →
+A `v*` tag (pushed by `pnpm release`) runs `.github/workflows/release.yml`: CI + e2e → tag/version check →
 pack + contents check → `npm stage publish` (Trusted Publishing) → draft GitHub release
 (changelogithub) → waits until a maintainer runs `pnpm stage approve` (2FA) → publishes the release →
 deploys the website. Steps: `CONTRIBUTING.md` → Releases.
@@ -138,6 +138,11 @@ pnpm test                 # playwright (from root)
 
 After any change to `src/`, the minimum green bar is: **`pnpm build.types` + `pnpm build.lib`**
 pass at the root, and `pnpm build.types` passes in `website/` and `test/`.
+
+In GitHub Actions, `ci.yml` (lint, types, the library and website builds) runs on every push to
+`main`/`v2` and every pull request; `e2e.yml` (Playwright, chromium + webkit) only when `src/`,
+`test/`, the Playwright/Vite/TS config, the dependencies or the CI setup change. The release runs
+both whatever changed.
 
 ## Qwik authoring conventions (apply to all `.tsx` here)
 

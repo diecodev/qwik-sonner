@@ -64,7 +64,7 @@ Maintainers only. On an up-to-date `v2` (`main` once `v2` merges), `pnpm release
 version (`2.0.0-beta.2`…), commits it, tags it and pushes. The tag runs
 [`release.yml`](./.github/workflows/release.yml):
 
-1. the CI, and a check that the tag matches the version in `package.json`;
+1. the CI, the Playwright suite and a check that the tag matches the version in `package.json`;
 2. it builds and packs the library, checks the package contents and **stages** it on npm through
    Trusted Publishing (a prerelease under its identifier, like `beta`; a plain version under
    `latest`);

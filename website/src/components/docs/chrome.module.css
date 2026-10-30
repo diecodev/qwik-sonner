@@ -147,10 +147,6 @@
   .headerIcon {
     display: none;
   }
-
-  .versionMenu {
-    width: min(300px, calc(100vw - 24px));
-  }
 }
 
 /* Version selector -------------------------------------------------------- */
@@ -227,6 +223,19 @@
     opacity 150ms var(--ease-out),
     transform 250ms var(--ease-drawer),
     visibility 0s;
+}
+
+/* On phones the trigger sits too far right for the menu to fit, and even
+   closed it widened the page: anchor it to the (sticky) header instead. */
+@media (max-width: 480px) {
+  .versionSelect {
+    position: static;
+  }
+
+  .versionMenu {
+    left: 12px;
+    width: min(300px, calc(100vw - 24px));
+  }
 }
 
 .menuLabel {

@@ -191,19 +191,7 @@ const DialogDemo = component$(() => {
 
   return (
     <>
-      <button
-        class="button"
-        onClick$={() => {
-          // Workaround for 2.0.0-beta.1 (see Advanced → Known issues): a
-          // topLayer Toaster also opens its popover for other Toasters' toasts
-          // and never closes it, which would leave it beneath the modal.
-          // Closing it lets the next toast re-open it above the dialog.
-          document
-            .querySelectorAll<HTMLElement>("[data-sonner-toaster-popover]:popover-open")
-            .forEach((el) => el.hidePopover());
-          dialog.value?.showModal();
-        }}
-      >
+      <button class="button" onClick$={() => dialog.value?.showModal()}>
         Open dialog
       </button>
       <dialog ref={dialog} class={styles.dialog}>
@@ -331,7 +319,7 @@ export default component$(() => {
         <code>{"<dialog>.showModal()"}</code> lives in the browser's top layer, above any z-index. A
         Toaster with <code>topLayer</code> joins it there.
       </p>
-      <Demo hint="The demo closes the top-layer container before opening the dialog — a workaround for a known issue in 2.0.0-beta.1.">
+      <Demo>
         <DialogDemo />
       </Demo>
       <CodeBlock code={dialogCode} />
@@ -362,7 +350,7 @@ toast.info("Maintenance tonight", { toasterId: "announcements" });`}
       />
 
       <H2 id="counter">Live toast counter</H2>
-      <Demo hint="In 2.0.0-beta.1 the counter only subscribes after a full page load — reload if you navigated here (see known issues).">
+      <Demo>
         <ToastCounter />
         <button class="button" onClick$={() => toast("Another one")}>
           Add a toast

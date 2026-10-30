@@ -1,9 +1,7 @@
 import { createContextId, useContext, type Signal } from "@qwik.dev/core";
-import type { ToasterProps } from "qwik-sonner";
+import type { Position, Theme } from "qwik-sonner";
 
-// qwik-sonner doesn't export these unions yet, so derive them from the props.
-export type Position = Extract<NonNullable<ToasterProps["position"]>, string>;
-export type Theme = Extract<NonNullable<ToasterProps["theme"]>, string>;
+export type { Position, Theme };
 
 export const POSITIONS: Position[] = [
   "top-left",
@@ -16,9 +14,8 @@ export const POSITIONS: Position[] = [
 
 /**
  * Live settings of the site-wide `<Toaster>` rendered in the root layout. Demos
- * on any page write to these signals instead of rendering their own Toaster:
- * a Toaster that is first rendered on the client (e.g. after a `<Link>`
- * navigation) never subscribes in qwik-sonner 2.0.0-beta.1.
+ * on any page write to these signals instead of rendering their own Toaster,
+ * so every toast on the site comes from the same one.
  */
 export interface ToasterControls {
   position: Signal<Position>;

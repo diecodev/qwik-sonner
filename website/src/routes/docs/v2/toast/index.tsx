@@ -15,7 +15,7 @@ toast.promise(promise, data)      // loading → success / error
 toast.custom((id) => jsx, options?)
 toast.dismiss(id?)                // one toast, or all of them
 toast.getToasts()                 // active toasts
-toast.getHistory()                // everything created so far`;
+toast.getHistory()                // created so far (up to 100)`;
 
 const typesCode = `toast("Event has been created");
 
@@ -97,7 +97,7 @@ toast.dismiss(id); // remove one toast
 toast.dismiss();   // remove every toast`;
 
 const stateCode = `toast.getToasts();  // toasts currently on screen (not dismissed)
-toast.getHistory(); // every toast created so far, including dismissed ones`;
+toast.getHistory(); // toasts created so far, dismissed ones included (up to 100)`;
 
 const PROMISE_ROWS: PropRow[] = [
   {

@@ -22,7 +22,8 @@ const CLASS_ROWS: PropRow[] = [
   {
     name: "default",
     type: "ClassList",
-    description: "Added to every toast `<li>`, whatever its type (same as sonner).",
+    description:
+      "Added to the toast `<li>` when it has no type: `toast()`, `toast.message()` and `toast.custom()` (same as sonner).",
   },
 ];
 

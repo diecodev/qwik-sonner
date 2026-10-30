@@ -88,7 +88,7 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       # Staged, not published: nothing is public until a maintainer approves it
-      # with 2FA (`npm stage approve`, see CONTRIBUTING.md). Trusted Publishing
+      # with 2FA (`pnpm stage approve`, see CONTRIBUTING.md). Trusted Publishing
       # adds the provenance statement on its own.
       - name: Stage via Trusted Publishing (OIDC)
         run: npm stage publish *.tgz --access public --tag ${{ steps.disttag.outputs.tag }}

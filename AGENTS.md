@@ -94,7 +94,7 @@ at build time too (`website/src/lib/github.ts`). Details: `website/README.md`.
 
 A `v*` tag (pushed by `pnpm release`) runs `.github/workflows/release.yml`: CI → tag/version check →
 pack + contents check → `npm stage publish` (Trusted Publishing) → draft GitHub release
-(changelogithub) → waits until a maintainer runs `npm stage approve` (2FA) → publishes the release →
+(changelogithub) → waits until a maintainer runs `pnpm stage approve` (2FA) → publishes the release →
 deploys the website. Steps: `CONTRIBUTING.md` → Releases.
 
 ## Public API of the library

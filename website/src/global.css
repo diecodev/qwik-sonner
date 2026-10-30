@@ -35,6 +35,9 @@
   --warning-bg: hsl(49, 100%, 97%);
   --warning-border: hsl(49, 91%, 84%);
   --warning-text: hsl(31, 92%, 45%);
+  /* changelog markers: breaking changes and new features (the rest stay gray) */
+  --log-breaking: #b45309;
+  --log-new: #2563eb;
   --error-bg: hsl(359, 100%, 97%);
   --error-border: hsl(359, 100%, 94%);
   --error-text: hsl(360, 100%, 45%);
@@ -97,6 +100,8 @@
     --warning-bg: hsl(64, 100%, 6%);
     --warning-border: hsl(60, 100%, 9%);
     --warning-text: hsl(46, 87%, 65%);
+    --log-breaking: #fbbf24;
+    --log-new: #6ea8ff;
     --error-bg: hsl(358, 76%, 10%);
     --error-border: hsl(357, 89%, 16%);
     --error-text: hsl(358, 100%, 81%);
@@ -137,6 +142,8 @@
   --warning-bg: hsl(64, 100%, 6%);
   --warning-border: hsl(60, 100%, 9%);
   --warning-text: hsl(46, 87%, 65%);
+  --log-breaking: #fbbf24;
+  --log-new: #6ea8ff;
   --error-bg: hsl(358, 76%, 10%);
   --error-border: hsl(357, 89%, 16%);
   --error-text: hsl(358, 100%, 81%);

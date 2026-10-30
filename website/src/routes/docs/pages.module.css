@@ -404,57 +404,55 @@
   margin: 2px 0;
 }
 
-/* A color per kind of change (`data-kind`, set by lib/github.ts), as in the legend */
-.release .notes :global([data-kind]),
-.legendItem {
-  --k: var(--gray9);
-}
-
-.release .notes :global([data-kind="breaking"]),
-.legendItem[data-kind="breaking"] {
-  --k: var(--error-text);
-}
-
-.release .notes :global([data-kind="feature"]),
-.legendItem[data-kind="feature"] {
-  --k: var(--success-text);
-}
-
-.release .notes :global([data-kind="fix"]),
-.legendItem[data-kind="fix"] {
-  --k: var(--info-text);
-}
-
-.release .notes :global([data-kind="deprecated"]),
-.legendItem[data-kind="deprecated"] {
-  --k: var(--warning-text);
-}
-
-.release .notes :global(:is(h1, h2, h3, h4, h5, h6)[data-kind]) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--k);
-}
-
-.release .notes :global(:is(h1, h2, h3, h4, h5, h6)[data-kind])::before,
-.legendItem::before {
-  content: "";
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--k);
-}
-
+/* A symbol per kind of change (`data-kind`, set by lib/github.ts) in place of
+   the bullet, as in the legend. Only breaking changes and new features get a
+   color; the rest stay gray. */
 .release .notes :global(ul[data-kind]) {
-  margin-left: 3px;
-  padding-left: 19px;
-  border-left: 2px solid color-mix(in srgb, var(--k) 45%, transparent);
+  padding-left: 22px;
+  list-style: none;
 }
 
-.release .notes :global(ul[data-kind] > li)::marker {
-  color: var(--k);
+.release .notes :global(ul[data-kind] > li) {
+  position: relative;
+}
+
+.release .notes :global(ul[data-kind] > li)::before,
+.legendItem::before {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--gray10);
+}
+
+.release .notes :global(ul[data-kind] > li)::before {
+  position: absolute;
+  left: -20px;
+}
+
+.release .notes :global(ul[data-kind="breaking"] > li)::before,
+.legendItem[data-kind="breaking"]::before {
+  content: "!";
+  color: var(--log-breaking);
+}
+
+.release .notes :global(ul[data-kind="feature"] > li)::before,
+.legendItem[data-kind="feature"]::before {
+  content: "+";
+  color: var(--log-new);
+}
+
+.release .notes :global(ul[data-kind="fix"] > li)::before,
+.legendItem[data-kind="fix"]::before {
+  content: "~";
+}
+
+.release .notes :global(ul[data-kind="deprecated"] > li)::before,
+.legendItem[data-kind="deprecated"]::before {
+  content: "−";
+}
+
+.release .notes :global(ul[data-kind="perf"] > li)::before,
+.release .notes :global(ul[data-kind="docs"] > li)::before {
+  content: "·";
 }
 
 .legend {
@@ -462,14 +460,15 @@
   flex-wrap: wrap;
   gap: 6px 18px;
   margin: -16px 0 28px;
-  font-size: 13px;
-  color: var(--gray11);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gray10);
 }
 
 .legendItem {
   display: inline-flex;
-  align-items: center;
-  gap: 7px;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .release .notes :global(samp) {

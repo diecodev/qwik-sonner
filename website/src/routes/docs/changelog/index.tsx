@@ -14,13 +14,13 @@ const FILTERS = [
 
 type Filter = (typeof FILTERS)[number]["id"];
 
-// The kinds the notes are colored by (see lib/github.ts); performance and docs
-// sections stay gray.
+// The kinds of change the notes mark with a symbol (see lib/github.ts and
+// pages.module.css); performance and docs sections get a plain dot.
 const LEGEND: { kind: ChangeKind; label: string }[] = [
-  { kind: "breaking", label: "Breaking change" },
-  { kind: "feature", label: "Feature" },
-  { kind: "fix", label: "Fix" },
-  { kind: "deprecated", label: "Deprecated" },
+  { kind: "breaking", label: "breaking" },
+  { kind: "feature", label: "new" },
+  { kind: "fix", label: "fix" },
+  { kind: "deprecated", label: "deprecated" },
 ];
 
 // The notes of each GitHub release: vite.config.ts reads them when the site

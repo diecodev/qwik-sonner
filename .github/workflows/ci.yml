@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, v2]
+  # Every base, not only main: in a stack each pull request targets the branch below it.
   pull_request:
-    branches: [main]
   workflow_call: # lets release.yml reuse this exact gate
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  # cancel superseded PR runs, but never cancel pushes to main
+  # cancel superseded PR runs, but never cancel pushes to main or v2
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:

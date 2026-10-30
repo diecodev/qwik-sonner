@@ -58,4 +58,12 @@ Make sure to include:
 
 If your changes require a package version update, clearly state it in the PR. Provide reasons and justifications for the version update.
 
+## Website
+
+The docs site lives in `website/` and consumes the library through `workspace:*`, so build the
+library first. `pnpm build.website` (from the root) builds the library and the site exactly as
+Vercel does. Production deploys from GitHub Actions after each release, or when a push to `v2`
+changes `website/`; a branch that changes the website gets a preview from Vercel. See
+[website/README.md](./website/README.md).
+
 Thank you for your contribution! 🚀

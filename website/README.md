@@ -26,7 +26,7 @@ dist-tags and dates are read from the npm registry when the site builds (`vite.c
 unreleased; in CI (`CI` set) the build fails instead.
 
 The changelog's notes are the published GitHub releases, as GitHub renders them (`vite.config.ts` →
-`src/lib/github.ts` → `src/lib/release-notes.ts`): to change what the site says about a version, edit
+`src/lib/github.ts` → `src/routes/docs/changelog/`): to change what the site says about a version, edit
 its release on GitHub and redeploy. A release is a draft until its version is approved on npm, so the
 site never shows notes for a version that isn't out (see `CONTRIBUTING.md` → Releases). Set
 `GITHUB_TOKEN` to read them with a token. Offline or rate-limited, a local or preview build goes on

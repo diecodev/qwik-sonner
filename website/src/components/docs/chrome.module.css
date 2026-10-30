@@ -5,8 +5,10 @@
   top: 0;
   z-index: 50;
   background: var(--bg-blur);
+  /* No hand-written -webkit- copy: Lightning CSS (Vite 8) adds the prefix
+     Safari needs, and with both it kept only the prefixed one, so Chromium
+     didn't blur. */
   backdrop-filter: saturate(180%) blur(12px);
-  -webkit-backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid var(--gray3);
 }
 

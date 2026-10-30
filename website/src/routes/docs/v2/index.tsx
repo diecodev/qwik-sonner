@@ -88,7 +88,7 @@ export default component$(() => {
 
       <H2 id="installation">Installation</H2>
       <p>
-        Version 2 targets Qwik 2 (<code>@qwik.dev/core</code>).
+        Version 2 targets Qwik 2: <code>@qwik.dev/core</code> 2.0.0-rc.4 or later.
         {v2.prerelease ? (
           <>
             {" "}

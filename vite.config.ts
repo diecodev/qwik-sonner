@@ -1,7 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import { qwikVite } from "@qwik.dev/core/optimizer";
-import tsconfigPaths from "vite-tsconfig-paths";
-import pkg from "./package.json";
+import pkg from "./package.json" with { type: "json" };
 import tailwindcss from "@tailwindcss/vite";
 
 type DepMap = Record<string, string>;
@@ -54,13 +53,14 @@ export default defineConfig(() => {
         formats: ["es"],
         fileName: (_format, entryName) => `${entryName}.qwik.mjs`,
       },
-      rollupOptions: {
+      rolldownOptions: {
         external,
         output: {
           chunkFileNames: "[name]-[hash].qwik.mjs",
         },
       },
     },
-    plugins: [qwikVite(), tsconfigPaths(), tailwindcss(), dropAppManifest],
+    resolve: { tsconfigPaths: true },
+    plugins: [qwikVite(), tailwindcss(), dropAppManifest],
   };
 });

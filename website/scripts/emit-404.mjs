@@ -1,7 +1,9 @@
-// Runs after the SSG (`pnpm build.server`). Qwik Router 2.0.0-beta.37 prerenders
-// index routes only, so the 404 page is rendered at /not-found/; this moves it to
-// dist/404.html, which Vercel serves for every missing address, and drops the
-// /not-found/ page from the output and the sitemap.
+// Runs after the SSG (`pnpm build.server`). Qwik Router's SSG writes its own
+// dist/404.html from routes/404.tsx, but that copy shows the build-time address
+// (`/404.html`) until Qwik starts. The /not-found/ route renders the same page
+// marked as prerendered, so the address stays blank until the browser fills it
+// in: this moves that copy to dist/404.html, which Vercel serves for every
+// missing address, and drops the /not-found/ page from the output and the sitemap.
 import { copyFile, readFile, rm, writeFile } from "node:fs/promises";
 
 const dist = new URL("../dist/", import.meta.url);

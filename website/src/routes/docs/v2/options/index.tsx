@@ -87,8 +87,9 @@ const OPTION_ROWS: PropRow[] = [
   {
     name: "important",
     type: "boolean",
+    deprecated: true,
     description:
-      "Accepted for parity with sonner's types; it currently has no effect (sonner 2 announces every toast through the region's polite live region).",
+      'No effect. In qwik-sonner 1.x it announced the toast with `aria-live="assertive"`; sonner 2 dropped it, and every toast is announced through the Toaster\'s polite live region.',
   },
 ];
 
@@ -108,7 +109,9 @@ const ACTION_ROWS: PropRow[] = [
   {
     name: "actionButtonStyle",
     type: "CSSProperties",
-    description: "Typed for parity; style buttons through the toast's `actionButtonStyle`.",
+    deprecated: true,
+    description:
+      "No effect, as in sonner. Style the buttons with the toast's `actionButtonStyle` / `cancelButtonStyle` or the Toaster's `toastOptions`.",
   },
 ];
 

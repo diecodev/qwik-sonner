@@ -45,12 +45,15 @@ const typesCode = `import type {
   ToastClassnames,
   ToastToDismiss,
   Action,
-} from "qwik-sonner";
-
-// Not exported yet — derive them from ToasterProps:
-type Position = Extract<ToasterProps["position"], string>;
-type Theme = Extract<ToasterProps["theme"], string>;
-type Direction = Extract<ToasterProps["dir"], string>;`;
+  Position,       // "top-left" | "top-center" | … | "bottom-right"
+  Theme,          // "light" | "dark" | "system"
+  Direction,      // "rtl" | "ltr" | "auto"
+  SwipeDirection, // "top" | "right" | "bottom" | "left"
+  ToastTypes,
+  ToastIcons,
+  Offset,
+  PromiseData,
+} from "qwik-sonner"; // the same from "qwik-sonner/headless"`;
 
 export default component$(() => {
   return (
@@ -65,7 +68,10 @@ export default component$(() => {
         <code>toast()</code> writes to a small module-level store, the same design as sonner. Each{" "}
         <code>{"<Toaster />"}</code> subscribes to it in the browser once Qwik starts (on the{" "}
         <code>qinit</code> event), so the Toaster's code only loads when the page boots — not when
-        it scrolls into view — and toasts work even if it sits below the fold.
+        it scrolls into view — and toasts work even if it sits below the fold. A Toaster first
+        rendered in the browser (behind a condition, or after a <code>{"<Link>"}</code> navigation)
+        subscribes as soon as it renders, picks up the toasts already showing, and unsubscribes when
+        it unmounts.
       </p>
       <p>
         Toasts only exist in the browser. Server-side rendering always outputs an empty toaster.
@@ -90,6 +96,14 @@ export default component$(() => {
         <li>Off by default, for parity with sonner.</li>
         <li>No-op in browsers without the Popover API — it falls back to normal stacking.</li>
         <li>
+          Each Toaster opens only while it has toasts of its own, so several can use{" "}
+          <code>topLayer</code>.
+        </li>
+        <li>
+          The browser stacks the top layer in opening order: if a modal opens while toasts are
+          showing, the Toaster's next toast brings it back above the modal.
+        </li>
+        <li>
           With the headless entry, add the{" "}
           <Link href="/docs/v2/styling/#headless-top-layer">popover reset</Link> yourself.
         </li>
@@ -100,8 +114,9 @@ export default component$(() => {
 
       <H2 id="use-sonner">useSonner()</H2>
       <p>
-        A reactive list of the active toasts, for building your own renderer, a badge, or a log. It
-        subscribes when the component becomes visible.
+        A reactive list of the active toasts, for building your own renderer, a badge, or a log.
+        Like the Toaster, it subscribes once the page boots (or as soon as it renders in the
+        browser) and unsubscribes when the component unmounts.
       </p>
       <CodeBlock code={useSonnerCode} />
       <p>
@@ -153,44 +168,14 @@ export default component$(() => {
 
       <H2 id="known-issues">Known issues</H2>
       <p>
-        Found in 2.0.0-beta.1. Each has a workaround; follow the{" "}
-        <Link href="/docs/changelog/">changelog</Link> for fixes.
+        The issues found in 2.0.0-beta.1 are fixed in 2.0.0-beta.2 — see the{" "}
+        <Link href="/docs/changelog/">changelog</Link>. One remains, in development only:
       </p>
-      <Callout type="warning" title="A Toaster first rendered on the client shows no toasts">
+      <Callout type="note" title="Two toasts back to back on the dev server">
         <p>
-          The subscription relies on <code>qinit</code>, which fires once when the page boots. A
-          Toaster that mounts later — behind a condition, or on a page reached through{" "}
-          <code>{"<Link>"}</code> — misses it. Render the Toaster in the root layout.
-        </p>
-      </Callout>
-      <Callout type="warning" title="useSonner() in a component first rendered on the client">
-        <p>
-          Same cause: <code>useSonner()</code> subscribes on <code>qvisible</code>, which a
-          component mounted after boot (e.g. on a page reached through <code>{"<Link>"}</code>)
-          doesn't receive, so its list stays empty until a full page load.
-        </p>
-      </Callout>
-      <Callout type="warning" title="topLayer and modals opened while toasts are showing">
-        <p>
-          The browser stacks top-layer elements in the order they open, so a Toaster whose popover
-          is already open when a <code>{"<dialog>"}</code> opens stays beneath it and toasts fired
-          from the dialog are hidden. In 2.0.0-beta.1 a <code>topLayer</code> Toaster also opens its
-          popover for toasts meant for other Toasters and, since it never renders them, never closes
-          it again. Use <code>topLayer</code> only with a single Toaster, and open modals while no
-          toasts are showing.
-        </p>
-      </Callout>
-      <Callout type="note" title={'Switching away from theme="system"'}>
-        <p>
-          A Toaster that started with <code>theme="system"</code> keeps listening to OS changes
-          after its theme signal moves to <code>light</code>/<code>dark</code> (inherited from
-          sonner). If you switch themes at runtime, start from an explicit theme.
-        </p>
-      </Callout>
-      <Callout type="note" title="Some type unions aren't exported">
-        <p>
-          <code>Position</code>, <code>Theme</code> and <code>Direction</code> must be derived from{" "}
-          <code>ToasterProps</code> for now — see <a href="#types">TypeScript</a>.
+          With Qwik 2.0.0-beta.37's dev server, a plain <code>toast()</code> followed right away by
+          a typed one (<code>toast.success()</code>…), before the first has rendered, can stall the
+          Toaster until the page reloads. Production builds aren't affected.
         </p>
       </Callout>
     </>

@@ -123,14 +123,6 @@ export default component$(() => {
       </p>
       <CodeBlock title="src/routes/layout.tsx" code={layoutCode} />
       <CodeBlock title="src/routes/index.tsx" code={pageCode} />
-      <Callout type="warning" title="Keep the Toaster in a server-rendered layout">
-        <p>
-          In 2.0.0-beta.1 a <code>Toaster</code> that is first rendered on the client — behind a
-          condition, or inside a page reached through <code>{"<Link>"}</code> navigation — never
-          subscribes to the toast store, so its toasts don't show. Rendering it in the root layout
-          avoids this: it's server-rendered on first load and survives navigation.
-        </p>
-      </Callout>
 
       <H2 id="entry-points">Styled or headless</H2>
       <p>

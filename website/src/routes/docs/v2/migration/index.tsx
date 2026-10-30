@@ -53,7 +53,7 @@ export default component$(() => {
         <code>1 dependency (DOMPurify)</code>
         <code>0 dependencies</code>
         <code>sonner 1.x behaviour</code>
-        <code>sonner 2.0.7 behaviour</code>
+        <code>sonner 2.0.8 behaviour</code>
       </div>
 
       <H2 id="steps">Steps</H2>

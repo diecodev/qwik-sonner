@@ -39,8 +39,12 @@ jobs:
       - name: Production settings
         run: npx --yes vercel@65.7.0 pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
+      # The changelog reads the GitHub releases when it builds: with a token,
+      # GitHub counts the requests against it, not against the runner's address.
       - name: Build
         run: npx --yes vercel@65.7.0 build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Deploy
         run: npx --yes vercel@65.7.0 deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

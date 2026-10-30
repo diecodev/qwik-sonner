@@ -37,6 +37,8 @@ jobs:
       - name: Build website (client + SSG)
         run: pnpm build.client && pnpm build.server
         working-directory: website
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # the changelog reads the GitHub releases
 
       - name: Typecheck test app
         run: pnpm build.types && pnpm lint

@@ -138,7 +138,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   # The docs show the new version: the version menu, the install commands and
-  # the changelog read npm when they build.
+  # the changelog read npm and the GitHub releases when they build.
   website:
     needs: published
     uses: ./.github/workflows/website.yml

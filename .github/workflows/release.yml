@@ -13,9 +13,13 @@ permissions:
   contents: read
 
 jobs:
-  # Full quality gate (lint + typecheck + lib build + Playwright) before anything ships.
+  # Full quality gate before anything ships: lint, typecheck and builds (ci.yml)
+  # and the Playwright suite (e2e.yml), whatever the release changed.
   ci:
     uses: ./.github/workflows/ci.yml
+
+  e2e:
+    uses: ./.github/workflows/e2e.yml
 
   # Runs next to the CI, so a mistagged release fails in seconds.
   version:
@@ -33,7 +37,7 @@ jobs:
 
   stage:
     name: Stage on npm
-    needs: [ci, version]
+    needs: [ci, e2e, version]
     runs-on: ubuntu-latest
     permissions:
       contents: read

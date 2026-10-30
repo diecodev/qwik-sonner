@@ -1,0 +1,92 @@
+name: E2E
+
+# The Playwright suite drives the library (src/) through the test app (test/),
+# so it only runs when one of them, or what builds and runs them, changes: a
+# pull request that only touches the website or the docs doesn't wait for it.
+# The release always runs it (workflow_call).
+on:
+  push:
+    branches: [main, v2]
+    paths:
+      - "src/**"
+      - "test/**"
+      - "playwright.config.ts"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - "tsconfig.lib.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/actions/setup/**"
+      - ".github/workflows/e2e.yml"
+  # Every base, not only main: in a stack each pull request targets the branch below it.
+  pull_request:
+    paths:
+      - "src/**"
+      - "test/**"
+      - "playwright.config.ts"
+      - "vite.config.ts"
+      - "tsconfig.json"
+      - "tsconfig.lib.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/actions/setup/**"
+      - ".github/workflows/e2e.yml"
+  workflow_call: # lets release.yml run it before publishing
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  # cancel superseded PR runs, but never cancel pushes to main or v2
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Playwright (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+
+      # The Playwright webServer runs `pnpm dev` in ./test, which imports the
+      # workspace-linked library from lib/, so the lib must be built first.
+      - name: Build library
+        run: pnpm build.types && pnpm build.lib
+
+      - name: Resolve Playwright version
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-v2-${{ runner.os }}-${{ matrix.browser }}-${{ steps.pw.outputs.version }}
+
+      - name: Install Playwright (browser + system deps)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Install Playwright system deps (cached browser)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps ${{ matrix.browser }}
+
+      - name: Run Playwright tests
+        run: pnpm exec playwright test --project=${{ matrix.browser }}
+
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 7

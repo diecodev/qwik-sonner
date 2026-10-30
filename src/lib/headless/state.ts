@@ -11,20 +11,28 @@ import type {
 
 let toastsCounter = 1;
 
+// Amount of toasts kept in `toast.getHistory()`. Dismissed toasts above this
+// limit are dropped so long-running apps don't hold on to them (and their JSX)
+// forever.
+const MAX_HISTORY_SIZE = 100;
+
 type titleT = (() => JSXOutput | string) | JSXOutput | string;
 
 const subscribers: Array<(toast: ToastT | ToastToDismiss) => void> = [];
 let toasts: Array<ToastT | ToastToDismiss> = [];
 const dismissedToasts = new Set<string | number>();
+// Dismissals scheduled for the next frame, by toast id.
+const pendingDismissals = new Map<string | number, number>();
 
 // `requestAnimationFrame` only exists in the browser; toasts are always
 // triggered client-side, but guard anyway so the module is import-safe on SSR.
+// Returns the frame handle, or `undefined` when `cb` already ran.
 const scheduleRaf = (cb: () => void) => {
   if (typeof requestAnimationFrame !== "undefined") {
-    requestAnimationFrame(cb);
-  } else {
-    cb();
+    return requestAnimationFrame(cb);
   }
+  cb();
+  return undefined;
 };
 
 // Qwik does not expose a public `isJSXNode`, so detect a JSX node structurally
@@ -55,9 +63,19 @@ const isHttpResponse = (data: any): data is Response => {
   );
 };
 
+// Whether the caller passed a toast id: any number (`0` included — it's falsy,
+// not missing) or a non-empty string.
+const hasId = (id: unknown): id is number | string =>
+  typeof id === "number" || (typeof id === "string" && id.length > 0);
+
 // We use arrow functions to maintain the correct `this` reference
 const subscribe = (subscriber: (toast: ToastT | ToastToDismiss) => void) => {
   subscribers.push(subscriber);
+  // A toast can be published before a Toaster subscribes — fired before it
+  // mounted, by a `qinit` handler that ran before its own, or by a click right
+  // after load (on Qwik >= beta.45 `qinit` no longer runs in the qwikloader's
+  // serial queue). Replay whatever is still active so it doesn't get lost.
+  getActiveToasts().forEach((toast) => subscriber(toast));
 
   return () => {
     const index = subscribers.indexOf(subscriber);
@@ -72,6 +90,21 @@ const publish = (data: ToastT) => {
 const addToast = (data: ToastT) => {
   publish(data);
   toasts = [...toasts, data];
+  trimHistory();
+};
+
+// Keeps the history bounded without ever dropping a toast that's still on screen.
+const trimHistory = () => {
+  let toRemove = toasts.length - MAX_HISTORY_SIZE;
+  if (toRemove <= 0) return;
+  toasts = toasts.filter((toast) => {
+    if (toRemove > 0 && dismissedToasts.has(toast.id)) {
+      dismissedToasts.delete(toast.id);
+      toRemove--;
+      return false;
+    }
+    return true;
+  });
 };
 
 const create = (
@@ -88,16 +121,30 @@ const create = (
   const message = data.message;
   const rest = { ...data };
   delete rest.message;
-  const id =
-    typeof data?.id === "number" || (data.id && data.id?.length > 0) ? data.id : toastsCounter++;
-  const alreadyExists = toasts.find((toast) => {
-    return toast.id === id;
-  });
-  const dismissible = data.dismissible === undefined ? true : data.dismissible;
+  const id = hasId(data.id) ? data.id : toastsCounter++;
 
-  if (dismissedToasts.has(id)) {
+  // A dismissal that hasn't reached the subscribers yet gets cancelled: the
+  // toast is still on screen, so this is an update of it rather than a new
+  // toast. Otherwise the pending dismissal would remove the toast just created.
+  const pendingDismissal = pendingDismissals.get(id);
+  if (pendingDismissal !== undefined) {
+    cancelAnimationFrame(pendingDismissal);
+    pendingDismissals.delete(id);
     dismissedToasts.delete(id);
   }
+
+  const wasDismissed = dismissedToasts.has(id);
+  const dismissible = data.dismissible === undefined ? true : data.dismissible;
+
+  if (wasDismissed) {
+    dismissedToasts.delete(id);
+    // The previous toast with this id is gone, so this is a brand new toast.
+    // Drop the old one instead of merging into it, otherwise its props (e.g.
+    // `action`) leak into the new one.
+    toasts = toasts.filter((toast) => toast.id !== id);
+  }
+
+  const alreadyExists = wasDismissed ? undefined : toasts.find((toast) => toast.id === id);
 
   if (alreadyExists) {
     toasts = toasts.map((toast) => {
@@ -122,20 +169,35 @@ const create = (
 };
 
 const dismiss = (id?: number | string) => {
-  if (id) {
-    dismissedToasts.add(id);
-    scheduleRaf(() => subscribers.forEach((subscriber) => subscriber({ id, dismiss: true })));
-  } else {
-    toasts.forEach((toast) => {
+  // No id: dismiss every active toast. Mark them dismissed too, so they stop
+  // counting as active (and a Toaster that subscribes later doesn't show them).
+  if (id == null) {
+    getActiveToasts().forEach((toast) => {
+      dismissedToasts.add(toast.id);
       subscribers.forEach((subscriber) => subscriber({ id: toast.id, dismiss: true }));
     });
+    return id;
   }
 
+  dismissedToasts.add(id);
+  const alreadyPending = pendingDismissals.get(id);
+  if (alreadyPending !== undefined) {
+    cancelAnimationFrame(alreadyPending);
+  }
+  const frame = scheduleRaf(() => {
+    pendingDismissals.delete(id);
+    subscribers.forEach((subscriber) => subscriber({ id, dismiss: true }));
+  });
+  if (frame !== undefined) {
+    pendingDismissals.set(id, frame);
+  }
   return id;
 };
 
 const message = (message: titleT, data?: ExternalToast) => {
-  return create({ ...data, message });
+  // `type: undefined` resets the type when this updates a toast that had one,
+  // e.g. turning a loading toast into a plain one.
+  return create({ ...data, message, type: undefined });
 };
 
 const error = (message: titleT, data?: ExternalToast) => {
@@ -263,8 +325,9 @@ const promise = <ToastData>(promise: PromiseT<ToastData>, data?: PromiseData<Toa
 };
 
 const custom = (jsx: (id: number | string) => JSXOutput, data?: ExternalToast) => {
-  const id = data?.id || toastsCounter++;
-  create({ jsx: jsx(id), ...data, id });
+  const id = hasId(data?.id) ? data.id : toastsCounter++;
+  // A custom toast has no type, so it resets the one of the toast it replaces.
+  create({ ...data, jsx: jsx(id), id, type: undefined });
   return id;
 };
 
@@ -293,14 +356,7 @@ export const ToastState = {
 
 // bind this to the toast function
 const toastFunction = (message: titleT, data?: ExternalToast) => {
-  const id = data?.id || toastsCounter++;
-
-  ToastState.addToast({
-    title: message,
-    ...data,
-    id,
-  });
-  return id;
+  return ToastState.message(message, data);
 };
 
 const basicToast = toastFunction;

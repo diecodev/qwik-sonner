@@ -249,6 +249,13 @@ export default component$(() => {
         Render Infinity Toast
       </button>
       <button
+        data-testid="loading-toast"
+        class="button"
+        onClick$={() => toast.loading("Loading toast")}
+      >
+        Render Loading Toast
+      </button>
+      <button
         data-testid="auto-close-toast-callback"
         class="button"
         onClick$={() =>

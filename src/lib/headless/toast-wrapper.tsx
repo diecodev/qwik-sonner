@@ -5,7 +5,6 @@ import {
   isSignal,
   Signal,
   useComputed$,
-  useOn,
   useOnDocument,
   useSignal,
   useTask$,
@@ -16,12 +15,17 @@ import {
   ExternalToast,
   HeightT,
   Offset,
+  Position,
+  PromiseData,
+  SwipeDirection,
   Theme,
   ToastClassnames,
+  ToastIcons,
   ToasterProps,
   ToastT,
   ToastToDismiss,
   ToastProps,
+  ToastTypes,
 } from "./types";
 import {
   GAP,
@@ -56,6 +60,12 @@ function getDocumentDirection(): Direction {
 function resolveDir(dir: Signal<Direction> | Direction | undefined): Direction {
   const d = isSignal(dir) ? dir.value : dir;
   return d == null || d === "auto" ? getDocumentDirection() : d;
+}
+
+// A Toaster without an `id` owns the toasts that have no `toasterId`; one with
+// an `id` owns only the toasts addressed to it.
+function isOwnToast(toast: ToastT, toasterId: string | undefined) {
+  return toasterId ? toast.toasterId === toasterId : !toast.toasterId;
 }
 
 function assignOffset(defaultOffset?: Offset, mobileOffset?: Offset) {
@@ -97,12 +107,15 @@ function assignOffset(defaultOffset?: Offset, mobileOffset?: Offset) {
  */
 export function useSonner() {
   const activeToasts = useSignal<ToastT[]>([]);
+  // Same subscription scheme as the `Toaster` (see there): a task that is a
+  // no-op on the server, re-run on the client by `qinit` when server-rendered.
+  const resumed = useSignal(false);
 
-  const subscribe = $(() => {
-    // Seed with anything already active when this component becomes visible.
-    activeToasts.value = ToastState.getActiveToasts() as ToastT[];
+  useTask$(({ track, cleanup }) => {
+    track(() => resumed.value);
+    if (!isBrowser) return;
 
-    return ToastState.subscribe((incoming) => {
+    const unsubscribe = ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
         activeToasts.value = activeToasts.value.filter((t) => t.id !== incoming.id);
         return;
@@ -121,9 +134,16 @@ export function useSonner() {
 
       activeToasts.value = [incoming as ToastT, ...activeToasts.value];
     });
+
+    cleanup(unsubscribe);
   });
 
-  useOn("qvisible", subscribe);
+  useOnDocument(
+    "qinit",
+    $(() => {
+      resumed.value = true;
+    }),
+  );
 
   return { toasts: activeToasts };
 }
@@ -160,12 +180,9 @@ const Toaster = component$<ToasterProps>((props) => {
   const lastFocusedElementRef = useSignal<HTMLElement | null>(null);
   const isFocusWithinRef = useSignal(false);
 
-  const filteredToasts = useComputed$(() => {
-    if (props.id) {
-      return toasts.value.filter((t) => t.toasterId === props.id);
-    }
-    return toasts.value.filter((t) => !t.toasterId);
-  });
+  // `toasts` also holds other Toasters' toasts (like sonner, so a partial update
+  // without `toasterId` keeps the owner it was created with); render only ours.
+  const filteredToasts = useComputed$(() => toasts.value.filter((t) => isOwnToast(t, props.id)));
 
   const possiblePositions = useComputed$(() => {
     // Resolve `position` reactively: a `Signal<Position>` is read via `.value`
@@ -184,23 +201,38 @@ const Toaster = component$<ToasterProps>((props) => {
 
   const hotkeyLabel = hotkey.join("+").replace(/Key/g, "").replace(/Digit/g, "");
 
-  // Keep the top-layer popover state in sync with the toast count: show it the
-  // moment a toast appears, hide it once the toaster empties. Runs only from
+  // Keep the top-layer popover state in sync with this Toaster's own toasts:
+  // show it the moment one appears, hide it once they are gone. Runs only from
   // client event QRLs (`subscribe`/`removeToast`), never a task, so it fires in
   // consumer bundles too. No-ops when `topLayer` is off or the browser lacks
   // the Popover API (`showPopover` undefined) — older engines just ignore the
   // `popover` attribute and fall back to the normal `z-index` stacking.
-  const syncTopLayer = $(() => {
+  //
+  // `raise` (a new toast of ours arrived): the top layer stacks in opening
+  // order, so a modal `<dialog>` (or fullscreen element, or popover) opened
+  // after ours paints over it. Hiding and re-showing the popover moves it back
+  // on top; it's done only while something else is in the top layer, and both
+  // calls run in the same task, so the toasts are never rendered hidden (their
+  // running animations carry on).
+  const syncTopLayer = $((raise?: boolean) => {
     if (!topLayer) return;
     const el = sectionRef.value;
     if (!el || typeof el.showPopover !== "function") return;
 
-    const hasToasts = toasts.value.length > 0;
+    const hasToasts = filteredToasts.value.length > 0;
     const isOpen = el.matches(":popover-open");
     if (hasToasts && !isOpen) {
       el.showPopover();
     } else if (!hasToasts && isOpen) {
       el.hidePopover();
+    } else if (hasToasts && raise) {
+      const isCovered = Array.from(document.querySelectorAll(":modal, :popover-open")).some(
+        (other) => other !== el && !el.contains(other),
+      );
+      if (isCovered) {
+        el.hidePopover();
+        el.showPopover();
+      }
     }
   });
 
@@ -213,10 +245,33 @@ const Toaster = component$<ToasterProps>((props) => {
     await syncTopLayer();
   });
 
-  const onMountHandler = $(() => {
-    return ToastState.subscribe((incoming) => {
+  // Flipped by `qinit` (see below) so the subscription and system-theme tasks
+  // re-run on the client for a server-rendered Toaster.
+  const resumed = useSignal(false);
+
+  // Subscribe to the toast state on the client; `cleanup` unsubscribes on
+  // unmount and before a re-run, so re-running never double-subscribes.
+  //   - A Toaster first rendered on the client (behind a condition, or on a
+  //     page reached with `<Link>`) subscribes as soon as this task runs. It
+  //     can't wait for `qinit`: before Qwik 2.0.0-rc.4 the qwikloader fires it
+  //     only once, at page load, so it never reaches client-rendered
+  //     components (from rc.4 it does, and the resulting re-run is harmless).
+  //   - A server-rendered Toaster ran this task on the server, where it is a
+  //     no-op; `qinit` flips `resumed` so it runs again on the client.
+  // `ToastState.subscribe` replays the toasts that are already active, so the
+  // ones published before this runs still show.
+  useTask$(({ track, cleanup }) => {
+    track(() => resumed.value);
+    if (!isBrowser) return;
+
+    const unsubscribe = ToastState.subscribe((incoming) => {
       if ((incoming as ToastToDismiss).dismiss) {
-        toasts.value = toasts.value.map((t) => (t.id === incoming.id ? { ...t, delete: true } : t));
+        // Our own toasts animate out (the `Toast` then calls `removeToast`).
+        // Another Toaster's toasts are never rendered here, so nothing would
+        // ever remove them: drop them now.
+        toasts.value = toasts.value
+          .filter((t) => t.id !== incoming.id || isOwnToast(t, props.id))
+          .map((t) => (t.id === incoming.id ? { ...t, delete: true } : t));
         return;
       }
 
@@ -232,26 +287,18 @@ const Toaster = component$<ToasterProps>((props) => {
       }
 
       toasts.value = [incoming as ToastT, ...toasts.value];
-      void syncTopLayer();
+      if (isOwnToast(incoming as ToastT, props.id)) void syncTopLayer(true);
     });
-  });
 
-  // Resolve the system color scheme (and listen for changes) on the client.
-  const onMountTheme = $(() => {
-    const t = isSignal(props.theme) ? props.theme.value : props.theme;
-    if (t !== "system") return;
-
-    const mql = window.matchMedia("(prefers-color-scheme: dark)");
-    actualTheme.value = mql.matches ? "dark" : "light";
-    mql.addEventListener("change", (event) => {
-      actualTheme.value = (event as MediaQueryListEvent).matches ? "dark" : "light";
-    });
+    cleanup(unsubscribe);
   });
 
   // Keep `actualTheme` in sync with the `theme` prop (incl. SSR). Tracking the
   // unwrapped value subscribes to a `Signal` prop's `.value`, so changing the
   // signal at runtime re-runs this task on the resumed singleton.
-  useTask$(({ track }) => {
+  // With `"system"`, follow the OS color scheme on the client; `cleanup` drops
+  // the listener as soon as the prop changes or the Toaster unmounts.
+  useTask$(({ track, cleanup }) => {
     const t = track(() => (isSignal(props.theme) ? props.theme.value : props.theme)) as
       | Theme
       | undefined;
@@ -259,15 +306,23 @@ const Toaster = component$<ToasterProps>((props) => {
       actualTheme.value = t === "dark" ? "dark" : "light";
       return;
     }
+    // The OS scheme is only known on the client: a server-rendered Toaster
+    // resolves it once `qinit` resumes it.
+    track(() => resumed.value);
     if (!isBrowser) return;
-    actualTheme.value = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const syncTheme = () => {
+      actualTheme.value = mql.matches ? "dark" : "light";
+    };
+    syncTheme();
+    mql.addEventListener("change", syncTheme);
+    cleanup(() => mql.removeEventListener("change", syncTheme));
   });
 
   useTask$(({ track }) => {
-    const list = track(() => toasts.value);
-    // Ensure expanded is always false when no toasts are present / only one left
+    const list = track(() => filteredToasts.value);
+    // Ensure expanded is always false when none of our toasts are present / only one left
     if (list.length <= 1) {
       expanded.value = false;
     }
@@ -295,11 +350,12 @@ const Toaster = component$<ToasterProps>((props) => {
     }),
   );
 
-  // Return focus to the previously-focused element once the toaster empties.
+  // Return focus to the previously-focused element once the toaster has none of
+  // its own toasts left (other Toasters' toasts in `toasts` don't count).
   // (Qwik doesn't reset refs on unmount, so React's "ol unmount" cleanup can't
   // be replicated via the ref — key off the toast count instead.)
   useTask$(({ track }) => {
-    const count = track(() => toasts.value.length);
+    const count = track(() => filteredToasts.value.length);
     if (count === 0 && isFocusWithinRef.value) {
       const last = lastFocusedElementRef.value;
       lastFocusedElementRef.value = null;
@@ -308,8 +364,9 @@ const Toaster = component$<ToasterProps>((props) => {
     }
   });
 
-  // Wire the client-side toast subscription on `qinit` — the Qwik init event the
-  // qwikloader fires once the container is ready. It is dispatched on
+  // Resume a server-rendered Toaster on `qinit` — the Qwik init event the
+  // qwikloader fires once the container is ready — which re-runs the
+  // subscription and system-theme tasks on the client. It is dispatched on
   // `readystatechange` (and immediately on load), with a replay path for
   // late-registered listeners, so it fires regardless of page-load timing or
   // scroll position. We can't use the usual alternatives here:
@@ -322,9 +379,8 @@ const Toaster = component$<ToasterProps>((props) => {
   //     handler never runs there either.
   useOnDocument(
     "qinit",
-    $(async () => {
-      await onMountHandler();
-      await onMountTheme();
+    $(() => {
+      resumed.value = true;
     }),
   );
 
@@ -466,6 +522,14 @@ export {
   type ToastClassnames,
   type ToastToDismiss,
   type Action,
+  type Position,
+  type Theme,
+  type Direction,
+  type SwipeDirection,
+  type ToastIcons,
+  type ToastTypes,
+  type Offset,
+  type PromiseData,
   Toast,
   GAP,
   TOAST_WIDTH,

@@ -71,7 +71,7 @@ authoritative for this beta. Official docs: <https://qwik.dev/docs/> (Qwik City 
 │   │   ├── styled/              # styled Toaster + styles.css
 │   │   └── headless/            # core logic: state, toast, toast-wrapper, types, icons, const
 │   ├── root.tsx / entry.*.tsx   # dev/SSR harness (not published)
-├── website/              # demo + docs site (Qwik Router app, deployed to Deno Deploy)
+├── website/              # demo + docs site (Qwik Router app, prerendered and hosted on Vercel)
 ├── test/                 # Qwik Router app used by Playwright e2e tests
 ├── pnpm-workspace.yaml   # workspaces: ".", "website", "test"
 └── playwright.config.ts
@@ -79,6 +79,23 @@ authoritative for this beta. Official docs: <https://qwik.dev/docs/> (Qwik City 
 
 `pnpm-workspace.yaml` also lists `onlyBuiltDependencies` / `allowBuilds` for `esbuild` and
 `sharp` — these must stay approved or `pnpm install` blocks build scripts.
+
+## Website hosting (Vercel)
+
+The site is fully prerendered (Qwik Router's SSG adapter), so Vercel serves `website/dist` as static
+files — no functions. Build settings live in `vercel.json` at the repo root. Production deploys run
+from GitHub Actions (`.github/workflows/website.yml`, Vercel CLI) after each release and on pushes to
+`v2` that touch `website/`; Vercel's Git integration only builds previews for other branches
+(`website/scripts/vercel-preview.sh`). Versions, dist-tags and dates on the site come from npm at
+build time (`website/src/lib/npm.ts`); the changelog's notes are the published GitHub releases, read
+at build time too (`website/src/lib/github.ts`). Details: `website/README.md`.
+
+## Releases
+
+A `v*` tag (pushed by `pnpm release`) runs `.github/workflows/release.yml`: CI → tag/version check →
+pack + contents check → `npm stage publish` (Trusted Publishing) → draft GitHub release
+(changelogithub) → waits until a maintainer runs `npm stage approve` (2FA) → publishes the release →
+deploys the website. Steps: `CONTRIBUTING.md` → Releases.
 
 ## Public API of the library
 
@@ -106,7 +123,11 @@ pnpm fmt                  # oxfmt . (whole repo)
 # Website (cd website)
 pnpm build.types          # tsc --noEmit (typecheck)
 pnpm build.client         # vite client build
+pnpm build.server         # prerenders every route into dist/ (SSG adapter)
 pnpm dev                  # local dev server
+
+# Website, as Vercel builds it (root): library + client + SSG -> website/dist
+pnpm build.website
 
 # e2e (cd test, then root)
 pnpm --filter test build  # build the test app

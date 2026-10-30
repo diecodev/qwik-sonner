@@ -1,0 +1,191 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 56px !important;
+  text-align: center;
+}
+
+/* Toast stack ------------------------------------------------------------- */
+
+.stack {
+  position: relative;
+  width: 100%;
+  max-width: 356px;
+  height: 104px;
+  margin-bottom: 36px;
+}
+
+.ghost,
+.toast {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 8px;
+  border: 1px solid var(--gray4);
+  background: var(--gray0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ghost {
+  height: 70px;
+  transform-origin: bottom center;
+  animation: stack-in 600ms var(--ease-out) backwards;
+}
+
+.ghost:nth-child(1) {
+  transform: translateY(-24px) scale(0.9);
+  animation-delay: 160ms;
+}
+
+.ghost:nth-child(2) {
+  transform: translateY(-12px) scale(0.95);
+  animation-delay: 80ms;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--error-text);
+  background: var(--error-bg);
+  border-color: var(--error-border);
+  animation: toast-in 500ms var(--ease-drawer) backwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+@keyframes stack-in {
+  from {
+    opacity: 0;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toastContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.toastTitle {
+  font-weight: 500;
+}
+
+.toastPath {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+.toastAction {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--error-bg);
+  background: var(--error-text);
+  text-decoration: none;
+}
+
+/* Copy -------------------------------------------------------------------- */
+
+.code {
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--gray10);
+}
+
+.title {
+  margin: 0 0 10px;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.lead {
+  max-width: 440px;
+  margin: 0 0 28px;
+  color: var(--gray11);
+}
+
+/* Links ------------------------------------------------------------------- */
+
+.links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+@media (max-width: 480px) {
+  .links {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1px solid var(--gray4);
+  border-radius: 12px;
+  text-decoration: none;
+  transition:
+    border-color 150ms,
+    background 150ms,
+    transform 160ms var(--ease-out);
+}
+
+.link:hover {
+  border-color: var(--gray7);
+  background: var(--gray1);
+}
+
+.link:active {
+  transform: scale(0.99);
+}
+
+.link strong {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.link span {
+  font-size: 13px;
+  color: var(--gray11);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 20px;
+  margin-top: 32px;
+}
+
+.report {
+  font-size: 13px;
+  color: var(--gray11);
+}

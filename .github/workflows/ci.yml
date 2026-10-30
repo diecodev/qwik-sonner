@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, v2]
+  # Every base, not only main: in a stack each pull request targets the branch below it.
   pull_request:
-    branches: [main]
   workflow_call: # lets release.yml reuse this exact gate
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  # cancel superseded PR runs, but never cancel pushes to main
+  # cancel superseded PR runs, but never cancel pushes to main or v2
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
@@ -32,6 +32,13 @@ jobs:
       - name: Typecheck website
         run: pnpm build.types && pnpm lint
         working-directory: website
+
+      # The website imports the library built above, as Vercel builds it.
+      - name: Build website (client + SSG)
+        run: pnpm build.client && pnpm build.server
+        working-directory: website
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # the changelog reads the GitHub releases
 
       - name: Typecheck test app
         run: pnpm build.types && pnpm lint

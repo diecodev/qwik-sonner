@@ -84,6 +84,13 @@ export const Toast = component$<ToastProps>((props) => {
   // values in the object survives that re-render.
   const committedSwipeX = useSignal<number | null>(null);
   const committedSwipeY = useSignal<number | null>(null);
+  // Offsets of the ongoing drag, read on release. For the same reason they
+  // can't be read back from `--swipe-amount-x/y` like sonner does (React only
+  // touches the style properties that change): any re-render of the `<li>`
+  // between the last move and the release (e.g. another toast arriving) would
+  // reset them to 0 and cancel the swipe. Never read while rendering, so
+  // updating it on every move doesn't re-render.
+  const swipeOffset = useSignal({ x: 0, y: 0 });
   const isSwiped = useSignal<boolean>(false);
   const offsetBeforeRemove = useSignal<number>(0);
   const initialHeight = useSignal<number>(0);
@@ -99,6 +106,8 @@ export const Toast = component$<ToastProps>((props) => {
   const isFront = index === 0;
   const isVisible = index + 1 <= visibleToasts;
   const toastType = toast.type;
+  // Toasts created with `toast()` have no type; `classes.default` is the key for those.
+  const toastTypeKey = (toastType ?? "default") as keyof ToastClassnames;
   const dismissible = toast.dismissible !== false;
   const toastClass = toast.class ?? "";
   const toastDescriptionClass = toast.descriptionClass ?? "";
@@ -136,6 +145,9 @@ export const Toast = component$<ToastProps>((props) => {
     return idx === -1 ? 0 : idx;
   });
   const closeButton = useComputed$(() => props.toast.closeButton ?? props.closeButton);
+  const allowedSwipeDirections = useComputed$(
+    () => props.swipeDirections ?? getDefaultSwipeDirections(props.position),
+  );
   const duration = useComputed$(() => props.toast.duration || props.duration || TOAST_LIFETIME);
   const toastsHeightBefore = useComputed$(() => {
     return positionHeights.value.reduce((prev, curr, reducerIndex) => {
@@ -359,9 +371,8 @@ export const Toast = component$<ToastProps>((props) => {
         toastClass,
         classes?.toast,
         toast?.classes?.toast,
-        classes?.default,
-        classes?.[toastType as keyof ToastClassnames],
-        toast?.classes?.[toastType as keyof ToastClassnames],
+        classes?.[toastTypeKey],
+        toast?.classes?.[toastTypeKey],
       ]}
       data-sonner-toast=""
       data-rich-colors={String(richColors.value)}
@@ -430,6 +441,7 @@ export const Toast = component$<ToastProps>((props) => {
           offsetBeforeRemove.value = offset.value;
           if ((event.target as HTMLElement).tagName === "BUTTON") return;
           swiping.value = true;
+          swipeOffset.value = { x: 0, y: 0 };
           pointerStartRef.value = { x: event.clientX, y: event.clientY };
         }),
       ]}
@@ -446,18 +458,21 @@ export const Toast = component$<ToastProps>((props) => {
           if (swipeOut.value || props.toast.dismissible === false) return;
 
           pointerStartRef.value = null;
-          const swipeAmountX = Number(
-            toastRef.value?.style.getPropertyValue("--swipe-amount-x").replace("px", "") || 0,
-          );
-          const swipeAmountY = Number(
-            toastRef.value?.style.getPropertyValue("--swipe-amount-y").replace("px", "") || 0,
-          );
+          const { x: swipeAmountX, y: swipeAmountY } = swipeOffset.value;
           const timeTaken = Date.now() - (dragStartTime.value ?? Date.now());
 
           const swipeAmount = swipeDirection.value === "x" ? swipeAmountX : swipeAmountY;
           const velocity = Math.abs(swipeAmount) / timeTaken;
 
-          if (Math.abs(swipeAmount) >= SWIPE_THRESHOLD || velocity > 0.11) {
+          // Movement towards a direction that isn't allowed is dampened, not
+          // blocked, so a fast flick can still pass the velocity check. Only
+          // dismiss if the direction is allowed.
+          const isAllowedDirection =
+            swipeDirection.value === "x"
+              ? allowedSwipeDirections.value.includes(swipeAmountX > 0 ? "right" : "left")
+              : allowedSwipeDirections.value.includes(swipeAmountY > 0 ? "bottom" : "top");
+
+          if (isAllowedDirection && (Math.abs(swipeAmount) >= SWIPE_THRESHOLD || velocity > 0.11)) {
             offsetBeforeRemove.value = offset.value;
             props.toast.onDismiss$?.(props.toast);
 
@@ -477,6 +492,7 @@ export const Toast = component$<ToastProps>((props) => {
             swipeOut.value = true;
             return;
           } else {
+            swipeOffset.value = { x: 0, y: 0 };
             toastRef.value?.style.setProperty("--swipe-amount-x", "0px");
             toastRef.value?.style.setProperty("--swipe-amount-y", "0px");
           }
@@ -494,7 +510,7 @@ export const Toast = component$<ToastProps>((props) => {
         const yDelta = event.clientY - pointerStartRef.value.y;
         const xDelta = event.clientX - pointerStartRef.value.x;
 
-        const swipeDirections = props.swipeDirections ?? getDefaultSwipeDirections(props.position);
+        const swipeDirections = allowedSwipeDirections.value;
 
         // Determine swipe direction if not already locked
         if (!swipeDirection.value && (Math.abs(xDelta) > 1 || Math.abs(yDelta) > 1)) {
@@ -541,6 +557,8 @@ export const Toast = component$<ToastProps>((props) => {
           isSwiped.value = true;
         }
 
+        swipeOffset.value = swipeAmount;
+
         // Apply transform using both x and y values
         toastRef.value?.style.setProperty("--swipe-amount-x", `${swipeAmount.x}px`);
         toastRef.value?.style.setProperty("--swipe-amount-y", `${swipeAmount.y}px`);
@@ -566,9 +584,11 @@ export const Toast = component$<ToastProps>((props) => {
       toast.icon !== null &&
       (iconFromIcons !== null || toast.icon) ? (
         <div data-icon="" class={[classes?.icon, toast?.classes?.icon]}>
-          {toast.promise || (toastType === "loading" && !toast.icon)
+          {toastType === "loading"
             ? toast.icon || getLoadingIcon()
-            : null}
+            : toast.promise
+              ? getLoadingIcon()
+              : null}
           {toastType !== "loading" ? icon : null}
         </div>
       ) : null}

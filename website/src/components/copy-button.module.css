@@ -1,0 +1,43 @@
+.copy {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--gray1);
+  color: var(--gray11);
+  box-shadow: var(--shadow-button);
+  cursor: pointer;
+  transition:
+    color 150ms,
+    background 150ms,
+    transform 160ms var(--ease-out);
+}
+
+.copy:hover {
+  color: var(--gray12);
+  background: var(--gray2);
+}
+
+.copy:active {
+  transform: scale(0.94);
+}
+
+.icon {
+  grid-area: 1 / 1;
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out),
+    filter 200ms var(--ease-out);
+}
+
+/* Cross-fade with a touch of blur and scale between the two icons. */
+.copy[data-copied="false"] .icon[data-icon="check"],
+.copy[data-copied="true"] .icon[data-icon="copy"] {
+  opacity: 0;
+  transform: scale(0.5);
+  filter: blur(2px);
+}

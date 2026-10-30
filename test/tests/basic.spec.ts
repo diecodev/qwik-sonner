@@ -1,4 +1,13 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+// The toast slides in; wait for the enter animation to settle before measuring
+// it, otherwise the drag can start where the toast no longer is.
+async function waitForEnterAnimation(page: Page) {
+  await page.waitForFunction(() => {
+    const el = document.querySelector("[data-sonner-toast]") as HTMLElement | null;
+    return !!el && parseFloat(getComputedStyle(el).opacity) > 0.99;
+  });
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
@@ -91,12 +100,16 @@ test.describe("Basic functionality", () => {
     await page.getByTestId("default-button").click();
     const toast = page.locator("[data-sonner-toast]");
     await toast.waitFor({ state: "visible" });
+    await waitForEnterAnimation(page);
     const box = await toast.boundingBox();
     if (!box) return;
     const startX = box.x + box.width / 2;
     const startY = box.y + box.height / 2;
     await page.mouse.move(startX, startY);
     await page.mouse.down();
+    // Qwik loads the pointer handlers lazily: wait until the toast took the
+    // gesture, as a person's drag would, before moving.
+    await expect(toast).toHaveAttribute("data-swiping", "true");
     await page.mouse.move(startX, startY + 20, { steps: 5 });
     await page.mouse.move(startX, startY + 300, { steps: 10 });
     await page.mouse.up();
@@ -124,12 +137,16 @@ test.describe("Basic functionality", () => {
     await page.getByTestId("default-button").click();
     const toast = page.locator("[data-sonner-toast]");
     await toast.waitFor({ state: "visible" });
+    await waitForEnterAnimation(page);
     const box = await toast.boundingBox();
     if (!box) return;
     const startX = box.x + box.width / 2;
     const startY = box.y + box.height / 2;
     await page.mouse.move(startX, startY);
     await page.mouse.down();
+    // Qwik loads the pointer handlers lazily: wait until the toast took the
+    // gesture, as a person's drag would, before moving.
+    await expect(toast).toHaveAttribute("data-swiping", "true");
     await page.mouse.move(startX, startY - 20, { steps: 5 });
     await page.mouse.move(startX, startY - 300, { steps: 10 });
     await page.mouse.up();
@@ -188,13 +205,7 @@ test.describe("Basic functionality", () => {
     const toast = page.locator("[data-sonner-toast]");
 
     await toast.waitFor({ state: "visible" });
-    // Wait for the enter animation to settle before measuring/swiping —
-    // otherwise the toast is still sliding in (translateY) and the swipe
-    // starts from a transient position.
-    await page.waitForFunction(() => {
-      const el = document.querySelector("[data-sonner-toast]") as HTMLElement | null;
-      return !!el && parseFloat(getComputedStyle(el).opacity) > 0.99;
-    });
+    await waitForEnterAnimation(page);
 
     const box = await toast.boundingBox();
     if (!box) return;
@@ -204,12 +215,45 @@ test.describe("Basic functionality", () => {
 
     await page.mouse.move(startX, startY);
     await page.mouse.down();
+    // Qwik loads the pointer handlers lazily: wait until the toast took the
+    // gesture, as a person's drag would, before moving.
+    await expect(toast).toHaveAttribute("data-swiping", "true");
 
     // Small initial movement to trigger drag
     await page.mouse.move(startX, startY + 20, { steps: 5 });
 
     // Main swipe movement
     await page.mouse.move(startX, startY + 300, { steps: 10 });
+    await page.mouse.up();
+
+    await expect(page.getByTestId("dismiss-el")).toHaveCount(1);
+  });
+
+  // While dragging, the swipe offset lives in `--swipe-amount-*` vars set on the
+  // `<li>` by hand. Qwik rewrites the whole `style` attribute whenever the `<li>`
+  // re-renders, so a re-render between the last move and the release (here:
+  // another toast arriving) must not reset the swipe.
+  test("a swipe still dismisses when the toast re-renders before the release", async ({ page }) => {
+    await page.getByTestId("dismiss-toast-callback").click();
+    const toast = page.locator("[data-sonner-toast]");
+    await toast.waitFor({ state: "visible" });
+    await waitForEnterAnimation(page);
+    const box = await toast.boundingBox();
+    if (!box) return;
+    const startX = box.x + box.width / 2;
+    const startY = box.y + box.height / 2;
+
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await expect(toast).toHaveAttribute("data-swiping", "true");
+    await page.mouse.move(startX, startY + 20, { steps: 5 });
+    await page.mouse.move(startX, startY + 300, { steps: 10 });
+    await expect(toast).toHaveAttribute("data-swiped", "true");
+
+    await page.evaluate(() =>
+      (document.querySelector('[data-testid="default-button"]') as HTMLElement).click(),
+    );
+    await expect(page.locator("[data-sonner-toast]")).toHaveCount(2);
     await page.mouse.up();
 
     await expect(page.getByTestId("dismiss-el")).toHaveCount(1);

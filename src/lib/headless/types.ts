@@ -71,6 +71,12 @@ export interface ToastIcons {
 export interface Action {
   label: string | JSXOutput;
   onClick$: QRL<(ev: PointerEvent, target: HTMLButtonElement) => any>;
+  /**
+   * @deprecated Has no effect, on the action or the cancel button — like in
+   * sonner 2.x, which declares it but never reads it. Style the buttons with the
+   * toast's `actionButtonStyle` / `cancelButtonStyle`, or the Toaster's
+   * `toastOptions`, instead.
+   */
   actionButtonStyle?: CSSProperties;
   /**
    * Qwik adaptation of sonner's `event.preventDefault()` behaviour: when `true`
@@ -93,6 +99,12 @@ export interface ToastT {
   description?: string | JSXOutput | (() => JSXOutput | string);
   duration?: number;
   delete?: boolean;
+  /**
+   * @deprecated Has no effect. qwik-sonner 1.x announced an important toast with
+   * `aria-live="assertive"`; sonner 2.x dropped the option, and so did this port:
+   * every toast is announced through the Toaster's `aria-live="polite"` region.
+   * Still accepted for backwards compatibility.
+   */
   important?: boolean;
   action?: Action | JSXOutput;
   cancel?: Action | JSXOutput;

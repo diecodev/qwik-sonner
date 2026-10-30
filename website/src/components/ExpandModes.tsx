@@ -1,8 +1,8 @@
 import { toast } from "qwik-sonner";
 import { CodeBlock } from "./CodeBlock";
-import { type Signal } from "@qwik.dev/core";
+import { component$, type Signal } from "@qwik.dev/core";
 
-export const ExpandModes = ({ expand }: { expand: Signal<boolean> }) => {
+export const ExpandModes = component$(({ expand }: { expand: Signal<boolean> }) => {
   return (
     <div>
       <h2>Expand</h2>
@@ -11,7 +11,7 @@ export const ExpandModes = ({ expand }: { expand: Signal<boolean> }) => {
       </p>
       <div class="buttons">
         <button
-          data-active={expand}
+          data-active={expand.value}
           class="button"
           onClick$={() => {
             toast("Event has been created", {
@@ -23,7 +23,7 @@ export const ExpandModes = ({ expand }: { expand: Signal<boolean> }) => {
           Expand
         </button>
         <button
-          data-active={!expand}
+          data-active={!expand.value}
           class="button"
           onClick$={() => {
             toast("Event has been created", {
@@ -38,4 +38,4 @@ export const ExpandModes = ({ expand }: { expand: Signal<boolean> }) => {
       <CodeBlock code={`<Toaster expand={${expand.value}} />`} />
     </div>
   );
-};
+});

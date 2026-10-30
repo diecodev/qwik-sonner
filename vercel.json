@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "git": { "deploymentEnabled": { "main": false, "v2": false } },
+  "ignoreCommand": "sh website/scripts/vercel-preview.sh",
+  "buildCommand": "pnpm build.website",
+  "outputDirectory": "website/dist",
+  "trailingSlash": true,
+  "redirects": [
+    { "source": "/docs", "destination": "/docs/v2/", "permanent": true },
+    { "source": "/docs/", "destination": "/docs/v2/", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/build/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}

@@ -17,29 +17,60 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
-  publish:
-    name: Publish to npm
-    needs: ci
+  # Runs next to the CI, so a mistagged release fails in seconds.
+  version:
+    name: The tag is the version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Compare the tag with package.json
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::the tag $GITHUB_REF_NAME doesn't match the version in package.json ($VERSION)"
+            exit 1
+          fi
+
+  stage:
+    name: Stage on npm
+    needs: [ci, version]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write # OIDC token for npm Trusted Publishing (no NPM_TOKEN needed)
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
 
       - name: Build library
         run: pnpm build.types && pnpm build.lib
 
       # Pack with pnpm so `catalog:`/`workspace:` specifiers are rewritten to real
-      # versions in the tarball, but publish with the npm CLI: pnpm publish does
+      # versions in the tarball, but stage with the npm CLI: pnpm publish does
       # not yet support npm's OIDC Trusted Publishing (pnpm/pnpm#9812, #11513).
       - name: Pack
         run: pnpm pack --pack-destination .
 
-      # Trusted Publishing requires npm CLI >= 11.5.1.
+      # Every file package.json points to (main, types, exports) is in the
+      # tarball, and the Qwik build manifests are not.
+      - name: Check the package contents
+        run: |
+          tar -tzf *.tgz | sed 's|^package/||' > "$RUNNER_TEMP/packed.txt"
+          node -e '
+            const fs = require("node:fs");
+            const pkg = require("./package.json");
+            const packed = new Set(fs.readFileSync(process.env.RUNNER_TEMP + "/packed.txt", "utf8").split("\n"));
+            const entries = [pkg.main, pkg.qwik, pkg.types, ...Object.values(pkg.exports).flatMap(Object.values)];
+            const missing = [...new Set(entries.map((entry) => entry.replace(/^\.\//, "")))].filter((file) => !packed.has(file));
+            const manifests = [...packed].filter((file) => /(^|\/)(q-manifest|[^/]*bundle-graph)\.json$/.test(file));
+            if (missing.length) console.error(`::error::not in the package: ${missing.join(", ")}`);
+            if (manifests.length) console.error(`::error::build manifests in the package: ${manifests.join(", ")}`);
+            if (missing.length || manifests.length) process.exit(1);
+          '
+
+      # Staged publishing needs npm >= 11.15.
       - name: Ensure recent npm
-        run: npm install -g npm@latest
+        run: npm install -g npm@12
 
       # Prerelease versions (e.g. 2.0.0-beta.0) publish under their identifier
       # tag (`beta`) so `latest` keeps pointing at the stable line; plain
@@ -53,25 +84,62 @@ jobs:
           else
             TAG="latest"
           fi
-          echo "Publishing $VERSION under dist-tag '$TAG'"
+          echo "Staging $VERSION under dist-tag '$TAG'"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Publish via Trusted Publishing (OIDC)
-        run: npm publish *.tgz --provenance --access public --tag ${{ steps.disttag.outputs.tag }}
+      # Staged, not published: nothing is public until a maintainer approves it
+      # with 2FA (`npm stage approve`, see CONTRIBUTING.md). Trusted Publishing
+      # adds the provenance statement on its own.
+      - name: Stage via Trusted Publishing (OIDC)
+        run: npm stage publish *.tgz --access public --tag ${{ steps.disttag.outputs.tag }}
 
   github_release:
-    name: GitHub release & changelog
-    needs: publish
+    name: GitHub release (draft)
+    needs: stage
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # changelogithub needs full history to diff tags
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-      - run: npx changelogithub
+          node-version: 24
+      # A draft until the staged version is approved on npm: edit its notes in
+      # the meantime (the website shows them). The `published` job publishes it.
+      - run: npx changelogithub@15.0.5 --draft ${{ contains(github.ref_name, '-') && '--prerelease' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  published:
+    name: Wait for the approval on npm
+    needs: github_release
+    runs-on: ubuntu-latest
+    # As long as GitHub lets a job run. Past it, publish the draft release and
+    # run the Website workflow by hand.
+    timeout-minutes: 360
+    permissions:
+      contents: write
+    steps:
+      # A staged version isn't public: the registry answers for it only once a
+      # maintainer approves it.
+      - name: Wait for the version on npm
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          until curl --silent --fail --output /dev/null "https://registry.npmjs.org/qwik-sonner/$VERSION"; do
+            sleep 30
+          done
+          echo "qwik-sonner@$VERSION is on npm"
+
+      - name: Publish the GitHub release
+        run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  # The docs show the new version: the version menu, the install commands and
+  # the changelog read npm and the GitHub releases when they build.
+  website:
+    needs: published
+    uses: ./.github/workflows/website.yml
+    secrets: inherit

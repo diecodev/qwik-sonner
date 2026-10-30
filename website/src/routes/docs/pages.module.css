@@ -377,90 +377,43 @@
   box-shadow: inset 0 0 0 1px var(--success-border);
 }
 
-.changes {
-  margin: 12px 0 0 !important;
-  padding: 0 !important;
-  list-style: none;
-}
-
-.changes li {
-  display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  gap: 12px;
-  margin: 0 !important;
-  padding: 7px 0;
+.notes {
   font-size: 14px;
   line-height: 1.6;
 }
 
-@media (max-width: 480px) {
-  .changes li {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 2px;
-  }
+/* GitHub's HTML: the release body, as on the release page */
+.release .notes > :global(:first-child) {
+  margin-top: 0;
 }
 
-.kind {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 22px;
-  font-size: 12px;
-  font-weight: 500;
+.release .notes :global(:is(h1, h2, h3, h4, h5, h6)) {
+  margin: 20px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
   color: var(--gray11);
 }
 
-.kind::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--k, var(--gray8));
+.release .notes :global(ul) {
+  margin: 0 0 12px;
 }
 
-.kind[data-kind="breaking"] {
-  --k: var(--error-text);
+.release .notes :global(li) {
+  margin: 2px 0;
 }
 
-.kind[data-kind="feature"] {
-  --k: var(--success-text);
-}
-
-.kind[data-kind="fix"] {
-  --k: var(--info-text);
-}
-
-.kind[data-kind="deprecated"] {
-  --k: var(--warning-text);
-}
-
-.since {
-  margin-left: 8px;
-  padding: 1px 6px;
-  border-radius: 999px;
+.release .notes :global(samp) {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--gray10);
-  background: var(--gray3);
-  white-space: nowrap;
 }
 
 .noNotes {
   margin: 8px 0 0 !important;
   font-size: 14px;
   color: var(--gray10);
-}
-
-.earlier {
-  margin: 14px 0 0 !important;
-  font-size: 13px;
-  color: var(--gray10);
-}
-
-.earlier a {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  color: var(--gray11);
 }
 
 .releaseLinks {

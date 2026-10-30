@@ -1,12 +1,9 @@
 import { component$, useSignal } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
-import { inline } from "~/components/docs/inline";
-import { KIND_LABEL, NOTES, type ChangeKind } from "~/lib/changelog";
-import { NPM, seriesKeys, seriesOf } from "~/lib/release";
+import { majorOf, newestFirst, NPM, tagsOf } from "~/lib/release";
+import { RELEASES } from "~/lib/release-notes";
 import { GITHUB_URL, NPM_URL } from "~/lib/versions";
 import styles from "../pages.module.css";
-
-const KIND_ORDER: ChangeKind[] = ["breaking", "feature", "fix", "deprecated", "docs"];
 
 const FILTERS = [
   { id: "all", label: "All" },
@@ -17,17 +14,23 @@ const FILTERS = [
 
 type Filter = (typeof FILTERS)[number]["id"];
 
-// Every series npm knows (plus the repo's, before it's published) and every
-// series with notes, newest first; versions, tags and days come from npm.
-const SERIES = [...new Set([...seriesKeys(NPM), ...NOTES.map((n) => n.series)])]
-  .sort((a, b) => {
-    const [am, an] = a.split(".").map(Number);
-    const [bm, bn] = b.split(".").map(Number);
-    return bm - am || bn - an;
-  })
-  .map((key) => {
-    const [major, minor] = key.split(".").map(Number);
-    return { key, ...seriesOf(NPM, major, minor), notes: NOTES.find((n) => n.series === key) };
+// Every version on npm, newest first, with its notes from the GitHub release
+// of its tag; versions, tags and days come from npm.
+const VERSIONS = Object.keys(NPM.dates)
+  .sort(newestFirst)
+  .map((version, index, all) => {
+    const major = majorOf(version);
+    return {
+      version,
+      major,
+      date: NPM.dates[version],
+      tags: tagsOf(NPM, version),
+      notes: RELEASES[version] ?? null,
+      /** the version before it, for the commits between both */
+      previous: all[index + 1] ?? null,
+      /** the newest version of its major carries the link to that major's docs */
+      newestOfMajor: all.findIndex((other) => majorOf(other) === major) === index,
+    };
   });
 
 const formatDate = (iso: string) =>
@@ -41,20 +44,19 @@ const formatDate = (iso: string) =>
 export default component$(() => {
   const filter = useSignal<Filter>("all");
 
-  const visible = SERIES.filter((s) => filter.value === "all" || s.major === filter.value);
+  const visible = VERSIONS.filter((v) => filter.value === "all" || v.major === filter.value);
 
   return (
     <>
       <h1>Changelog</h1>
       <p class="lead">
-        Every release line of qwik-sonner, newest first. Versions, dist-tags and dates come straight
-        from{" "}
+        Every version of qwik-sonner, newest first. Versions, dist-tags and dates come straight from{" "}
         <a href={NPM_URL} target="_blank" rel="noreferrer">
           npm
         </a>
-        ; releases are tagged on{" "}
-        <a href={`${GITHUB_URL}/tags`} target="_blank" rel="noreferrer">
-          GitHub
+        ; the notes are the{" "}
+        <a href={`${GITHUB_URL}/releases`} target="_blank" rel="noreferrer">
+          GitHub releases
         </a>
         .
       </p>
@@ -74,105 +76,68 @@ export default component$(() => {
         ))}
       </div>
 
-      {visible.map((series) => {
-        const index = SERIES.indexOf(series);
-        const previous = SERIES.slice(index + 1).find((s) => s.date !== null);
-        const notes = series.notes;
-        const kinds = KIND_ORDER.filter((k) => notes?.changes.some((c) => c.kind === k));
+      {VERSIONS.length === 0 ? (
+        <p class={styles.noNotes}>
+          npm couldn't be read when this page was built, so there are no versions to show.
+        </p>
+      ) : null}
 
-        return (
-          <section key={series.key} id={`v${series.key}`} class={styles.release}>
-            <div class={styles.releaseAside}>
-              {series.date ? (
-                <time dateTime={series.date}>{formatDate(series.date)}</time>
-              ) : (
-                <span>Unreleased</span>
-              )}
-              <span>{series.major >= 2 ? "Qwik 2" : "Qwik 1"}</span>
-            </div>
-            <div>
-              <h2 class={styles.releaseTitle}>
-                <a href={`#v${series.key}`} style={{ textDecoration: "none" }}>
-                  {series.version}
+      {visible.map((release) => (
+        <section key={release.version} id={`v${release.version}`} class={styles.release}>
+          <div class={styles.releaseAside}>
+            <time dateTime={release.date}>{formatDate(release.date)}</time>
+            <span>{release.major >= 2 ? "Qwik 2" : "Qwik 1"}</span>
+          </div>
+          <div>
+            <h2 class={styles.releaseTitle}>
+              <a href={`#v${release.version}`} style={{ textDecoration: "none" }}>
+                {release.version}
+              </a>
+              {release.tags.map((tag) => (
+                <span
+                  key={tag}
+                  class={styles.chip}
+                  data-tone={tag === "latest" ? "success" : "info"}
+                >
+                  {tag}
+                </span>
+              ))}
+            </h2>
+            {release.notes?.html ? (
+              // rendered and sanitized by GitHub (see lib/github.ts)
+              <div class={styles.notes} dangerouslySetInnerHTML={release.notes.html} />
+            ) : (
+              <p class={styles.noNotes}>No release notes for this version.</p>
+            )}
+            <div class={styles.releaseLinks}>
+              <a href={`${NPM_URL}/v/${release.version}`} target="_blank" rel="noreferrer">
+                npm
+              </a>
+              {release.notes ? (
+                <a href={release.notes.url} target="_blank" rel="noreferrer">
+                  GitHub release
                 </a>
-                {series.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    class={styles.chip}
-                    data-tone={tag === "latest" ? "success" : "info"}
-                  >
-                    {tag}
-                  </span>
-                ))}
-                {series.date === null ? <span class={styles.chip}>unreleased</span> : null}
-              </h2>
-              {notes?.summary ? <p>{inline(notes.summary)}</p> : null}
-              {kinds.length ? (
-                <ul class={styles.changes}>
-                  {kinds.flatMap((kind) =>
-                    notes!.changes
-                      .filter((c) => c.kind === kind)
-                      .map((change, i) => (
-                        <li key={`${kind}-${i}`}>
-                          <span class={styles.kind} data-kind={kind}>
-                            {KIND_LABEL[kind]}
-                          </span>
-                          <span>
-                            {inline(change.text)}
-                            {change.version && series.earlier.length ? (
-                              <span class={styles.since}>{change.version}</span>
-                            ) : null}
-                          </span>
-                        </li>
-                      )),
-                  )}
-                </ul>
-              ) : (
-                <p class={styles.noNotes}>No release notes for this series yet.</p>
-              )}
-              {series.earlier.length ? (
-                <p class={styles.earlier}>
-                  Earlier in {series.key}:{" "}
-                  {series.earlier.map(({ version, date }, i) => (
-                    <span key={version}>
-                      {i > 0 ? " · " : null}
-                      <a href={`${NPM_URL}/v/${version}`} target="_blank" rel="noreferrer">
-                        {version}
-                      </a>{" "}
-                      ({formatDate(date)})
-                    </span>
-                  ))}
-                </p>
               ) : null}
-              <div class={styles.releaseLinks}>
-                {series.date ? (
-                  <a href={`${NPM_URL}/v/${series.version}`} target="_blank" rel="noreferrer">
-                    npm
-                  </a>
-                ) : null}
-                {series.date ? (
-                  <a
-                    href={
-                      previous
-                        ? `${GITHUB_URL}/compare/v${previous.version}...v${series.version}`
-                        : `${GITHUB_URL}/tree/v${series.version}`
-                    }
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {previous ? "Commits" : "Source"}
-                  </a>
-                ) : null}
-                {series.major >= 2 ? (
-                  <Link href="/docs/v2/migration/">Migration guide</Link>
-                ) : series.major === 1 ? (
-                  <Link href="/docs/v1/">v1 docs</Link>
-                ) : null}
-              </div>
+              <a
+                href={
+                  release.previous
+                    ? `${GITHUB_URL}/compare/v${release.previous}...v${release.version}`
+                    : `${GITHUB_URL}/tree/v${release.version}`
+                }
+                target="_blank"
+                rel="noreferrer"
+              >
+                {release.previous ? "Commits" : "Source"}
+              </a>
+              {!release.newestOfMajor ? null : release.major >= 2 ? (
+                <Link href="/docs/v2/migration/">Migration guide</Link>
+              ) : release.major === 1 ? (
+                <Link href="/docs/v1/">v1 docs</Link>
+              ) : null}
             </div>
-          </section>
-        );
-      })}
+          </div>
+        </section>
+      ))}
     </>
   );
 });
@@ -182,7 +147,8 @@ export const head: DocumentHead = {
   meta: [
     {
       name: "description",
-      content: "Release notes for every qwik-sonner series, with versions and dates from npm.",
+      content:
+        "Release notes for every qwik-sonner version, from its GitHub release, with dates from npm.",
     },
   ],
 };

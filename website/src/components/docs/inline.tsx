@@ -1,8 +1,8 @@
 import type { JSXOutput } from "@qwik.dev/core";
 
 /**
- * Renders a tiny markdown subset used by data-driven copy (changelog entries,
- * API tables): `code` and **bold**. Everything else is plain text.
+ * Renders a tiny markdown subset used by data-driven copy (API tables):
+ * `code` and **bold**. Everything else is plain text.
  */
 export function inline(text: string): JSXOutput {
   return text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, i) => {

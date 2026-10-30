@@ -1,5 +1,19 @@
 .shell {
+  /* Height of what sticks at the top: the header, plus the banner on the docs
+     of an older line. Sticky and fixed parts of the page start below it. */
+  --docs-top: 56px;
   min-height: 100dvh;
+}
+
+.shell[data-banner] {
+  /* the 57px header (its border included) and the one-line banner */
+  --docs-top: 98px;
+}
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .skip {

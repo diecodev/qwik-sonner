@@ -1,7 +1,7 @@
 import { component$, useSignal } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
+import type { ChangeKind, Releases } from "~/lib/github";
 import { majorOf, newestFirst, NPM, tagsOf } from "~/lib/release";
-import { RELEASES } from "~/lib/release-notes";
 import { GITHUB_URL, NPM_URL } from "~/lib/versions";
 import styles from "../pages.module.css";
 
@@ -14,24 +14,42 @@ const FILTERS = [
 
 type Filter = (typeof FILTERS)[number]["id"];
 
+// The kinds of change the notes mark with a symbol (see lib/github.ts and
+// pages.module.css); performance and docs sections get a plain dot.
+const LEGEND: { kind: ChangeKind; label: string }[] = [
+  { kind: "breaking", label: "breaking" },
+  { kind: "feature", label: "new" },
+  { kind: "fix", label: "fix" },
+  { kind: "deprecated", label: "deprecated" },
+];
+
+// The notes of each GitHub release: vite.config.ts reads them when the site
+// builds and defines `__RELEASES__` with them, so only this page carries them.
+declare const __RELEASES__: Releases;
+const RELEASES: Releases = __RELEASES__;
+
 // Every version on npm, newest first, with its notes from the GitHub release
-// of its tag; versions, tags and days come from npm.
-const VERSIONS = Object.keys(NPM.dates)
-  .sort(newestFirst)
-  .map((version, index, all) => {
-    const major = majorOf(version);
-    return {
-      version,
-      major,
-      date: NPM.dates[version],
-      tags: tagsOf(NPM, version),
-      notes: RELEASES[version] ?? null,
-      /** the version before it, for the commits between both */
-      previous: all[index + 1] ?? null,
-      /** the newest version of its major carries the link to that major's docs */
-      newestOfMajor: all.findIndex((other) => majorOf(other) === major) === index,
-    };
-  });
+// of its tag; versions, tags and days come from npm. Built when the page
+// renders, not when the module loads: in the client build Rolldown can put the
+// modules this reads in a chunk that imports this one back, and a module-level
+// read would run before they're initialized (an empty page after a <Link>).
+const versionsOf = () =>
+  Object.keys(NPM.dates)
+    .sort(newestFirst)
+    .map((version, index, all) => {
+      const major = majorOf(version);
+      return {
+        version,
+        major,
+        date: NPM.dates[version],
+        tags: tagsOf(NPM, version),
+        notes: RELEASES[version] ?? null,
+        /** the version before it, for the commits between both */
+        previous: all[index + 1] ?? null,
+        /** the newest version of its major carries the link to that major's docs */
+        newestOfMajor: all.findIndex((other) => majorOf(other) === major) === index,
+      };
+    });
 
 const formatDate = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", {
@@ -44,7 +62,8 @@ const formatDate = (iso: string) =>
 export default component$(() => {
   const filter = useSignal<Filter>("all");
 
-  const visible = VERSIONS.filter((v) => filter.value === "all" || v.major === filter.value);
+  const versions = versionsOf();
+  const visible = versions.filter((v) => filter.value === "all" || v.major === filter.value);
 
   return (
     <>
@@ -76,7 +95,15 @@ export default component$(() => {
         ))}
       </div>
 
-      {VERSIONS.length === 0 ? (
+      <div class={styles.legend} role="list" aria-label="Kinds of change">
+        {LEGEND.map(({ kind, label }) => (
+          <span key={kind} class={styles.legendItem} data-kind={kind} role="listitem">
+            {label}
+          </span>
+        ))}
+      </div>
+
+      {versions.length === 0 ? (
         <p class={styles.noNotes}>
           npm couldn't be read when this page was built, so there are no versions to show.
         </p>
@@ -130,7 +157,7 @@ export default component$(() => {
                 {release.previous ? "Commits" : "Source"}
               </a>
               {!release.newestOfMajor ? null : release.major >= 2 ? (
-                <Link href="/docs/v2/migration/">Migration guide</Link>
+                <Link href="/docs/migration/">Migration guide</Link>
               ) : release.major === 1 ? (
                 <Link href="/docs/v1/">v1 docs</Link>
               ) : null}

@@ -184,7 +184,7 @@ export default component$(() => {
       <CodeBlock code={signatureCode} />
       <p>
         <code>message</code> is a <code>string</code>, JSX, or a function returning either. Every
-        helper takes the same <Link href="/docs/v2/options/">options object</Link> as its last
+        helper takes the same <Link href="/docs/options/">options object</Link> as its last
         argument.
       </p>
 
@@ -419,14 +419,14 @@ export default component$(() => {
       <CodeBlock code={dismissCode} />
       <p>
         Use <code>onDismiss$</code> and <code>onAutoClose$</code> to react to a toast closing — see{" "}
-        <Link href="/docs/v2/options/#callbacks">callbacks</Link>.
+        <Link href="/docs/options/#callbacks">callbacks</Link>.
       </p>
 
       <H2 id="state">Reading state</H2>
       <CodeBlock code={stateCode} />
       <p>
         For a reactive list inside a component use{" "}
-        <Link href="/docs/v2/advanced/#use-sonner">
+        <Link href="/docs/advanced/#use-sonner">
           <code>useSonner()</code>
         </Link>
         .

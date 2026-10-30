@@ -26,7 +26,7 @@ dist-tags and dates are read from the npm registry when the site builds (`vite.c
 unreleased; in CI (`CI` set) the build fails instead.
 
 The changelog's notes are the published GitHub releases, as GitHub renders them (`vite.config.ts` →
-`src/lib/github.ts` → `src/lib/release-notes.ts`): to change what the site says about a version, edit
+`src/lib/github.ts` → `src/routes/docs/changelog/`): to change what the site says about a version, edit
 its release on GitHub and redeploy. A release is a draft until its version is approved on npm, so the
 site never shows notes for a version that isn't out (see `CONTRIBUTING.md` → Releases). Set
 `GITHUB_TOKEN` to read them with a token. Offline or rate-limited, a local or preview build goes on
@@ -65,6 +65,14 @@ The build settings live in [`vercel.json`](../vercel.json) at the repo root:
 pnpm is the one in the root `package.json`'s `packageManager`: the CI's setup installs it, and
 Vercel reads it for the previews.
 
-`trailingSlash` matches the URLs of the pages (`/docs/v2/toast/`), `/docs` redirects to the current
-docs, `404.html` answers missing pages, and `/build/` and `/assets/` (hashed file names) are cached
-for a year.
+`trailingSlash` matches the URLs of the pages (`/docs/toast/`), `/docs/v2/…` redirects to `/docs/…`
+(see below), `404.html` answers missing pages, and `/build/` and `/assets/` (hashed file names) are
+cached for a year.
+
+## Docs URLs
+
+The current line's docs live at `/docs/…` (`src/routes/docs/`), an older line's at `/docs/v<n>/…`
+(`src/routes/docs/v1/`), and `vercel.json` redirects `/docs/v<current>/…` to `/docs/…`, so both
+addresses work. The paths come from `CURRENT_VERSION` in `src/lib/versions.ts`. When a new major
+ships: move the current pages into `src/routes/docs/v<n>/`, put the new ones in `src/routes/docs/`,
+set `CURRENT_VERSION`, and point the redirects in `vercel.json` at the new major.

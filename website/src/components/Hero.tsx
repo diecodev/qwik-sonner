@@ -28,7 +28,7 @@ export const Hero = component$(() => {
         >
           Render a toast
         </button>
-        <Link class={styles.button} href="/docs/v2/">
+        <Link class={styles.button} href="/docs/">
           Documentation
         </Link>
         <a class={styles.button} href={GITHUB_URL} target="_blank" rel="noreferrer">

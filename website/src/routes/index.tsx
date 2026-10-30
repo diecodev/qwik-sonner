@@ -23,7 +23,7 @@ export default component$(() => {
       <header class="landing-nav container">
         <Logo />
         <nav>
-          <Link href="/docs/v2/">Docs</Link>
+          <Link href="/docs/">Docs</Link>
           <Link href="/docs/changelog/">Changelog</Link>
           <a href={GITHUB_URL} target="_blank" rel="noreferrer">
             GitHub

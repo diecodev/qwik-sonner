@@ -338,7 +338,7 @@
 @media (min-width: 641px) {
   .releaseAside {
     position: sticky;
-    top: 80px;
+    top: calc(var(--docs-top, 56px) + 24px);
     align-self: start;
   }
 }
@@ -402,6 +402,73 @@
 
 .release .notes :global(li) {
   margin: 2px 0;
+}
+
+/* A symbol per kind of change (`data-kind`, set by lib/github.ts) in place of
+   the bullet, as in the legend. Only breaking changes and new features get a
+   color; the rest stay gray. */
+.release .notes :global(ul[data-kind]) {
+  padding-left: 22px;
+  list-style: none;
+}
+
+.release .notes :global(ul[data-kind] > li) {
+  position: relative;
+}
+
+.release .notes :global(ul[data-kind] > li)::before,
+.legendItem::before {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--gray10);
+}
+
+.release .notes :global(ul[data-kind] > li)::before {
+  position: absolute;
+  left: -20px;
+}
+
+.release .notes :global(ul[data-kind="breaking"] > li)::before,
+.legendItem[data-kind="breaking"]::before {
+  content: "!";
+  color: var(--log-breaking);
+}
+
+.release .notes :global(ul[data-kind="feature"] > li)::before,
+.legendItem[data-kind="feature"]::before {
+  content: "+";
+  color: var(--log-new);
+}
+
+.release .notes :global(ul[data-kind="fix"] > li)::before,
+.legendItem[data-kind="fix"]::before {
+  content: "~";
+}
+
+.release .notes :global(ul[data-kind="deprecated"] > li)::before,
+.legendItem[data-kind="deprecated"]::before {
+  content: "−";
+}
+
+.release .notes :global(ul[data-kind="perf"] > li)::before,
+.release .notes :global(ul[data-kind="docs"] > li)::before {
+  content: "·";
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: -16px 0 28px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gray10);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .release .notes :global(samp) {

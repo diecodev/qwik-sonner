@@ -2,7 +2,7 @@
 
 .heading {
   position: relative;
-  scroll-margin-top: 88px;
+  scroll-margin-top: calc(var(--docs-top, 56px) + 32px);
 }
 
 .anchor {

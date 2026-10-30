@@ -5,8 +5,10 @@
   top: 0;
   z-index: 50;
   background: var(--bg-blur);
+  /* No hand-written -webkit- copy: Lightning CSS (Vite 8) adds the prefix
+     Safari needs, and with both it kept only the prefixed one, so Chromium
+     didn't blur. */
   backdrop-filter: saturate(180%) blur(12px);
-  -webkit-backdrop-filter: saturate(180%) blur(12px);
   border-bottom: 1px solid var(--gray3);
 }
 
@@ -389,12 +391,26 @@
   white-space: nowrap;
 }
 
-.bannerLink span {
+.bannerArrow {
   transition: transform 200ms var(--ease-out);
 }
 
-.bannerLink:hover span {
+.bannerLink:hover .bannerArrow {
   transform: translateX(3px);
+}
+
+.bannerShort {
+  display: none;
+}
+
+@media (max-width: 999px) {
+  .bannerLong {
+    display: none;
+  }
+
+  .bannerShort {
+    display: inline;
+  }
 }
 
 @keyframes banner-in {
@@ -408,9 +424,9 @@
 
 .sidebar {
   position: sticky;
-  top: 56px;
+  top: var(--docs-top, 56px);
   align-self: start;
-  max-height: calc(100dvh - 56px);
+  max-height: calc(100dvh - var(--docs-top, 56px));
   overflow-y: auto;
   padding: 28px 8px 48px 0;
   scrollbar-width: thin;
@@ -461,7 +477,7 @@
 @media (max-width: 900px) {
   .sidebar {
     position: fixed;
-    inset: 56px 0 0;
+    inset: var(--docs-top, 56px) 0 0;
     z-index: 40;
     max-height: none;
     padding: 20px 20px 48px;
@@ -495,7 +511,7 @@
 
 .toc {
   position: sticky;
-  top: 56px;
+  top: var(--docs-top, 56px);
   align-self: start;
   padding: 32px 0 48px;
   font-size: 13px;

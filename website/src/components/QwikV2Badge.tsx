@@ -24,7 +24,7 @@ export const QwikV2Badge = component$<{ size?: "sm" | "md" }>(({ size = "md" }) 
 
   return (
     <Link
-      href="/docs/v2/#installation"
+      href="/docs/#installation"
       class={styles.badge}
       data-size={size}
       data-channel={channel}

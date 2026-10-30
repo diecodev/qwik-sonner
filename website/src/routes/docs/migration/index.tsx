@@ -3,7 +3,7 @@ import { Link, type DocumentHead } from "@qwik.dev/router";
 import { CodeBlock } from "~/components/CodeBlock";
 import { Callout, H2, H3, InstallTabs } from "~/components/docs/ui";
 import { VERSIONS } from "~/lib/versions";
-import styles from "../../pages.module.css";
+import styles from "../pages.module.css";
 
 const htmlBefore = `// v1 — string parsed as (sanitized) HTML
 toast("<strong>Saved</strong> to drafts");`;
@@ -106,7 +106,7 @@ export default component$(() => {
         <li>
           Markup and styles follow sonner 2's <code>data-sonner-*</code> contract. Custom CSS that
           targeted v1's markup may need new selectors — see{" "}
-          <Link href="/docs/v2/styling/#data-attributes">data attributes</Link>.
+          <Link href="/docs/styling/#data-attributes">data attributes</Link>.
         </li>
         <li>
           <code>important: true</code> no longer makes a toast <code>aria-live="assertive"</code>.
@@ -136,24 +136,24 @@ export default component$(() => {
         v1 recommended rendering the Toaster before the rest of the page to avoid rendering
         glitches. v2 subscribes when Qwik boots, so it can go anywhere in the root layout — but keep
         it in a server-rendered layout (see{" "}
-        <Link href="/docs/v2/advanced/#known-issues">known issues</Link>).
+        <Link href="/docs/advanced/#known-issues">known issues</Link>).
       </p>
       <CodeBlock code={placementCode} />
 
       <H2 id="new">Worth adopting</H2>
       <ul>
         <li>
-          <Link href="/docs/v2/toaster/#signals">Signals</Link> for <code>position</code>,{" "}
+          <Link href="/docs/toaster/#signals">Signals</Link> for <code>position</code>,{" "}
           <code>theme</code>, <code>richColors</code>, <code>dir</code> and <code>invert</code>.
         </li>
         <li>
-          <Link href="/docs/v2/advanced/#top-layer">
+          <Link href="/docs/advanced/#top-layer">
             <code>topLayer</code>
           </Link>{" "}
           for toasts above native dialogs.
         </li>
         <li>
-          <Link href="/docs/v2/advanced/#multiple-toasters">Multiple toasters</Link> with{" "}
+          <Link href="/docs/advanced/#multiple-toasters">Multiple toasters</Link> with{" "}
           <code>id</code> / <code>toasterId</code>.
         </li>
         <li>

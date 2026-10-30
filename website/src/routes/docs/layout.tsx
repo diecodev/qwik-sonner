@@ -21,6 +21,8 @@ export default component$(() => {
   const pageVersion = versionFromPath(pathname);
   // Unversioned pages (the changelog) borrow the current version's navigation.
   const version = pageVersion ?? CURRENT_VERSION;
+  // The docs of an older line say so under the header.
+  const banner = pageVersion !== null && pageVersion !== CURRENT_VERSION;
   const group = DOCS_NAV[version].find((g) => g.items.some((i) => i.href === pathname));
   const editUrl = `${GITHUB_URL}/edit/v2/website/src/routes${pathname}index.tsx`;
 
@@ -30,12 +32,15 @@ export default component$(() => {
   });
 
   return (
-    <div class={styles.shell}>
+    <div class={styles.shell} data-banner={banner ? "" : undefined}>
       <a href="#docs-content" class={styles.skip}>
         Skip to content
       </a>
-      <DocsHeader version={version} navOpen={navOpen} />
-      {pageVersion ? <VersionBanner version={pageVersion} /> : null}
+      {/* The banner sticks with the header, so it stays in view. */}
+      <div class={styles.top}>
+        <DocsHeader version={version} navOpen={navOpen} />
+        {banner ? <VersionBanner version={pageVersion} /> : null}
+      </div>
       <div class={styles.grid}>
         <Sidebar version={version} open={navOpen.value} />
         <main id="docs-content" class={styles.main}>

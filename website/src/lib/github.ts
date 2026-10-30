@@ -12,6 +12,39 @@ export interface ReleaseNotes {
 /** The notes of each published release, by version (the tag without its `v`). */
 export type Releases = Record<string, ReleaseNotes>;
 
+/** The kinds of change a release's sections list, as the changelog colors them. */
+export type ChangeKind = "breaking" | "deprecated" | "feature" | "fix" | "perf" | "docs";
+
+// A section's kind, from its heading: the curated notes say "Breaking changes",
+// "Features", "Fixes"…, changelogithub "🚨 Breaking Changes", "🚀 Features",
+// "🐞 Bug Fixes", "🏎 Performance". The first match wins.
+const KINDS: [ChangeKind, RegExp][] = [
+  ["breaking", /breaking/i],
+  ["deprecated", /deprecat/i],
+  ["feature", /feature|\bnew\b|\badded\b/i],
+  ["fix", /\bfix/i],
+  ["perf", /perf/i],
+  ["docs", /\bdocs?\b|documentation/i],
+];
+
+/**
+ * Marks each heading of a known kind, and the lists under it until the next
+ * heading, with `data-kind` so the changelog can color them. Other headings
+ * ("View changes on GitHub") and the lists under them stay as they are.
+ */
+export const markKinds = (html: string) => {
+  let kind: ChangeKind | undefined;
+  return html.replace(
+    /<(h[1-6])([^>]*)>([\s\S]*?)<\/\1>|<ul(?=[\s>])/g,
+    (match, tag?: string, attrs?: string, inner?: string) => {
+      if (!tag) return kind ? `<ul data-kind="${kind}"` : match;
+      const text = inner!.replace(/<[^>]*>/g, "").replace(/&[#\w]+;/g, " ");
+      kind = KINDS.find(([, pattern]) => pattern.test(text))?.[0];
+      return kind ? `<${tag}${attrs} data-kind="${kind}">${inner}</${tag}>` : match;
+    },
+  );
+};
+
 const RELEASES = "https://api.github.com/repos/diecodev/qwik-sonner/releases";
 const PER_PAGE = 100;
 
@@ -57,7 +90,7 @@ export const readReleases = async (): Promise<Releases> => {
         .filter((release) => !release.draft && release.tag_name.startsWith("v"))
         .map((release) => [
           release.tag_name.slice(1),
-          { html: release.body_html?.trim() ?? "", url: release.html_url },
+          { html: markKinds(release.body_html?.trim() ?? ""), url: release.html_url },
         ]),
     );
   } catch (error) {

@@ -53,7 +53,7 @@
     "dev.debug": "pnpm --filter test dev.debug",
     "fmt": "oxfmt .",
     "fmt.check": "oxfmt --check .",
-    "lint": "oxlint --debug=files .",
+    "lint": "oxlint .",
     "release": "bumpp --commit --tag --push",
     "prepublishOnly": "pnpm run build.types && pnpm run build.lib",
     "start": "pnpm --filter test start",

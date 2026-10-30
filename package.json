@@ -48,6 +48,7 @@
     "build": "pnpm run build.types && pnpm run build.lib",
     "build.lib": "vite build --mode lib",
     "build.types": "tsc --emitDeclarationOnly -p tsconfig.lib.json",
+    "build.website": "pnpm build.types && pnpm build.lib && pnpm -C website build.client && pnpm -C website build.server",
     "dev": "pnpm --filter test dev",
     "dev.debug": "pnpm --filter test dev.debug",
     "fmt": "oxfmt .",

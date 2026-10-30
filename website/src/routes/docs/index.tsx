@@ -5,7 +5,8 @@ import { CURRENT_VERSION, VERSIONS } from "~/lib/versions";
 
 const target = `${VERSIONS[CURRENT_VERSION].basePath}/`;
 
-// `/docs` always means "the newest docs".
+// `/docs` always means "the newest docs". In production the site is static and
+// vercel.json does this redirect; this handler covers `pnpm dev`.
 export const onGet: RequestHandler = ({ redirect }) => {
   throw redirect(308, target);
 };

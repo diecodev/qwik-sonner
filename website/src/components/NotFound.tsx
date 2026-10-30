@@ -1,4 +1,4 @@
-import { $, component$, useStyles$ } from "@qwik.dev/core";
+import { $, component$, useOnDocument, useSignal, useStyles$ } from "@qwik.dev/core";
 import { Link, useLocation } from "@qwik.dev/router";
 import { toast } from "qwik-sonner";
 import { Logo } from "./Logo";
@@ -19,13 +19,27 @@ const LINKS = [
   { href: "/", title: "Home", text: "Demos and quick start" },
 ];
 
-/** The 404 page: the missing address as an error toast, and where to go next. */
-export const NotFound = component$(() => {
+/**
+ * The 404 page. Static hosting serves it (dist/404.html) for any missing
+ * address, so the address is only known in the browser: `prerendered` marks
+ * that copy, whose router location isn't the visitor's.
+ */
+export const NotFound = component$<{ prerendered?: boolean }>(({ prerendered }) => {
   useStyles$(landing);
-  const path = useLocation().url.pathname;
+  const loc = useLocation();
+  // Reached through client-side navigation the router knows the path; the
+  // prerendered copy asks the browser once Qwik starts.
+  const path = useSignal(prerendered ? "" : loc.url.pathname);
+
+  useOnDocument(
+    "qinit",
+    $(() => {
+      path.value = location.pathname;
+    }),
+  );
 
   const issueUrl = `${GITHUB_URL}/issues/new?title=${encodeURIComponent(
-    `Broken link: ${path || "(unknown page)"}`,
+    `Broken link: ${path.value || "(unknown page)"}`,
   )}`;
 
   return (
@@ -52,7 +66,7 @@ export const NotFound = component$(() => {
             </svg>
             <div class={styles.toastContent}>
               <span class={styles.toastTitle}>Page not found</span>
-              <span class={styles.toastPath}>{path || "…"}</span>
+              <span class={styles.toastPath}>{path.value || "…"}</span>
             </div>
             <Link href="/" class={styles.toastAction} tabIndex={-1}>
               Home
@@ -81,7 +95,7 @@ export const NotFound = component$(() => {
             class="button"
             onClick$={() =>
               toast.error("Page not found", {
-                description: path || undefined,
+                description: path.value || undefined,
                 action: {
                   label: "Home",
                   onClick$: $(() => {

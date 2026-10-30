@@ -46,3 +46,6 @@ bun.lockb
 
 # Local-only notes
 todos.md
+
+# Vercel CLI (vercel pull / build)
+.vercel

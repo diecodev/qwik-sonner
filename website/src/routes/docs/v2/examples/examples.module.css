@@ -1,0 +1,72 @@
+.inbox {
+  margin: 16px 0 8px;
+  border: 1px solid var(--gray4);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px 10px 16px;
+  font-size: 14px;
+  animation: row-in 300ms var(--ease-out);
+}
+
+.mail + .mail {
+  border-top: 1px solid var(--gray3);
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.empty {
+  padding: 22px 16px;
+  font-size: 14px;
+  color: var(--gray11);
+  text-align: center;
+}
+
+.linkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--gray12);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.input {
+  flex: 1 1 220px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--gray5);
+  border-radius: 8px;
+  background: var(--gray0);
+  color: var(--gray12);
+  font: 14px var(--font-sans);
+  transition:
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--gray8);
+  box-shadow: 0 0 0 3px var(--gray4);
+}

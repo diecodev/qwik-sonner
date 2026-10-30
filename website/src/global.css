@@ -1,8 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/*
+ * Design tokens. The gray scale is sonner's own; the semantic colors reuse the
+ * library's rich-color palette (success/info/warning/error) so badges, banners
+ * and changelog tags read as part of the same system as the toasts.
+ */
 :root {
+  color-scheme: light;
   --gray0: #fff;
   --gray1: hsl(0, 0%, 99%);
   --gray2: hsl(0, 0%, 97.3%);
@@ -17,19 +19,101 @@
   --gray11: hsl(0, 0%, 43.5%);
   --gray12: hsl(0, 0%, 9%);
   --hover: rgb(40, 40, 40);
-  --border-radius: 6px;
+
+  --bg: var(--gray0);
+  --bg-blur: rgba(255, 255, 255, 0.8);
+  --fg: var(--gray12);
+  --muted: var(--gray11);
+  --border: var(--gray4);
+
+  --success-bg: hsl(143, 85%, 96%);
+  --success-border: hsl(145, 92%, 87%);
+  --success-text: hsl(140, 100%, 27%);
+  --info-bg: hsl(208, 100%, 97%);
+  --info-border: hsl(221, 91%, 93%);
+  --info-text: hsl(210, 92%, 45%);
+  --warning-bg: hsl(49, 100%, 97%);
+  --warning-border: hsl(49, 91%, 84%);
+  --warning-text: hsl(31, 92%, 45%);
+  --error-bg: hsl(359, 100%, 97%);
+  --error-border: hsl(359, 100%, 94%);
+  --error-text: hsl(360, 100%, 45%);
+
+  --shadow-button:
+    0px 0px 0px 1px rgba(0, 0, 0, 0.06), 0px 1px 0px 0px rgba(0, 0, 0, 0.08),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.04), 0px 3px 3px 0px rgba(0, 0, 0, 0.02),
+    0px 4px 4px 0px rgba(0, 0, 0, 0.01);
+  --shadow-popover: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 8px 24px -4px rgba(0, 0, 0, 0.12);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px rgba(0, 0, 0, 0.18);
+
+  --sh-identifier: var(--gray12);
+  --sh-keyword: #6550b9;
+  --sh-string: #218358;
+  --sh-class: #0d74ce;
+  --sh-entity: #0d74ce;
+  --sh-property: #ab6400;
+  --sh-jsxliterals: var(--gray12);
+  --sh-sign: var(--gray10);
+  --sh-comment: var(--gray9);
+  --sh-break: inherit;
+  --sh-space: inherit;
+
+  --radius: 8px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue,
-    Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
-    Noto Color Emoji;
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --font-mono:
-    "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New,
-    monospace;
-  --shiki-token-comment: var(--gray11) !important;
+    "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 }
 
-.dark {
-  --gray0: #000;
+/* Dark tokens: system preference unless the visitor picked a theme explicitly. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --gray0: #0a0a0a;
+    --gray1: hsl(0, 0%, 9.5%);
+    --gray2: hsl(0, 0%, 10.5%);
+    --gray3: hsl(0, 0%, 15.8%);
+    --gray4: hsl(0, 0%, 18.9%);
+    --gray5: hsl(0, 0%, 21.7%);
+    --gray6: hsl(0, 0%, 24.7%);
+    --gray7: hsl(0, 0%, 29.1%);
+    --gray8: hsl(0, 0%, 37.5%);
+    --gray9: hsl(0, 0%, 43%);
+    --gray10: hsl(0, 0%, 50.7%);
+    --gray11: hsl(0, 0%, 69.5%);
+    --gray12: hsl(0, 0%, 93.5%);
+    --hover: hsl(0, 0%, 85%);
+    --bg-blur: rgba(10, 10, 10, 0.78);
+    --success-bg: hsl(150, 100%, 6%);
+    --success-border: hsl(147, 100%, 12%);
+    --success-text: hsl(150, 86%, 65%);
+    --info-bg: hsl(215, 100%, 6%);
+    --info-border: hsl(223, 43%, 17%);
+    --info-text: hsl(216, 87%, 65%);
+    --warning-bg: hsl(64, 100%, 6%);
+    --warning-border: hsl(60, 100%, 9%);
+    --warning-text: hsl(46, 87%, 65%);
+    --error-bg: hsl(358, 76%, 10%);
+    --error-border: hsl(357, 89%, 16%);
+    --error-text: hsl(358, 100%, 81%);
+    --shadow-button: 0 0 0 1px hsl(0, 0%, 20%), 0 1px 0 0 rgba(255, 255, 255, 0.04) inset;
+    --shadow-popover: 0 0 0 1px hsl(0, 0%, 18%), 0 12px 32px -6px rgba(0, 0, 0, 0.6);
+    --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px rgba(255, 255, 255, 0.3);
+    --sh-keyword: #baa7ff;
+    --sh-string: #3dd68c;
+    --sh-class: #70b8ff;
+    --sh-entity: #70b8ff;
+    --sh-property: #ffca16;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --gray0: #0a0a0a;
   --gray1: hsl(0, 0%, 9.5%);
   --gray2: hsl(0, 0%, 10.5%);
   --gray3: hsl(0, 0%, 15.8%);
@@ -42,104 +126,180 @@
   --gray10: hsl(0, 0%, 50.7%);
   --gray11: hsl(0, 0%, 69.5%);
   --gray12: hsl(0, 0%, 93.5%);
+  --hover: hsl(0, 0%, 85%);
+  --bg-blur: rgba(10, 10, 10, 0.78);
+  --success-bg: hsl(150, 100%, 6%);
+  --success-border: hsl(147, 100%, 12%);
+  --success-text: hsl(150, 86%, 65%);
+  --info-bg: hsl(215, 100%, 6%);
+  --info-border: hsl(223, 43%, 17%);
+  --info-text: hsl(216, 87%, 65%);
+  --warning-bg: hsl(64, 100%, 6%);
+  --warning-border: hsl(60, 100%, 9%);
+  --warning-text: hsl(46, 87%, 65%);
+  --error-bg: hsl(358, 76%, 10%);
+  --error-border: hsl(357, 89%, 16%);
+  --error-text: hsl(358, 100%, 81%);
+  --shadow-button: 0 0 0 1px hsl(0, 0%, 20%), 0 1px 0 0 rgba(255, 255, 255, 0.04) inset;
+  --shadow-popover: 0 0 0 1px hsl(0, 0%, 18%), 0 12px 32px -6px rgba(0, 0, 0, 0.6);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px rgba(255, 255, 255, 0.3);
+  --sh-keyword: #baa7ff;
+  --sh-string: #3dd68c;
+  --sh-class: #70b8ff;
+  --sh-entity: #70b8ff;
+  --sh-property: #ffca16;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 80px;
 }
 
 body {
-  padding-top: 0;
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Disable double-tap zoom */
+* {
+  touch-action: manipulation;
+}
+
+::selection {
+  background: var(--gray7);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--fg);
+  text-wrap: balance;
+}
+
+p {
+  margin: 0 0 16px;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--gray8);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 150ms;
+}
+
+a:hover {
+  text-decoration-color: var(--fg);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: 6px;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--gray4);
+  background: var(--gray2);
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+pre code {
+  white-space: pre;
+}
+
+kbd {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  min-width: 20px;
+  display: inline-flex;
+  justify-content: center;
+  padding: 0 5px;
+  border-radius: 5px;
+  background: var(--gray2);
+  box-shadow: var(--shadow-button);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Demo buttons — sonner's pill buttons. */
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .button {
-  padding: 8px 12px;
+  padding: 7px 12px;
   margin: 0;
   background: var(--gray1);
-  border: 1px solid var(--gray3);
+  border: 1px solid var(--gray4);
   white-space: nowrap;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;
   font-family: var(--font-sans);
+  line-height: 1.4;
   cursor: pointer;
   color: var(--gray12);
   transition:
     border-color 200ms,
     background 200ms,
-    box-shadow 200ms;
-  margin: 1.5rem 0 0;
-}
-
-.button p {
-  line-height: 1.5;
+    box-shadow 200ms,
+    transform 160ms var(--ease-out);
 }
 
 .button:hover {
   background: var(--gray2);
-  border-color: var(--gray4);
+  border-color: var(--gray6);
+}
+
+.button:active {
+  transform: scale(0.97);
 }
 
 .button[data-active="true"] {
   background: var(--gray3);
-  border-color: var(--gray7);
+  border-color: var(--gray8);
 }
 
 .button:focus-visible {
-  outline: none;
-  box-shadow:
-    0px 0px 0px 1px rgba(0, 0, 0, 0.06),
-    0px 1px 0px 0px rgba(0, 0, 0, 0.08),
-    0px 2px 2px 0px rgba(0, 0, 0, 0.04),
-    0px 3px 3px 0px rgba(0, 0, 0, 0.02),
-    0px 4px 4px 0px rgba(0, 0, 0, 0.01),
-    0 0 0 2px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--focus-ring);
 }
 
-@media (max-width: 600px) {
-  .buttons {
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 16px,
-      black calc(100% - 16px),
-      transparent
-    );
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
   }
-}
-
-aside li.active a {
-  background: var(--gray3) !important;
-  color: var(--gray12) !important;
-}
-
-aside li:not(.active) a:hover {
-  background: var(--gray2) !important;
-}
-
-pre {
-  background-color: var(--gray0);
-  border: 1px solid var(--gray4);
-}
-
-button[title="Copy code"] {
-  background: var(--gray2);
-  color: var(--gray10);
-}
-
-main > p {
-  line-height: 1.5rem !important;
-  margin-top: 1rem !important;
-}
-
-.nx-text-primary-600 {
-  color: var(--gray12) !important;
-}
-
-div > a:hover {
-  color: var(--gray12) !important;
-}
-
-p {
-  color: var(--gray12) !important;
-}
-
-footer > div {
-  padding: 32px 24px !important;
 }

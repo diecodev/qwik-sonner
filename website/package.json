@@ -30,8 +30,7 @@
     "sugar-high": "2.6.0",
     "typescript": "catalog:",
     "undici": "catalog:",
-    "vite": "catalog:",
-    "vite-tsconfig-paths": "catalog:"
+    "vite": "catalog:"
   },
   "engines": {
     "node": ">=15.0.0"

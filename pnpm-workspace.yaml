@@ -6,14 +6,13 @@ allowBuilds:
   esbuild: true
   sharp: true
 catalog:
-  "@qwik.dev/core": 2.0.0-beta.37
-  "@qwik.dev/router": 2.0.0-beta.37
+  "@qwik.dev/core": 2.0.0-rc.4
+  "@qwik.dev/router": 2.0.0-rc.4
   "@tailwindcss/vite": ^4.3.1
   "@types/node": ^25.9.3
-  eslint-plugin-qwik: 2.0.0-beta.37
+  eslint-plugin-qwik: 2.0.0-rc.4
   oxlint: ^1.70.0
   oxfmt: ^0.55.0
   typescript: 6.0.3
   undici: ^8.5.0
-  vite: ^7.3.5
-  vite-tsconfig-paths: ^6.1.1
+  vite: ^8.3.5

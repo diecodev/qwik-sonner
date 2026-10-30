@@ -72,11 +72,10 @@
     "oxlint": "catalog:",
     "typescript": "catalog:",
     "undici": "catalog:",
-    "vite": "catalog:",
-    "vite-tsconfig-paths": "catalog:"
+    "vite": "catalog:"
   },
   "peerDependencies": {
-    "@qwik.dev/core": "^2.0.0-beta.37"
+    "@qwik.dev/core": "^2.0.0-rc.4"
   },
   "engines": {
     "node": ">=22.x"

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "target": "ES2017",
-    "module": "ES2022",
+    "module": "ESNext",
     "lib": ["es2022", "DOM", "WebWorker", "DOM.Iterable"],
     "jsx": "react-jsx",
     "jsxImportSource": "@qwik.dev/core",

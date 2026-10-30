@@ -81,5 +81,6 @@
   "engines": {
     "node": ">=22.x"
   },
+  "packageManager": "pnpm@12.15.0",
   "qwik": "./lib/index.qwik.mjs"
 }

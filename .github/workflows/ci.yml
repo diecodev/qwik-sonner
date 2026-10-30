@@ -33,6 +33,11 @@ jobs:
         run: pnpm build.types && pnpm lint
         working-directory: website
 
+      # The website imports the library built above, as Vercel builds it.
+      - name: Build website (client + SSG)
+        run: pnpm build.client && pnpm build.server
+        working-directory: website
+
       - name: Typecheck test app
         run: pnpm build.types && pnpm lint
         working-directory: test

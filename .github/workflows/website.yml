@@ -1,0 +1,46 @@
+name: Website
+
+on:
+  # A change to the docs goes to production on its own.
+  push:
+    branches: [v2] # the production branch; main once v2 merges
+    paths:
+      - "website/**"
+      - "vercel.json"
+      - ".github/workflows/website.yml"
+  # release.yml, once the new version is on npm.
+  workflow_call:
+  # By hand, from the Actions tab.
+  workflow_dispatch:
+
+concurrency:
+  group: website-production
+  # Never stop a deploy halfway: a newer one waits for it.
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The Vercel project, read by the CLI.
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+
+      # Vercel builds nothing from Git for the production branch (vercel.json):
+      # the build runs here, with the CI's pnpm and Node, and Vercel serves it.
+      - name: Production settings
+        run: npx --yes vercel@65.7.0 pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: npx --yes vercel@65.7.0 build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy
+        run: npx --yes vercel@65.7.0 deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

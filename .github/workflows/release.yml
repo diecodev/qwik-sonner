@@ -75,3 +75,26 @@ jobs:
       - run: npx changelogithub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  published:
+    name: Wait for the version on npm
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # The website reads the registry when it builds; wait until the packument
+      # lists the new version so the docs show it.
+      - name: Wait for the version on npm
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          until curl --silent --fail https://registry.npmjs.org/qwik-sonner | grep -q "\"$VERSION\""; do
+            sleep 15
+          done
+          echo "qwik-sonner@$VERSION is on npm"
+
+  # The docs show the new version: the version menu, the install commands and
+  # the changelog read npm when they build.
+  website:
+    needs: published
+    uses: ./.github/workflows/website.yml
+    secrets: inherit

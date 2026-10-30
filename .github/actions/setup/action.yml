@@ -1,5 +1,5 @@
 name: Setup
-description: Set up pnpm (pinned via packageManager), Node 22, and install dependencies frozen
+description: Set up pnpm (the version in packageManager), Node 24, and install dependencies frozen
 
 inputs:
   registry-url:
@@ -10,10 +10,10 @@ inputs:
 runs:
   using: composite
   steps:
+    # Without `version` it installs the one in package.json's packageManager,
+    # the same pnpm Vercel reads for preview builds.
     - name: Install pnpm
       uses: pnpm/action-setup@v6
-      with:
-        version: 11
 
     - name: Use Node.js 24
       uses: actions/setup-node@v7
